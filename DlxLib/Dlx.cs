@@ -4,8 +4,7 @@ using System.Collections.Generic;
 // I have used variable names c, r and j deliberately to make it easy to
 // relate this code to the original "Dancing Links" paper:
 //
-//      Dancing Links
-//      Donald E. Knuth, Stanford University
+//      Dancing Links (Donald E. Knuth, Stanford University)
 //      http://arxiv.org/pdf/cs/0011047v1.pdf
 
 namespace DlxLib
