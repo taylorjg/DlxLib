@@ -5,11 +5,11 @@
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{3EDCB373-9AC3-4A21-A9E3-3B126302B05A}</ProjectGuid>
+    <ProjectGuid>{7853064F-51EB-42E0-B94C-EA9842B3FC58}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>DlxTestApp</RootNamespace>
-    <AssemblyName>DlxTestApp</AssemblyName>
+    <RootNamespace>DlxLibDemo</RootNamespace>
+    <AssemblyName>DlxLibDemo</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <TargetFrameworkProfile>Client</TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>

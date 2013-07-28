@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using DlxLib;
 
-namespace DlxTestApp
+namespace DlxLibDemo
 {
     internal class Program
     {
@@ -70,12 +70,12 @@ namespace DlxTestApp
         {
             // ReSharper disable ReturnValueOfPureMethodIsNotUsed
             solutions.Select((solution, index) =>
-                {
-                    var rowIndexes = string.Join(", ", solution.RowIndexes);
-                    var line = string.Format("Solution[{0}] row indexes: [{1}]", index, rowIndexes);
-                    Console.WriteLine(line);
-                    return line;
-                }).ToList();
+            {
+                var rowIndexes = string.Join(", ", solution.RowIndexes);
+                var line = string.Format("Solution[{0}] row indexes: [{1}]", index, rowIndexes);
+                Console.WriteLine(line);
+                return line;
+            }).ToList();
             // ReSharper restore ReturnValueOfPureMethodIsNotUsed
         }
     }
