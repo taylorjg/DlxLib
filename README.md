@@ -1,15 +1,6 @@
 
-## Stuff To Do
+## TODO
 
-* Mention that DlxLib is a general engine for solving "exact cover" problems
-    * Just need to figure out how to represent your the problem as a 2D matrix of 0's/1's
-* Show main usage in brief code example (essentially a chunk of DlxLibDemo)
-* Mention overloads of the Solve() method e.g. T[,] + an optional predicate
-* Mention the differences between my implementation and the pseudo-code in the original paper
-    * Search() method has no 'k' param
-    * ColumnObject has no Name property
-        * DlxLibDemo2 shows how to associate names with columns inside the calling program
-            * Add a screenshot of DlxLibDemo2 in action
 * Make DlxLib available as a NuGet package ?
 
 ## DlxLib (C#)
@@ -20,12 +11,40 @@ DlxLib is C# class library that implements Dancing Links (DLX) as described in t
 
 Given a matrix of 1's and 0's, it finds all solutions where a solution identifies a subset of the rows in the matrix such that every column contains exactly one 1. This is known as the "exact cover" problem. It can be used to solve various puzzles.
 
-## API
+The difficulty is in representing a given problem as a 2D matrix of 0's/1's. But if you can figure out how to do that, then DlxLib can find all the solutions.
+
+*TODO: give an example of how to represent a problem as a 2D matrix.*
+
+## DlxLib API
+
+### The Dlx Class
+
+The Dlx class exposes three overloads of the <code>Solve()</code> method.
 
 ```C#
 public IEnumerable<Solution> Solve(bool[,] matrix);
+```
+
+This overload takes a 2D matrix of <code>bool</code>. It returns an enumerable of <code>Solutions</code>.
+
+```C#
 public IEnumerable<Solution> Solve<T>(T[,] matrix);
+```
+
+This overload takes a 2D matrix of <code>T</code>. It returns an enumerable of <code>Solutions</code>. Internally, it converts the supplied matrix to a matrix of <code>bool</code>. Any elements that are not <code>default(T)</code> are considered to represent <code>true</code>.
+
+```C#
 public IEnumerable<Solution> Solve<T>(T[,] matrix, Func<T, bool> predicate);
+```
+
+This overload takes a 2D matrix of <code>T</code>. It returns an enumerable of <code>Solutions</code>. Internally, it converts the supplied matrix to a matrix of <code>bool</code>. It uses the supplied predicate function to determine which elements represent <code>true</code>.
+
+### The Solution Class
+
+Each instance of the Solution class represents a solution to the matrix. It exposes an enumerable of <code>int</code> via the <code>RowIndexes</code> property - these identify a subset of the rows in the matrix that comprise a solution. The row indexes are zero-based.
+
+```C#
+public IEnumerable<int> RowIndexes { get; private set; }
 ```
 
 ## Simple Example
@@ -48,7 +67,12 @@ var solutions = dlx.Solve(matrix);
 // Do something with the solutions here...
 ```
 
+## Differences between DlxLib and the pseudo-code in the original paper
 
+* The <code>Search()</code> method has no <code>k</code> param
+    * I have a <code>RowIndex</code> property on <code>DataObject</code>. I maintain a <code>Stack&lt;int&gt;</code> to store row indexes as the algorithm progresses. When a solution is found, I create a Solution object to encapsulate this bunch of row indexes (ordered by ascending value). The calling program can use these row indexes to identify the subset of rows of the matrix that comprise a solution. The program is then free to process this information in any way it chooses.
+* The <code>ColumnObject</code> class has no <code>Name</code> property
+    * DlxLibDemo2.exe shows how to associate names with columns inside the calling program
 
 ## Screenshot of DlxLibDemo.exe
 
