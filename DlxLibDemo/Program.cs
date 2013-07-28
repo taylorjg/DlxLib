@@ -9,11 +9,11 @@ namespace DlxLibDemo
     {
         private static void Main()
         {
-            Test1();
-            Test2();
+            Demo1();
+            Demo2();
         }
 
-        private static void Test1()
+        private static void Demo1()
         {
             var matrix = new[,]
                 {
@@ -27,11 +27,10 @@ namespace DlxLibDemo
 
             var dlx = new Dlx();
             var solutions = dlx.Solve(matrix);
-            PrintMatrix(matrix);
-            PrintSolutions(solutions);
+            PrintSolutions(matrix, solutions);
         }
 
-        private static void Test2()
+        private static void Demo2()
         {
             var matrix = new[,]
                 {
@@ -45,38 +44,59 @@ namespace DlxLibDemo
 
             var dlx = new Dlx();
             var solutions = dlx.Solve(matrix);
-            PrintMatrix(matrix);
-            PrintSolutions(solutions);
+            PrintSolutions(matrix, solutions);
         }
 
-        private static void PrintMatrix(int[,] matrix)
+        private static void PrintSolutions(int[,] matrix, IEnumerable<Solution> solutions)
         {
+            // ReSharper disable ReturnValueOfPureMethodIsNotUsed
+            solutions.Select((solution, index) =>
+                {
+                    PrintSolution(matrix, solution, index);
+                    return 0;
+                }).ToList();
+            // ReSharper restore ReturnValueOfPureMethodIsNotUsed
+        }
+
+        private static void PrintSolution(int[,] matrix, Solution solution, int index)
+        {
+            var rowIndexes = "[" + string.Join(", ", solution.RowIndexes) + "]";
+            Console.WriteLine("Solution number {0} ({1}):", index + 1, rowIndexes);
+
             var numRows = matrix.GetLength(0);
             var numCols = matrix.GetLength(1);
 
             for (var rowIndex = 0; rowIndex < numRows; rowIndex++)
             {
-                var values = new List<int>();
+                Console.Write("matrix[{0}]: {{", rowIndex);
                 for (var colIndex = 0; colIndex < numCols; colIndex++)
                 {
-                    values.Add(matrix[rowIndex, colIndex]);
-                }
-                var line = string.Join(", ", values);
-                Console.WriteLine("matrix[{0}]: {{{1}}}", rowIndex, line);
-            }
-        }
+                    var value = matrix[rowIndex, colIndex];
+                    var changedForegroundColor = false;
+                    var oldForegroundColor = Console.ForegroundColor;
 
-        private static void PrintSolutions(IEnumerable<Solution> solutions)
-        {
-            // ReSharper disable ReturnValueOfPureMethodIsNotUsed
-            solutions.Select((solution, index) =>
-            {
-                var rowIndexes = string.Join(", ", solution.RowIndexes);
-                var line = string.Format("Solution[{0}] row indexes: [{1}]", index, rowIndexes);
-                Console.WriteLine(line);
-                return line;
-            }).ToList();
-            // ReSharper restore ReturnValueOfPureMethodIsNotUsed
+                    if (solution.RowIndexes.Contains(rowIndex) && value != 0)
+                    {
+                        Console.ForegroundColor = ConsoleColor.Yellow;
+                        changedForegroundColor = true;
+                    }
+
+                    Console.Write("{0}", value);
+
+                    if (changedForegroundColor)
+                    {
+                        Console.ForegroundColor = oldForegroundColor;
+                    }
+
+                    if (colIndex + 1 < numCols)
+                    {
+                        Console.Write(", ");
+                    }
+                }
+                Console.WriteLine("}");
+            }
+
+            Console.WriteLine();
         }
     }
 }
