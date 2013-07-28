@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 
-// I have used variable names c, r and j deliberately to make it easy to
-// relate this code to the original "Dancing Links" paper:
+// I have used variable names c, r and j deliberately to make it easier to
+// relate the code back to the original "Dancing Links" paper:
 //
 //      Dancing Links (Donald E. Knuth, Stanford University)
 //      http://arxiv.org/pdf/cs/0011047v1.pdf
@@ -13,7 +13,7 @@ namespace DlxLib
     {
         private IList<Solution> _solutions;
         private Stack<int> _currentSolution;
-        private ColumnHeader Root { get; set; }
+        private ColumnObject Root { get; set; }
 
         public IEnumerable<Solution> Solve(bool[,] matrix)
         {
@@ -26,17 +26,17 @@ namespace DlxLib
         {
             var defaultEqualityComparerT = EqualityComparer<T>.Default;
             var defaultT = default(T);
-            Func<T, bool> isTrueFunc = t => !defaultEqualityComparerT.Equals(t, defaultT);
-            return Solve(matrix, isTrueFunc);
+            Func<T, bool> predicate = t => !defaultEqualityComparerT.Equals(t, defaultT);
+            return Solve(matrix, predicate);
         }
 
-        public IEnumerable<Solution> Solve<T>(T[,] matrix, Func<T, bool> isTrueFunc)
+        public IEnumerable<Solution> Solve<T>(T[,] matrix, Func<T, bool> predicate)
         {
-            var boolMatrix = ToBoolMatrix(matrix, isTrueFunc);
+            var boolMatrix = ToBoolMatrix(matrix, predicate);
             return Solve(boolMatrix);
         }
 
-        private static bool[,] ToBoolMatrix<T>(T[,] matrix, Func<T, bool> isTrueFunc)
+        private static bool[,] ToBoolMatrix<T>(T[,] matrix, Func<T, bool> predicate)
         {
             var numRows = matrix.GetLength(0);
             var numCols = matrix.GetLength(1);
@@ -46,7 +46,8 @@ namespace DlxLib
             {
                 for (var colIndex = 0; colIndex < numCols; colIndex++)
                 {
-                    boolMatrix[rowIndex, colIndex] = isTrueFunc(matrix[rowIndex, colIndex]);
+                    var element = matrix[rowIndex, colIndex];
+                    boolMatrix[rowIndex, colIndex] = predicate(element);
                 }
             }
 
@@ -60,62 +61,50 @@ namespace DlxLib
 
             var numRows = matrix.GetLength(0);
             var numCols = matrix.GetLength(1);
-            var colIndexToColumnHeader = new Dictionary<int, ColumnHeader>();
+            var colIndexToListHeader = new Dictionary<int, ColumnObject>();
 
-            Root = new ColumnHeader();
+            Root = new ColumnObject();
 
             for (var colIndex = 0; colIndex < numCols; colIndex++)
             {
-                var columnHeader = new ColumnHeader();
-                Root.AppendColumnHeader(columnHeader);
-                colIndexToColumnHeader[colIndex] = FindColumnHeader(colIndex);
+                var listHeader = new ColumnObject();
+                Root.AppendColumnHeader(listHeader);
+                colIndexToListHeader[colIndex] = listHeader;
             }
 
             for (var rowIndex = 0; rowIndex < numRows; rowIndex++)
             {
                 // We are starting a new row so indicate that this row is currently empty.
-                Node firstNodeInThisRow = null;
+                DataObject firstDataObjectInThisRow = null;
 
                 for (var colIndex = 0; colIndex < numCols; colIndex++)
                 {
-                    // We are only interested in the '1's ('true's) in the matrix.
-                    // We create a node for each '1'. We ignore all the '0's ('false's).
+                    // We are only interested in the 'true's in the matrix.
+                    // We create a DataObject for each 'true'. We ignore all the 'false's.
                     if (!matrix[rowIndex, colIndex])
                     {
                         continue;
                     }
 
-                    // Add the node to the appropriate column header.
-                    var columnHeader = colIndexToColumnHeader[colIndex];
-                    var node = new Node(columnHeader, rowIndex);
+                    // Create a new DataObject and add it to the appropriate list header.
+                    var listHeader = colIndexToListHeader[colIndex];
+                    var dataObject = new DataObject(listHeader, rowIndex);
 
-                    if (firstNodeInThisRow != null)
+                    if (firstDataObjectInThisRow != null)
                     {
-                        firstNodeInThisRow.AppendRowNode(node);
+                        firstDataObjectInThisRow.AppendToRow(dataObject);
                     }
                     else
                     {
-                        firstNodeInThisRow = node;
+                        firstDataObjectInThisRow = dataObject;
                     }
                 }
             }
         }
 
-        private ColumnHeader FindColumnHeader(int colIndexToFind)
-        {
-            var columnHeader = Root;
-
-            for (var colIndex = 0; colIndex <= colIndexToFind; colIndex++)
-            {
-                columnHeader = columnHeader.NextColumnHeader;
-            }
-
-            return columnHeader;
-        }
-
         private bool MatrixIsEmpty()
         {
-            return Root.NextColumnHeader == Root;
+            return Root.NextColumnObject == Root;
         }
 
         private void Search()
@@ -126,7 +115,7 @@ namespace DlxLib
                 return;
             }
 
-            var c = ChooseColumnWithLeastRows();
+            var c = GetListHeaderOfColumnWithLeastRows();
             CoverColumn(c);
 
             for (var r = c.Down; r != c; r = r.Down)
@@ -134,12 +123,12 @@ namespace DlxLib
                 _currentSolution.Push(r.RowIndex);
 
                 for (var j = r.Right; j != r; j = j.Right)
-                    CoverColumn(j.ColumnHeader);
+                    CoverColumn(j.ListHeader);
 
                 Search();
 
                 for (var j = r.Left; j != r; j = j.Left)
-                    UncoverColumn(j.ColumnHeader);
+                    UncoverColumn(j.ListHeader);
 
                 _currentSolution.Pop();
             }
@@ -147,24 +136,24 @@ namespace DlxLib
             UncoverColumn(c);
         }
 
-        private ColumnHeader ChooseColumnWithLeastRows()
+        private ColumnObject GetListHeaderOfColumnWithLeastRows()
         {
-            ColumnHeader chosenColumn = null;
+            ColumnObject listHeader = null;
 
             var smallestNumberOfRows = int.MaxValue;
-            for (var columnHeader = Root.NextColumnHeader; columnHeader != Root; columnHeader = columnHeader.NextColumnHeader)
+            for (var columnHeader = Root.NextColumnObject; columnHeader != Root; columnHeader = columnHeader.NextColumnObject)
             {
-                if (columnHeader.Size < smallestNumberOfRows)
+                if (columnHeader.NumberOfRows < smallestNumberOfRows)
                 {
-                    chosenColumn = columnHeader;
-                    smallestNumberOfRows = columnHeader.Size;
+                    listHeader = columnHeader;
+                    smallestNumberOfRows = columnHeader.NumberOfRows;
                 }
             }
 
-            return chosenColumn;
+            return listHeader;
         }
 
-        private static void CoverColumn(ColumnHeader c)
+        private static void CoverColumn(ColumnObject c)
         {
             c.UnlinkColumnHeader();
 
@@ -172,18 +161,18 @@ namespace DlxLib
             {
                 for (var j = i.Right; j != i; j = j.Right)
                 {
-                    j.ColumnHeader.UnlinkNode(j);
+                    j.ListHeader.UnlinkDataObject(j);
                 }
             }
         }
 
-        private static void UncoverColumn(ColumnHeader c)
+        private static void UncoverColumn(ColumnObject c)
         {
             for (var i = c.Up; i != c; i = i.Up)
             {
                 for (var j = i.Left; j != i; j = j.Left)
                 {
-                    j.ColumnHeader.RelinkNode(j);
+                    j.ListHeader.RelinkDataObject(j);
                 }
             }
 
