@@ -74,7 +74,7 @@ namespace DlxLibDemo
                     solution.RowIndexes.Contains(rowIndex),
                     ConsoleColor.Yellow,
                     () => Console.Write("{0}", localRowIndexForCapture));
-                Console.Write("]: {{");
+                Console.Write("]: {");
 
                 for (var colIndex = 0; colIndex < numCols; colIndex++)
                 {
