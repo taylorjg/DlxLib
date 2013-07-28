@@ -70,7 +70,7 @@ var solutions = dlx.Solve(matrix);
 ## Differences between DlxLib and the pseudo-code in the original paper
 
 * The <code>Search()</code> method has no <code>k</code> param
-    * I have a <code>RowIndex</code> property on <code>DataObject</code>. I maintain a <code>Stack&lt;int&gt;</code> to store row indexes as the algorithm progresses. When a solution is found, I create a Solution object to encapsulate this bunch of row indexes (ordered by ascending value). The calling program can use these row indexes to identify the subset of rows of the matrix that comprise a solution. The program is then free to process this information in any way it chooses.
+    * I have a <code>RowIndex</code> property on <code>DataObject</code>. I maintain a <code>Stack&lt;int&gt;</code> to store row indexes as the algorithm progresses. When a solution is found, I create a <code>Solution</code> object to encapsulate this bunch of row indexes (ordered by ascending value). The calling program can use these row indexes to identify the subset of rows of the matrix that comprise a solution. The program is then free to process this information in any way it chooses.
 * The <code>ColumnObject</code> class has no <code>Name</code> property
     * DlxLibDemo2.exe shows how to associate names with columns inside the calling program
 
