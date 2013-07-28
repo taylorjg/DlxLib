@@ -72,21 +72,11 @@ namespace DlxLibDemo
                 for (var colIndex = 0; colIndex < numCols; colIndex++)
                 {
                     var value = matrix[rowIndex, colIndex];
-                    var changedForegroundColor = false;
-                    var oldForegroundColor = Console.ForegroundColor;
 
-                    if (solution.RowIndexes.Contains(rowIndex) && value != 0)
-                    {
-                        Console.ForegroundColor = ConsoleColor.Yellow;
-                        changedForegroundColor = true;
-                    }
-
-                    Console.Write("{0}", value);
-
-                    if (changedForegroundColor)
-                    {
-                        Console.ForegroundColor = oldForegroundColor;
-                    }
+                    ChangeConsoleForegroundColorIf(
+                        solution.RowIndexes.Contains(rowIndex) && value != 0,
+                        ConsoleColor.Yellow,
+                        () => Console.Write("{0}", value));
 
                     if (colIndex + 1 < numCols)
                     {
@@ -97,6 +87,23 @@ namespace DlxLibDemo
             }
 
             Console.WriteLine();
+        }
+
+        private static void ChangeConsoleForegroundColorIf(bool condition, ConsoleColor consoleColor, Action action)
+        {
+            var oldForegroundColor = Console.ForegroundColor;
+
+            if (condition)
+            {
+                Console.ForegroundColor = consoleColor;
+            }
+
+            action();
+
+            if (condition)
+            {
+                Console.ForegroundColor = oldForegroundColor;
+            }
         }
     }
 }
