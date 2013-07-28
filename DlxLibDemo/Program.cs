@@ -68,7 +68,14 @@ namespace DlxLibDemo
 
             for (var rowIndex = 0; rowIndex < numRows; rowIndex++)
             {
-                Console.Write("matrix[{0}]: {{", rowIndex);
+                Console.Write("matrix[");
+                var localRowIndexForCapture = rowIndex;
+                ChangeConsoleForegroundColorIf(
+                    solution.RowIndexes.Contains(rowIndex),
+                    ConsoleColor.Yellow,
+                    () => Console.Write("{0}", localRowIndexForCapture));
+                Console.Write("]: {{");
+
                 for (var colIndex = 0; colIndex < numCols; colIndex++)
                 {
                     var value = matrix[rowIndex, colIndex];
