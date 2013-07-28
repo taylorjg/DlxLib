@@ -68,7 +68,7 @@ namespace DlxLibDemo2
             Console.WriteLine("Solution number {0}:", index + 1);
 
             var maxColumnNameLength = columnNames.Max(s => s.Length);
-            var columnNameformatString = string.Format("{{0,-{0}}}", maxColumnNameLength);
+            var columnNameFormatString = string.Format("{{0,-{0}}}", maxColumnNameLength);
 
             var numRowsInSolution = rowIndexes.Count;
             var numCols = matrix.GetLength(1);
@@ -84,7 +84,7 @@ namespace DlxLibDemo2
                     {
                         columnName = columnNames[matrixColIndex];
                     }
-                    Console.Write(columnNameformatString, columnName);
+                    Console.Write(columnNameFormatString, columnName);
 
                     if (matrixColIndex + 1 < numCols)
                     {
