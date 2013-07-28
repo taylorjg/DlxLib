@@ -1,11 +1,25 @@
 namespace DlxLib
 {
-    internal class ColumnObject : DataObject
+    internal class ColumnObject : IDataObject
     {
         public ColumnObject()
         {
+            Left = Right = Up = Down = this;
+            ListHeader = this;
+            RowIndex = -1;
+
             PreviousColumnObject = NextColumnObject = this;
+            NumberOfRows = 0;
         }
+
+        public IDataObject Left { get; set; }
+        public IDataObject Right { get; set; }
+        public IDataObject Up { get; set; }
+        public IDataObject Down { get; set; }
+        public ColumnObject ListHeader { get; private set; }
+        public int RowIndex { get; private set; }
+        public void UnlinkFromColumn() {}
+        public void RelinkIntoColumn() {}
 
         public ColumnObject PreviousColumnObject { get; private set; }
         public ColumnObject NextColumnObject { get; private set; }
@@ -31,19 +45,22 @@ namespace DlxLib
             PreviousColumnObject.NextColumnObject = this;
         }
 
-        public void AddDataObject(DataObject dataObject)
+        public void AddDataObject(IDataObject dataObject)
         {
-            AppendToColumn(dataObject);
+            Up.Down = dataObject;
+            dataObject.Down = this;
+            dataObject.Up = Up;
+            Up = dataObject;
             NumberOfRows++;
         }
 
-        public void UnlinkDataObject(DataObject dataObject)
+        public void UnlinkDataObject(IDataObject dataObject)
         {
             dataObject.UnlinkFromColumn();
             NumberOfRows--;
         }
 
-        public void RelinkDataObject(DataObject dataObject)
+        public void RelinkDataObject(IDataObject dataObject)
         {
             dataObject.RelinkIntoColumn();
             NumberOfRows++;

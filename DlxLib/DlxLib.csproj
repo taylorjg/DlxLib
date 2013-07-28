@@ -43,6 +43,7 @@
     <Compile Include="ColumnObject.cs" />
     <Compile Include="Dlx.cs" />
     <Compile Include="DataObject.cs" />
+    <Compile Include="IDataObject.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Solution.cs" />
   </ItemGroup>

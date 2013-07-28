@@ -1,29 +1,19 @@
 namespace DlxLib
 {
-    internal class DataObject
+    internal class DataObject : IDataObject
     {
         public DataObject(ColumnObject listHeader, int rowIndex)
         {
             Left = Right = Up = Down = this;
             ListHeader = listHeader;
+            listHeader.AddDataObject(this);
             RowIndex = rowIndex;
-
-            if (listHeader != null)
-            {
-                listHeader.AddDataObject(this);
-            }
         }
 
-        // TODO: this is a bit ugly...
-        protected DataObject()
-            : this(null, -1)
-        {
-        }
-
-        public DataObject Left { get; private set; }
-        public DataObject Right { get; private set; }
-        public DataObject Up { get; private set; }
-        public DataObject Down { get; private set; }
+        public IDataObject Left { get; set; }
+        public IDataObject Right { get; set; }
+        public IDataObject Up { get; set; }
+        public IDataObject Down { get; set; }
         public ColumnObject ListHeader { get; private set; }
         public int RowIndex { get; private set; }
 
@@ -33,14 +23,6 @@ namespace DlxLib
             dataObject.Right = this;
             dataObject.Left = Left;
             Left = dataObject;
-        }
-
-        public void AppendToColumn(DataObject dataObject)
-        {
-            Up.Down = dataObject;
-            dataObject.Down = this;
-            dataObject.Up = Up;
-            Up = dataObject;
         }
 
         public void UnlinkFromColumn()
