@@ -25,23 +25,23 @@ The Dlx class exposes three overloads of the <code>Solve()</code> method.
 public IEnumerable<Solution> Solve(bool[,] matrix);
 ```
 
-This overload takes a 2D matrix of <code>bool</code>. It returns an enumerable of <code>Solutions</code>.
+This overload takes a 2D matrix of <code>bool</code>. It returns an enumerable of <code>Solution</code>.
 
 ```C#
 public IEnumerable<Solution> Solve<T>(T[,] matrix);
 ```
 
-This overload takes a 2D matrix of <code>T</code>. It returns an enumerable of <code>Solutions</code>. Internally, it converts the supplied matrix to a matrix of <code>bool</code>. Any elements that are not <code>default(T)</code> are considered to represent <code>true</code>.
+This overload takes a 2D matrix of <code>T</code>. It returns an enumerable of <code>Solution</code>. Internally, it converts the supplied matrix to a matrix of <code>bool</code>. Any elements that are not <code>default(T)</code> are considered to represent <code>true</code>.
 
 ```C#
 public IEnumerable<Solution> Solve<T>(T[,] matrix, Func<T, bool> predicate);
 ```
 
-This overload takes a 2D matrix of <code>T</code>. It returns an enumerable of <code>Solutions</code>. Internally, it converts the supplied matrix to a matrix of <code>bool</code>. It uses the supplied predicate function to determine which elements represent <code>true</code>.
+This overload takes a 2D matrix of <code>T</code>. It returns an enumerable of <code>Solution</code>. Internally, it converts the supplied matrix to a matrix of <code>bool</code>. It uses the supplied predicate function to determine which elements represent <code>true</code>.
 
 ### The Solution Class
 
-Each instance of the Solution class represents a solution to the matrix. It exposes an enumerable of <code>int</code> via the <code>RowIndexes</code> property - these identify a subset of the rows in the matrix that comprise a solution. The row indexes are zero-based.
+Each instance of the <code>Solution</code> class represents a solution to the matrix. It exposes an enumerable of <code>int</code> via the <code>RowIndexes</code> property - these identify a subset of the rows in the matrix that comprise a solution. The row indexes are zero-based.
 
 ```C#
 public IEnumerable<int> RowIndexes { get; private set; }
@@ -49,7 +49,7 @@ public IEnumerable<int> RowIndexes { get; private set; }
 
 ## Simple Example
 
-Here is a brief example of using DlxLib. The matrix is a hardcoded 2D matrix of <code>int</code>.
+Here is a brief example of using DlxLib. The matrix is a hardcoded 2D matrix of <code>int</code> - in fact, it is the example matrix from the original paper. This example uses the second overload of the <code>Solve()</code> method. It is looks nicer to create a 2D array of 0/1 <code>int</code> values than a 2D array of <code>false</code>/<code>true</code> <code>bool</code> values.
 
 ```C#
 var matrix = new[,]
