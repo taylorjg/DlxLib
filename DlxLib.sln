@@ -14,6 +14,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DlxLibDemo", "DlxLibDemo\Dl
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DlxLibDemo2", "DlxLibDemo2\DlxLibDemo2.csproj", "{345701C2-9EE0-42DD-BC05-36D7E989D02E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DlxLibDemo3", "DlxLibDemo3\DlxLibDemo3.csproj", "{9F23CC45-D6BC-4DB7-B0FA-46B7C53FD014}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -54,6 +56,16 @@ Global
 		{345701C2-9EE0-42DD-BC05-36D7E989D02E}.Release|Mixed Platforms.Build.0 = Release|x86
 		{345701C2-9EE0-42DD-BC05-36D7E989D02E}.Release|x86.ActiveCfg = Release|x86
 		{345701C2-9EE0-42DD-BC05-36D7E989D02E}.Release|x86.Build.0 = Release|x86
+		{9F23CC45-D6BC-4DB7-B0FA-46B7C53FD014}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{9F23CC45-D6BC-4DB7-B0FA-46B7C53FD014}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{9F23CC45-D6BC-4DB7-B0FA-46B7C53FD014}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{9F23CC45-D6BC-4DB7-B0FA-46B7C53FD014}.Debug|x86.ActiveCfg = Debug|x86
+		{9F23CC45-D6BC-4DB7-B0FA-46B7C53FD014}.Debug|x86.Build.0 = Debug|x86
+		{9F23CC45-D6BC-4DB7-B0FA-46B7C53FD014}.Release|Any CPU.ActiveCfg = Release|x86
+		{9F23CC45-D6BC-4DB7-B0FA-46B7C53FD014}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{9F23CC45-D6BC-4DB7-B0FA-46B7C53FD014}.Release|Mixed Platforms.Build.0 = Release|x86
+		{9F23CC45-D6BC-4DB7-B0FA-46B7C53FD014}.Release|x86.ActiveCfg = Release|x86
+		{9F23CC45-D6BC-4DB7-B0FA-46B7C53FD014}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
