@@ -2,6 +2,8 @@
 ## TODO
 
 * Make DlxLib available as a NuGet package ?
+* Add events and raise them as the algorithm progresses ? This would allow the calling program to visualise the progress in a GUI ? It could also harvest solutions as they are found rather than waiting to receive them all together at the end of the algorithm.
+    * Add a WPF demo program showing this all working ? Perhaps solving a pentomino puzzle.
 
 ## DlxLib (C#)
 
@@ -13,7 +15,9 @@ Given a matrix of 1's and 0's, it finds all solutions where a solution identifie
 
 The difficulty is in representing a given problem as a 2D matrix of 0's/1's. But if you can figure out how to do that, then DlxLib can find all the solutions.
 
-*TODO: give an example of how to represent a problem as a 2D matrix.*
+See the following link for a very nice tutorial on how DLX works and a practical application (solving a pentomino puzzle):
+
+[CS575: Dancing Links - Colorado State University](http://www.cs.colostate.edu/~cs420dl/slides/DLX.ppt "CS575: Dancing Links - Colorado State University")
 
 ## DlxLib API
 
