@@ -28,6 +28,16 @@ namespace DlxLibDemo2
             var columnNames = new[] {"A", "B", "C", "D", "E", "F", "G"};
 
             var dlx = new Dlx();
+            dlx.SolutionFound += (sender, args) =>
+            {
+                var solution = "[" + string.Join(", ", args.Solution.RowIndexes) + "]";
+                Console.WriteLine("SolutionFound - Solution: {0}; SolutionIndex: {1}", solution, args.SolutionIndex);
+            };
+            dlx.SearchStep += (sender, args) =>
+            {
+                var rowIndexes = "[" + string.Join(", ", args.RowIndexes) + "]";
+                Console.WriteLine("SearchStep - Step: {0}; RowIndexes: {1}", args.Step, rowIndexes);
+            };
             var solutions = dlx.Solve(matrix);
             PrintSolutions(matrix, columnNames, solutions);
         }
@@ -47,6 +57,16 @@ namespace DlxLibDemo2
             var columnNames = new[] {"One", "Two", "Three", "Four"};
 
             var dlx = new Dlx();
+            dlx.SolutionFound += (sender, args) =>
+            {
+                var solution = "[" + string.Join(", ", args.Solution.RowIndexes) + "]";
+                Console.WriteLine("SolutionFound - Solution: {0}; SolutionIndex: {1}", solution, args.SolutionIndex);
+            };
+            dlx.SearchStep += (sender, args) =>
+            {
+                var rowIndexes = "[" + string.Join(", ", args.RowIndexes) + "]";
+                Console.WriteLine("SearchStep - Step: {0}; RowIndexes: {1}", args.Step, rowIndexes);
+            };
             var solutions = dlx.Solve(matrix);
             PrintSolutions(matrix, columnNames, solutions);
         }

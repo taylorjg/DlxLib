@@ -2,7 +2,7 @@
 ## TODO
 
 * Make DlxLib available as a NuGet package ?
-* Add events and raise them as the algorithm progresses ? This would allow the calling program to visualise the progress in a GUI ? It could also harvest solutions as they are found rather than waiting to receive them all together at the end of the algorithm.
+* Add events and raise them as the algorithm progresses ? This would allow the calling program to visualise the progress in a GUI ? It could also harvest solutions as they are found rather than waiting to receive them all together at the end of the algorithm. (<font color="red">WORK IN PROGRESS</font>)
     * Add a WPF demo program showing this all working ? Perhaps solving a pentomino puzzle.
 
 ## DlxLib (C#)

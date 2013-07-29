@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 // I have used variable names c, r and j deliberately to make it easier to
 // relate the code back to the original "Dancing Links" paper:
@@ -35,6 +36,9 @@ namespace DlxLib
             var boolMatrix = ToBoolMatrix(matrix, predicate);
             return Solve(boolMatrix);
         }
+
+        public EventHandler<SolutionFoundEventArgs> SolutionFound;
+        public EventHandler<SearchStepEventArgs> SearchStep;
 
         private static bool[,] ToBoolMatrix<T>(T[,] matrix, Func<T, bool> predicate)
         {
@@ -107,11 +111,14 @@ namespace DlxLib
             return Root.NextColumnObject == Root;
         }
 
-        private void Search()
+        private void Search(int k = 0)
         {
+            RaiseSearchStep(k);
+
             if (MatrixIsEmpty())
             {
                 _solutions.Add(new Solution(_currentSolution));
+                RaiseSolutionFound();
                 return;
             }
 
@@ -125,7 +132,7 @@ namespace DlxLib
                 for (var j = r.Right; j != r; j = j.Right)
                     CoverColumn(j.ListHeader);
 
-                Search();
+                Search(k + 1);
 
                 for (var j = r.Left; j != r; j = j.Left)
                     UncoverColumn(j.ListHeader);
@@ -177,6 +184,29 @@ namespace DlxLib
             }
 
             c.RelinkColumnHeader();
+        }
+
+        private void RaiseSolutionFound()
+        {
+            var solutionFound = SolutionFound;
+
+            if (solutionFound != null)
+            {
+                var solution = _solutions.Last();
+                var solutionIndex = _solutions.Count - 1;
+                solutionFound(this, new SolutionFoundEventArgs(solution, solutionIndex));
+            }
+        }
+
+        private void RaiseSearchStep(int step)
+        {
+            var searchStep = SearchStep;
+
+            if (searchStep != null)
+            {
+                var rowIndexes = _currentSolution.OrderBy(rowIndex => rowIndex).ToList();
+                searchStep(this, new SearchStepEventArgs(step, rowIndexes));
+            }
         }
     }
 }
