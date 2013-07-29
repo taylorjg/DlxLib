@@ -5,13 +5,15 @@ namespace DlxLib
 {
     public class SearchStepEventArgs : EventArgs
     {
-        public SearchStepEventArgs(int step, IEnumerable<int> rowIndexes)
+        public SearchStepEventArgs(int depth, int iteration, IEnumerable<int> rowIndexes)
         {
-            Step = step;
+            Depth = depth;
+            Iteration = iteration;
             RowIndexes = rowIndexes;
         }
 
-        public int Step { get; private set; }
+        public int Depth { get; private set; }
+        public int Iteration { get; private set; }
         public IEnumerable<int> RowIndexes { get; private set; }
     }
 }

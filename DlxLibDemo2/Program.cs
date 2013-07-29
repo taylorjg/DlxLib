@@ -36,7 +36,7 @@ namespace DlxLibDemo2
             dlx.SearchStep += (sender, args) =>
             {
                 var rowIndexes = "[" + string.Join(", ", args.RowIndexes) + "]";
-                Console.WriteLine("SearchStep - Step: {0}; RowIndexes: {1}", args.Step, rowIndexes);
+                Console.WriteLine("SearchStep - Depth: {0}; Iteration: {1}; RowIndexes: {2}", args.Depth, args.Iteration, rowIndexes);
             };
             var solutions = dlx.Solve(matrix);
             PrintSolutions(matrix, columnNames, solutions);
@@ -65,7 +65,7 @@ namespace DlxLibDemo2
             dlx.SearchStep += (sender, args) =>
             {
                 var rowIndexes = "[" + string.Join(", ", args.RowIndexes) + "]";
-                Console.WriteLine("SearchStep - Step: {0}; RowIndexes: {1}", args.Step, rowIndexes);
+                Console.WriteLine("SearchStep - Depth: {0}; Iteration: {1}; RowIndexes: {2}", args.Depth, args.Iteration, rowIndexes);
             };
             var solutions = dlx.Solve(matrix);
             PrintSolutions(matrix, columnNames, solutions);

@@ -15,6 +15,7 @@ namespace DlxLib
         }
 
         // TODO: this is a bit ugly...
+        // LSP problem here ?
         protected DataObject()
             : this(null, -1)
         {

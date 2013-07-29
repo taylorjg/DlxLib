@@ -14,6 +14,7 @@ namespace DlxLib
     {
         private IList<Solution> _solutions;
         private Stack<int> _currentSolution;
+        private int _iteration;
         private ColumnObject Root { get; set; }
 
         public IEnumerable<Solution> Solve(bool[,] matrix)
@@ -62,6 +63,7 @@ namespace DlxLib
         {
             _solutions = new List<Solution>();
             _currentSolution = new Stack<int>();
+            _iteration = 0;
 
             var numRows = matrix.GetLength(0);
             var numCols = matrix.GetLength(1);
@@ -113,6 +115,8 @@ namespace DlxLib
 
         private void Search(int k = 0)
         {
+            _iteration++;
+
             RaiseSearchStep(k);
 
             if (MatrixIsEmpty())
@@ -198,14 +202,14 @@ namespace DlxLib
             }
         }
 
-        private void RaiseSearchStep(int step)
+        private void RaiseSearchStep(int depth)
         {
             var searchStep = SearchStep;
 
             if (searchStep != null)
             {
-                var rowIndexes = _currentSolution.OrderBy(rowIndex => rowIndex).ToList();
-                searchStep(this, new SearchStepEventArgs(step, rowIndexes));
+                var rowIndexes = _currentSolution.ToList();
+                searchStep(this, new SearchStepEventArgs(depth, _iteration, rowIndexes));
             }
         }
     }
