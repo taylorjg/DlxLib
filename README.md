@@ -45,7 +45,7 @@ This overload takes a 2D matrix of <code>T</code>. It returns an enumerable of <
 
 ### The Solution Class
 
-Each instance of the <code>Solution</code> class represents a solution to the matrix. It exposes an enumerable of <code>int</code> via the <code>RowIndexes</code> property - these identify a subset of the rows in the matrix that comprise a solution. The row indexes are zero-based.
+Each instance of the <code>Solution</code> class represents a solution to the matrix. It exposes an enumerable of <code>int</code> via the <code>RowIndexes</code> property - these identify a subset of the rows in the matrix that comprise a solution. The row indexes are zero-based and are always in ascending order.
 
 ```C#
 public IEnumerable<int> RowIndexes { get; private set; }
