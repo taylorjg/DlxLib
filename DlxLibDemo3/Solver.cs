@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows;
 using DlxLib;
 using DlxLibDemo3.Model;
 
@@ -22,16 +24,40 @@ namespace DlxLibDemo3
             _dictionary = new Dictionary<int, Tuple<RotatedPiece, int, int>>();
             _board = new Board(boardSize);
             _board.ForceColourOfSquareZeroZeroToBeWhite();
+            SearchSteps = new ConcurrentQueue<SearchStepEventArgs>();
+            Solutions = new ConcurrentQueue<SolutionFoundEventArgs>();
+        }
+
+        private static void InvokeOnUiThread(Action action)
+        {
+            Application.Current.Dispatcher.Invoke(action);
         }
 
         public void Solve()
         {
+            var thread = new System.Threading.Thread(SolveOnBackgroundThread);
+            thread.Start();
+        }
+
+        private void SolveOnBackgroundThread()
+        {
             BuildMatrixAndDictionary();
+
             var dlx = new Dlx();
-            dlx.Started += (sender, e) => RaiseStarted(e);
-            dlx.Finished += (sender, e) => RaiseFinished(e);
-            dlx.SearchStep += (_, e) => RaiseSearchStep(e);
-            dlx.SolutionFound += (_, e) => RaiseSolutionFound(e);
+
+            dlx.Started += (sender, e) => InvokeOnUiThread(() => RaiseStarted(e));
+            dlx.Finished += (sender, e) => InvokeOnUiThread(() => RaiseFinished(e));
+            dlx.SearchStep += (_, e) =>
+                {
+                    SearchSteps.Enqueue(e);
+                    InvokeOnUiThread(() => RaiseSearchStep(e));
+                };
+            dlx.SolutionFound += (_, e) =>
+                {
+                    Solutions.Enqueue(e);
+                    InvokeOnUiThread(() => RaiseSolutionFound(e));
+                };
+
             dlx.Solve(_matrix);
         }
 
@@ -39,6 +65,8 @@ namespace DlxLibDemo3
         public EventHandler Finished;
         public EventHandler<SolutionFoundEventArgs> SolutionFound;
         public EventHandler<SearchStepEventArgs> SearchStep;
+        public ConcurrentQueue<SearchStepEventArgs> SearchSteps { get; set; }
+        public ConcurrentQueue<SolutionFoundEventArgs> Solutions { get; set; }
 
         //public Board PopulateBoardWithSolution(int[] solutionRowIndexes)
         //{

@@ -55,6 +55,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Logger.cs" />
     <Compile Include="Model\RotatedPiece.cs" />
     <Compile Include="Model\Square.cs" />
     <Compile Include="Model\Pieces.cs" />

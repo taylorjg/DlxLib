@@ -16,22 +16,15 @@ namespace DlxLibDemo3
 
             solver.SolutionFound += (sender, e) =>
                 {
-                    //var solution = "[" + string.Join(", ", e.Solution.RowIndexes) + "]";
-                    //Console.WriteLine("SolutionFound - Solution: {0}; SolutionIndex: {1}", solution, e.SolutionIndex);
                     solutions++;
                 };
 
             solver.SearchStep += (sender, e) =>
                 {
-                    //var rowIndexes = "[" + string.Join(", ", e.RowIndexes) + "]";
-                    //Console.WriteLine("SearchStep - Depth: {0}; Iteration: {1}; RowIndexes: {2}", e.Depth, e.Iteration, rowIndexes);
                     iterations++;
                 };
-
-            solver.Finished += (sender, e) =>
-                {
-                    var _ = MessageBox.Show(string.Format("solutions = {0}; iterations = {1}", solutions, iterations));
-                };
+            //solver.Started += (sender, e) => MessageBox.Show("Started!");
+            solver.Finished += (sender, e) => MessageBox.Show(string.Format("solutions = {0}; iterations = {1}", solutions, iterations));
 
             solver.Solve();
         }
