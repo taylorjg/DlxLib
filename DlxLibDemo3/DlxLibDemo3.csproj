@@ -58,6 +58,7 @@
     <Compile Include="Model\RotatedPiece.cs" />
     <Compile Include="Model\Square.cs" />
     <Compile Include="Model\Pieces.cs" />
+    <Compile Include="Solver.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -99,7 +100,12 @@
     </None>
     <AppDesigner Include="Properties\" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\DlxLib\DlxLib.csproj">
+      <Project>{C46D0463-53E5-4782-B4F8-50CDC2A933F9}</Project>
+      <Name>DlxLib</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

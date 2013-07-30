@@ -20,7 +20,9 @@ namespace DlxLib
         public IEnumerable<Solution> Solve(bool[,] matrix)
         {
             BuildInternalStructure(matrix);
+            RaiseStarted();
             Search();
+            RaiseFinished();
             return _solutions;
         }
 
@@ -38,6 +40,8 @@ namespace DlxLib
             return Solve(boolMatrix);
         }
 
+        public EventHandler Started;
+        public EventHandler Finished;
         public EventHandler<SolutionFoundEventArgs> SolutionFound;
         public EventHandler<SearchStepEventArgs> SearchStep;
 
@@ -188,6 +192,26 @@ namespace DlxLib
             }
 
             c.RelinkColumnHeader();
+        }
+
+        private void RaiseStarted()
+        {
+            var started = Started;
+
+            if (started != null)
+            {
+                started(this, EventArgs.Empty);
+            }
+        }
+
+        private void RaiseFinished()
+        {
+            var finished = Finished;
+
+            if (finished != null)
+            {
+                finished(this, EventArgs.Empty);
+            }
         }
 
         private void RaiseSolutionFound()
