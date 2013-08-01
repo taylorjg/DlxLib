@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Windows;
 using DlxLib;
 using DlxLibDemo3.Model;
@@ -17,6 +18,7 @@ namespace DlxLibDemo3
         private readonly IDictionary<int, Tuple<RotatedPiece, int, int>> _dictionary;
 
         private bool[,] _matrix;
+        private readonly Dlx _dlx = new Dlx();
 
         public Solver(IEnumerable<Piece> pieces, int boardSize)
         {
@@ -34,43 +36,55 @@ namespace DlxLibDemo3
 
         public void Solve()
         {
-            var thread = new System.Threading.Thread(SolveOnBackgroundThread);
-            thread.Start();
+            _thread = new Thread(SolveOnBackgroundThread);
+            _thread.Start();
+        }
+
+        public void Cancel()
+        {
+            Logger.Log("Calling _dlx.Cancel()");
+            _dlx.Cancel();
+            Logger.Log("Calling _thread.Join()");
+            _thread.Join();
+            Logger.Log("Back from _thread.Join()");
         }
 
         private void SolveOnBackgroundThread()
         {
+            Thread.CurrentThread.Name = "Dlx";
+
             BuildMatrixAndDictionary();
 
-            var dlx = new Dlx();
+            _dlx.Started += (_, e) => InvokeOnUiThread(() => RaiseStarted(e));
+            _dlx.Finished += (_, e) => InvokeOnUiThread(() => RaiseFinished(e));
 
-            var firstSolutionFound = false;
-
-            dlx.Started += (sender, e) => InvokeOnUiThread(() => RaiseStarted(e));
-            dlx.Finished += (sender, e) => InvokeOnUiThread(() => RaiseFinished(e));
-            dlx.SearchStep += (_, e) =>
+            _dlx.Cancelled += (_, e) => 
                 {
-                    if (!firstSolutionFound)
-                    {
-                        var pieceDetails = e.RowIndexes.Select(rowIndex => _dictionary[rowIndex]).ToList();
-                        SearchSteps.Enqueue(pieceDetails);
-                    }
-                    InvokeOnUiThread(() => RaiseSearchStep(e));
-                    Logger.Log("Leaving dlx.SearchStep event handler");
+                    Logger.Log("inside event handler for _dlx.Cancelled");
+                    //InvokeOnUiThread(() => RaiseCancelled(e));
                 };
-            dlx.SolutionFound += (_, e) => InvokeOnUiThread(() =>
-                {
-                    firstSolutionFound = true;
-                    RaiseSolutionFound(e);
-                });
 
-            dlx.Solve(_matrix);
+            _dlx.SearchStep += (_, e) =>
+                {
+                    var pieceDetails = e.RowIndexes.Select(rowIndex => _dictionary[rowIndex]).ToList();
+                    SearchSteps.Enqueue(pieceDetails);
+                    //InvokeOnUiThread(() => RaiseSearchStep(e));
+                };
+
+            _dlx.SolutionFound += (_, e) =>
+                {
+                    //InvokeOnUiThread(() => RaiseSolutionFound(e));
+                };
+
+            _dlx.Solve(_matrix);
         }
 
         public EventHandler Started;
         public EventHandler Finished;
+        public EventHandler Cancelled;
         public EventHandler<SearchStepEventArgs> SearchStep;
         public EventHandler<SolutionFoundEventArgs> SolutionFound;
+        private Thread _thread;
         public ConcurrentQueue<IEnumerable<Tuple<RotatedPiece, int, int>>> SearchSteps { get; private set; }
 
         private void BuildMatrixAndDictionary()
@@ -161,6 +175,16 @@ namespace DlxLibDemo3
             if (finished != null)
             {
                 finished(this, e);
+            }
+        }
+
+        private void RaiseCancelled(EventArgs e)
+        {
+            var cancelled = Cancelled;
+
+            if (cancelled != null)
+            {
+                cancelled(this, e);
             }
         }
 

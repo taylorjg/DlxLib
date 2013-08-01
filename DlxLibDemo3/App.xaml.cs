@@ -1,8 +1,11 @@
-﻿using System.Windows;
-
-namespace DlxLibDemo3
+﻿namespace DlxLibDemo3
 {
-    public partial class App : Application
+    public partial class App
     {
+        protected override void OnStartup(System.Windows.StartupEventArgs e)
+        {
+            System.Threading.Thread.CurrentThread.Name = "UI";
+            base.OnStartup(e);
+        }
     }
 }

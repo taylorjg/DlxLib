@@ -6,6 +6,6 @@
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
     <Grid>
-        <Canvas x:Name="BoardCanvas" Background="Brown"></Canvas>
+        <Canvas x:Name="BoardCanvas"></Canvas>
     </Grid>
 </UserControl>

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 
 // I have used variable names c, r and j deliberately to make it easier to
 // relate the code back to the original "Dancing Links" paper:
@@ -12,17 +13,24 @@ namespace DlxLib
 {
     public class Dlx
     {
+        private ColumnObject _root;
         private IList<Solution> _solutions;
         private Stack<int> _currentSolution;
         private int _iteration;
-        private ColumnObject Root { get; set; }
+        private readonly ManualResetEventSlim _cancelEvent = new ManualResetEventSlim(false);
 
         public IEnumerable<Solution> Solve(bool[,] matrix)
         {
             BuildInternalStructure(matrix);
             RaiseStarted();
+
             Search();
-            RaiseFinished();
+
+            if (_cancelEvent.IsSet)
+                RaiseCancelled();
+            else
+                RaiseFinished();
+
             return _solutions;
         }
 
@@ -40,8 +48,15 @@ namespace DlxLib
             return Solve(boolMatrix);
         }
 
+        public void Cancel()
+        {
+            Console.WriteLine("inside Dlx.Cancel()");
+            _cancelEvent.Set();
+        }
+
         public EventHandler Started;
         public EventHandler Finished;
+        public EventHandler Cancelled;
         public EventHandler<SolutionFoundEventArgs> SolutionFound;
         public EventHandler<SearchStepEventArgs> SearchStep;
 
@@ -65,20 +80,22 @@ namespace DlxLib
 
         private void BuildInternalStructure(bool[,] matrix)
         {
+            _root = null;
             _solutions = new List<Solution>();
             _currentSolution = new Stack<int>();
             _iteration = 0;
+            _cancelEvent.Reset();
 
             var numRows = matrix.GetLength(0);
             var numCols = matrix.GetLength(1);
             var colIndexToListHeader = new Dictionary<int, ColumnObject>();
 
-            Root = new ColumnObject();
+            _root = new ColumnObject();
 
             for (var colIndex = 0; colIndex < numCols; colIndex++)
             {
                 var listHeader = new ColumnObject();
-                Root.AppendColumnHeader(listHeader);
+                _root.AppendColumnHeader(listHeader);
                 colIndexToListHeader[colIndex] = listHeader;
             }
 
@@ -114,11 +131,17 @@ namespace DlxLib
 
         private bool MatrixIsEmpty()
         {
-            return Root.NextColumnObject == Root;
+            return _root.NextColumnObject == _root;
         }
 
         private void Search(int k = 0)
         {
+            if (_cancelEvent.IsSet)
+            {
+                Console.WriteLine("inside Search() - _cancelEvent is set - returning");
+                return;
+            }
+
             _iteration++;
 
             RaiseSearchStep(k);
@@ -156,7 +179,7 @@ namespace DlxLib
             ColumnObject listHeader = null;
 
             var smallestNumberOfRows = int.MaxValue;
-            for (var columnHeader = Root.NextColumnObject; columnHeader != Root; columnHeader = columnHeader.NextColumnObject)
+            for (var columnHeader = _root.NextColumnObject; columnHeader != _root; columnHeader = columnHeader.NextColumnObject)
             {
                 if (columnHeader.NumberOfRows < smallestNumberOfRows)
                 {
@@ -211,6 +234,16 @@ namespace DlxLib
             if (finished != null)
             {
                 finished(this, EventArgs.Empty);
+            }
+        }
+
+        private void RaiseCancelled()
+        {
+            var cancelled = Cancelled;
+
+            if (cancelled != null)
+            {
+                cancelled(this, EventArgs.Empty);
             }
         }
 

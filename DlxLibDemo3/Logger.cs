@@ -7,7 +7,7 @@ namespace DlxLibDemo3
         public static void Log(string format, params object[] args)
         {
             var mtid = System.Threading.Thread.CurrentThread.ManagedThreadId;
-            var prefix = string.Format("[{0}] ", mtid);
+            var prefix = string.Format("[{0:000}; {1,-3}] ", mtid, System.Threading.Thread.CurrentThread.Name);
             Console.WriteLine(prefix + format, args);
         }
     }
