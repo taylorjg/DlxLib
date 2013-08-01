@@ -55,35 +55,15 @@ namespace DlxLibDemo3
 
             BuildMatrixAndDictionary();
 
-            _dlx.Started += (_, e) => InvokeOnUiThread(() => RaiseStarted(e));
-            _dlx.Finished += (_, e) => InvokeOnUiThread(() => RaiseFinished(e));
-
-            _dlx.Cancelled += (_, e) => 
-                {
-                    Logger.Log("inside event handler for _dlx.Cancelled");
-                    //InvokeOnUiThread(() => RaiseCancelled(e));
-                };
-
             _dlx.SearchStep += (_, e) =>
                 {
                     var pieceDetails = e.RowIndexes.Select(rowIndex => _dictionary[rowIndex]).ToList();
                     SearchSteps.Enqueue(pieceDetails);
-                    //InvokeOnUiThread(() => RaiseSearchStep(e));
-                };
-
-            _dlx.SolutionFound += (_, e) =>
-                {
-                    //InvokeOnUiThread(() => RaiseSolutionFound(e));
                 };
 
             _dlx.Solve(_matrix);
         }
 
-        public EventHandler Started;
-        public EventHandler Finished;
-        public EventHandler Cancelled;
-        public EventHandler<SearchStepEventArgs> SearchStep;
-        public EventHandler<SolutionFoundEventArgs> SolutionFound;
         private Thread _thread;
         public ConcurrentQueue<IEnumerable<Tuple<RotatedPiece, int, int>>> SearchSteps { get; private set; }
 
@@ -156,56 +136,6 @@ namespace DlxLibDemo3
             }
 
             return dataItem;
-        }
-
-        private void RaiseStarted(EventArgs e)
-        {
-            var started = Started;
-
-            if (started != null)
-            {
-                started(this, e);
-            }
-        }
-
-        private void RaiseFinished(EventArgs e)
-        {
-            var finished = Finished;
-
-            if (finished != null)
-            {
-                finished(this, e);
-            }
-        }
-
-        private void RaiseCancelled(EventArgs e)
-        {
-            var cancelled = Cancelled;
-
-            if (cancelled != null)
-            {
-                cancelled(this, e);
-            }
-        }
-
-        private void RaiseSolutionFound(SolutionFoundEventArgs e)
-        {
-            var solutionFound = SolutionFound;
-
-            if (solutionFound != null)
-            {
-                solutionFound(this, e);
-            }
-        }
-
-        private void RaiseSearchStep(SearchStepEventArgs e)
-        {
-            var searchStep = SearchStep;
-
-            if (searchStep != null)
-            {
-                searchStep(this, e);
-            }
         }
     }
 }
