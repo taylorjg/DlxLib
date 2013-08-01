@@ -3,7 +3,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using System.Windows;
 using DlxLib;
 using DlxLibDemo3.Model;
 
@@ -29,11 +28,6 @@ namespace DlxLibDemo3
             SearchSteps = new ConcurrentQueue<IEnumerable<Tuple<RotatedPiece, int, int>>>();
         }
 
-        private static void InvokeOnUiThread(Action action)
-        {
-            Application.Current.Dispatcher.Invoke(action);
-        }
-
         public void Solve()
         {
             _thread = new Thread(SolveOnBackgroundThread);
@@ -42,11 +36,8 @@ namespace DlxLibDemo3
 
         public void Cancel()
         {
-            Logger.Log("Calling _dlx.Cancel()");
             _dlx.Cancel();
-            Logger.Log("Calling _thread.Join()");
             _thread.Join();
-            Logger.Log("Back from _thread.Join()");
         }
 
         private void SolveOnBackgroundThread()

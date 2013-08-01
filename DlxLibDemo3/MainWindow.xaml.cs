@@ -1,45 +1,63 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Windows.Threading;
+using DlxLibDemo3.Annotations;
 using DlxLibDemo3.Model;
 
 namespace DlxLibDemo3
 {
-    public partial class MainWindow
+    public partial class MainWindow : INotifyPropertyChanged
     {
+        private int _iterations;
+        private readonly Solver _solver = new Solver(Pieces.ThePieces, 8);
+
+        public int Iterations
+        {
+            get { return _iterations; }
+            private set
+            {
+                if (value == _iterations) return;
+                _iterations = value;
+                OnPropertyChanged("Iterations");
+            }
+        }
+
         public MainWindow()
         {
             InitializeComponent();
 
-            var solver = new Solver(Pieces.ThePieces, 8);
-            Closing += (_, __) =>
-                {
-                    Logger.Log("inside event handler for MainWindow.Closing");
-                    solver.Cancel();
-                };
-            var timer = new DispatcherTimer {Interval = TimeSpan.FromMilliseconds(50)};
+            ContentRendered += (_, __) => BoardControl.DrawGrid();
+
+            DataContext = this;
+
+            Closing += (_, __) => _solver.Cancel();
+
+            var timer = new DispatcherTimer {Interval = TimeSpan.FromMilliseconds(100)};
             timer.Tick += (_, __) =>
                 {
-                    Logger.Log("timer.Tick()");
                     IEnumerable<Tuple<RotatedPiece, int, int>> pieceDetails;
-                    if (solver.SearchSteps.TryDequeue(out pieceDetails))
+                    if (_solver.SearchSteps.TryDequeue(out pieceDetails))
                     {
                         var pieceDetailsList = pieceDetails.ToList();
                         ProcessSearchStep(pieceDetailsList);
                         if (pieceDetailsList.Count == Pieces.ThePieces.Count())
                         {
                             timer.Stop();
-                            solver.Cancel();
+                            _solver.Cancel();
                         }
                     }
                 };
             timer.Start();
-            solver.Solve();
+
+            _solver.Solve();
         }
 
         private void ProcessSearchStep(IList<Tuple<RotatedPiece, int, int>> pieceDetails)
         {
+            Iterations++;
+
             foreach (var pd in pieceDetails)
             {
                 var rotatedPiece = pd.Item1;
@@ -63,6 +81,19 @@ namespace DlxLibDemo3
             }
 
             BoardControl.RemovePiecesOtherThan(pieceDetails.Select(pd => pd.Item1.Piece.Name).ToList());
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        [NotifyPropertyChangedInvocator]
+        protected virtual void OnPropertyChanged(string propertyName)
+        {
+            var handler = PropertyChanged;
+
+            if (handler != null)
+            {
+                handler(this, new PropertyChangedEventArgs(propertyName));
+            }
         }
     }
 }

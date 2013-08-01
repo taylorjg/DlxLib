@@ -50,7 +50,6 @@ namespace DlxLib
 
         public void Cancel()
         {
-            Console.WriteLine("inside Dlx.Cancel()");
             _cancelEvent.Set();
         }
 
@@ -138,7 +137,6 @@ namespace DlxLib
         {
             if (_cancelEvent.IsSet)
             {
-                Console.WriteLine("inside Search() - _cancelEvent is set - returning");
                 return;
             }
 
@@ -158,6 +156,11 @@ namespace DlxLib
 
             for (var r = c.Down; r != c; r = r.Down)
             {
+                if (_cancelEvent.IsSet)
+                {
+                    return;
+                }
+
                 _currentSolution.Push(r.RowIndex);
 
                 for (var j = r.Right; j != r; j = j.Right)

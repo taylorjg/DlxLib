@@ -62,6 +62,7 @@
     <Compile Include="Model\RotatedPiece.cs" />
     <Compile Include="Model\Square.cs" />
     <Compile Include="Model\Pieces.cs" />
+    <Compile Include="Properties\Annotations.cs" />
     <Compile Include="Solver.cs" />
     <Page Include="BoardControl.xaml">
       <SubType>Designer</SubType>

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
@@ -12,10 +13,90 @@ namespace DlxLibDemo3
     public partial class BoardControl
     {
         private readonly IDictionary<char, Tuple<Orientation, int, int, Rectangle[]>> _pieceDetails = new Dictionary<char, Tuple<Orientation, int, int, Rectangle[]>>();
+        //private readonly Color _gridColour = Color.FromArgb(0x35, 0xCD, 0x85, 0x3F);
+        private readonly Color _gridColour = Color.FromArgb(0x46, 0xA5, 0x2A, 0x2A);
+        private const int GridLineThickness = 4;
+        private const int GridLineHalfThickness = GridLineThickness / 2;
 
         public BoardControl()
         {
             InitializeComponent();
+        }
+
+        public void DrawGrid()
+        {
+            DrawGridLines();
+            DrawGridSquares();
+        }
+
+        private void DrawGridLines()
+        {
+            var aw = ActualWidth;
+            var ah = ActualHeight;
+            var sw = (aw - GridLineThickness) / 8;
+            var sh = (ah - GridLineThickness) / 8;
+
+            var gridLineBrush = new SolidColorBrush(_gridColour);
+
+            // Horizontal grid lines
+            for (var row = 0; row <= 8; row++)
+            {
+                var line = new Line
+                    {
+                        Stroke = gridLineBrush,
+                        StrokeThickness = GridLineThickness,
+                        X1 = 0,
+                        Y1 = row * sh + GridLineHalfThickness,
+                        X2 = aw,
+                        Y2 = row * sh + GridLineHalfThickness
+                    };
+                BoardCanvas.Children.Add(line);
+            }
+
+            // Vertical grid lines
+            for (var col = 0; col <= 8; col++)
+            {
+                var line = new Line
+                {
+                    Stroke = gridLineBrush,
+                    StrokeThickness = GridLineThickness,
+                    X1 = col * sw + GridLineHalfThickness,
+                    Y1 = 0,
+                    X2 = col * sw + GridLineHalfThickness,
+                    Y2 = ah
+                };
+                BoardCanvas.Children.Add(line);
+            }
+        }
+
+        private void DrawGridSquares()
+        {
+            var aw = ActualWidth;
+            var ah = ActualHeight;
+            var sw = (aw - GridLineThickness) / 8;
+            var sh = (ah - GridLineThickness) / 8;
+
+            var gridSquareBrush = new SolidColorBrush(_gridColour);
+
+            for (var row = 0; row < 8; row++)
+            {
+                for (var col = 0; col < 8; col++)
+                {
+                    var isEven = (row + col) % 2 == 0;
+                    if (!isEven)
+                    {
+                        continue;
+                    }
+                    var gridSquare = new Rectangle {Fill = gridSquareBrush};
+                    var rect = new Rect(col * sw + GridLineHalfThickness, row * sh + GridLineHalfThickness, sw, sh);
+                    rect.Inflate(-8, -8);
+                    Canvas.SetLeft(gridSquare, rect.Left);
+                    Canvas.SetTop(gridSquare, rect.Top);
+                    gridSquare.Width = rect.Width;
+                    gridSquare.Height = rect.Height;
+                    BoardCanvas.Children.Add(gridSquare);
+                }
+            }
         }
 
         public void AddPiece(RotatedPiece rotatedPiece, int x, int y)
@@ -27,8 +108,8 @@ namespace DlxLibDemo3
 
             var aw = ActualWidth;
             var ah = ActualHeight;
-            var sw = aw / 8;
-            var sh = ah / 8;
+            var sw = (aw - GridLineThickness) / 8;
+            var sh = (ah - GridLineThickness) / 8;
 
             var rects = new List<Rectangle>();
 
@@ -39,12 +120,12 @@ namespace DlxLibDemo3
                     var square = rotatedPiece.SquareAt(px, py);
                     if (square != null)
                     {
-                        var rect = new Rectangle { Width = sw, Height = sh };
-                        Canvas.SetLeft(rect, (x + px) * sw);
-                        Canvas.SetBottom(rect, (y + py) * sh);
-                        rect.Fill = new SolidColorBrush(square.Colour == Colour.Black ? Colors.Black : Colors.White);
-                        BoardCanvas.Children.Add(rect);
-                        rects.Add(rect);
+                        var rectangle = new Rectangle { Width = sw, Height = sh };
+                        Canvas.SetLeft(rectangle, (x + px) * sw + GridLineHalfThickness);
+                        Canvas.SetBottom(rectangle, (y + py) * sh + GridLineHalfThickness);
+                        rectangle.Fill = new SolidColorBrush(square.Colour == Colour.Black ? Colors.Black : Colors.White);
+                        BoardCanvas.Children.Add(rectangle);
+                        rects.Add(rectangle);
                     }
                 }
             }
