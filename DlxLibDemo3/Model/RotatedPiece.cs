@@ -68,5 +68,10 @@ namespace DlxLibDemo3.Model
                     return null;
             }
         }
+
+        public override string ToString()
+        {
+            return string.Format("Piece Name: {0}; Orientation: {1}", Piece.Name, Orientation);
+        }
     }
 }

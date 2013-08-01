@@ -24,8 +24,7 @@ namespace DlxLibDemo3
             _dictionary = new Dictionary<int, Tuple<RotatedPiece, int, int>>();
             _board = new Board(boardSize);
             _board.ForceColourOfSquareZeroZeroToBeWhite();
-            SearchSteps = new ConcurrentQueue<SearchStepEventArgs>();
-            Solutions = new ConcurrentQueue<SolutionFoundEventArgs>();
+            SearchSteps = new ConcurrentQueue<IEnumerable<Tuple<RotatedPiece, int, int>>>();
         }
 
         private static void InvokeOnUiThread(Action action)
@@ -45,47 +44,34 @@ namespace DlxLibDemo3
 
             var dlx = new Dlx();
 
+            var firstSolutionFound = false;
+
             dlx.Started += (sender, e) => InvokeOnUiThread(() => RaiseStarted(e));
             dlx.Finished += (sender, e) => InvokeOnUiThread(() => RaiseFinished(e));
             dlx.SearchStep += (_, e) =>
                 {
-                    SearchSteps.Enqueue(e);
+                    if (!firstSolutionFound)
+                    {
+                        var pieceDetails = e.RowIndexes.Select(rowIndex => _dictionary[rowIndex]).ToList();
+                        SearchSteps.Enqueue(pieceDetails);
+                    }
                     InvokeOnUiThread(() => RaiseSearchStep(e));
+                    Logger.Log("Leaving dlx.SearchStep event handler");
                 };
-            dlx.SolutionFound += (_, e) =>
+            dlx.SolutionFound += (_, e) => InvokeOnUiThread(() =>
                 {
-                    Solutions.Enqueue(e);
-                    InvokeOnUiThread(() => RaiseSolutionFound(e));
-                };
+                    firstSolutionFound = true;
+                    RaiseSolutionFound(e);
+                });
 
             dlx.Solve(_matrix);
         }
 
         public EventHandler Started;
         public EventHandler Finished;
-        public EventHandler<SolutionFoundEventArgs> SolutionFound;
         public EventHandler<SearchStepEventArgs> SearchStep;
-        public ConcurrentQueue<SearchStepEventArgs> SearchSteps { get; set; }
-        public ConcurrentQueue<SolutionFoundEventArgs> Solutions { get; set; }
-
-        //public Board PopulateBoardWithSolution(int[] solutionRowIndexes)
-        //{
-        //    var board = new Board(_board.BoardSize);
-
-        //    // ReSharper disable ForCanBeConvertedToForeach
-        //    for (var i = 0; i < solutionRowIndexes.Length; i++)
-        //    {
-        //        var solutionRowIndex = solutionRowIndexes[i];
-        //        var tuple = _dictionary[solutionRowIndex];
-        //        var rotatedPiece = tuple.Item1;
-        //        var x = tuple.Item2;
-        //        var y = tuple.Item3;
-        //        board.PlacePieceAt(rotatedPiece, x, y);
-        //    }
-        //    // ReSharper restore ForCanBeConvertedToForeach
-
-        //    return board;
-        //}
+        public EventHandler<SolutionFoundEventArgs> SolutionFound;
+        public ConcurrentQueue<IEnumerable<Tuple<RotatedPiece, int, int>>> SearchSteps { get; private set; }
 
         private void BuildMatrixAndDictionary()
         {
