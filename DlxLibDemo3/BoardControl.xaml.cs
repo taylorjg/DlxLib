@@ -12,9 +12,8 @@ namespace DlxLibDemo3
 {
     public partial class BoardControl
     {
-        private readonly IDictionary<char, Tuple<Orientation, int, int, Rectangle[]>> _pieceDetails = new Dictionary<char, Tuple<Orientation, int, int, Rectangle[]>>();
-        //private readonly Color _gridColour = Color.FromArgb(0x35, 0xCD, 0x85, 0x3F);
-        private readonly Color _gridColour = Color.FromArgb(0x46, 0xA5, 0x2A, 0x2A);
+        private readonly IDictionary<char, Tuple<Orientation, int, int, PieceControl>> _pieceDetails = new Dictionary<char, Tuple<Orientation, int, int, PieceControl>>();
+        private readonly Color _gridColour = Color.FromArgb(0x80, 0xCD, 0x85, 0x3F);
         private const int GridLineThickness = 4;
         private const int GridLineHalfThickness = GridLineThickness / 2;
 
@@ -111,36 +110,18 @@ namespace DlxLibDemo3
             var sw = (aw - GridLineThickness) / 8;
             var sh = (ah - GridLineThickness) / 8;
 
-            var rects = new List<Rectangle>();
-
-            for (var px = 0; px < rotatedPiece.Width; px++)
-            {
-                for (var py = 0; py < rotatedPiece.Height; py++)
-                {
-                    var square = rotatedPiece.SquareAt(px, py);
-                    if (square != null)
-                    {
-                        var rectangle = new Rectangle { Width = sw, Height = sh };
-                        Canvas.SetLeft(rectangle, (x + px) * sw + GridLineHalfThickness);
-                        Canvas.SetBottom(rectangle, (y + py) * sh + GridLineHalfThickness);
-                        rectangle.Fill = new SolidColorBrush(square.Colour == Colour.Black ? Colors.Black : Colors.White);
-                        BoardCanvas.Children.Add(rectangle);
-                        rects.Add(rectangle);
-                    }
-                }
-            }
-
-            _pieceDetails[rotatedPiece.Piece.Name] = Tuple.Create(rotatedPiece.Orientation, x, y, rects.ToArray());
+            var pieceControl = new PieceControl(rotatedPiece, sw);
+            Canvas.SetLeft(pieceControl, x * sw + GridLineHalfThickness);
+            Canvas.SetBottom(pieceControl, y * sh + GridLineHalfThickness);
+            BoardCanvas.Children.Add(pieceControl);
+            _pieceDetails[rotatedPiece.Piece.Name] = Tuple.Create(rotatedPiece.Orientation, x, y, pieceControl);
         }
 
         public void RemovePiece(char pieceName)
         {
             if (_pieceDetails.ContainsKey(pieceName))
             {
-                foreach (var rect in _pieceDetails[pieceName].Item4)
-                {
-                    BoardCanvas.Children.Remove(rect);
-                }
+                BoardCanvas.Children.Remove(_pieceDetails[pieceName].Item4);
                 _pieceDetails.Remove(pieceName);
             }
             else
@@ -157,10 +138,7 @@ namespace DlxLibDemo3
             {
                 if (pieceNames.All(pn => pn != pieceName))
                 {
-                    foreach (var rect in _pieceDetails[pieceName].Item4)
-                    {
-                        BoardCanvas.Children.Remove(rect);
-                    }
+                    BoardCanvas.Children.Remove(_pieceDetails[pieceName].Item4);
                     pieceNamesToRemove.Add(pieceName);
                 }
             }

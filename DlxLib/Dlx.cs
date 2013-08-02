@@ -222,43 +222,43 @@ namespace DlxLib
 
         private void RaiseStarted()
         {
-            var started = Started;
+            var eventHandler = Started;
 
-            if (started != null)
+            if (eventHandler != null)
             {
-                started(this, EventArgs.Empty);
+                eventHandler(this, EventArgs.Empty);
             }
         }
 
         private void RaiseFinished()
         {
-            var finished = Finished;
+            var eventHandler = Finished;
 
-            if (finished != null)
+            if (eventHandler != null)
             {
-                finished(this, EventArgs.Empty);
+                eventHandler(this, EventArgs.Empty);
             }
         }
 
         private void RaiseCancelled()
         {
-            var cancelled = Cancelled;
+            var eventHandler = Cancelled;
 
-            if (cancelled != null)
+            if (eventHandler != null)
             {
-                cancelled(this, EventArgs.Empty);
+                eventHandler(this, EventArgs.Empty);
             }
         }
 
         private void RaiseSolutionFound()
         {
-            var solutionFound = SolutionFound;
+            var eventHandler = SolutionFound;
 
-            if (solutionFound != null)
+            if (eventHandler != null)
             {
                 var solution = _solutions.Last();
                 var solutionIndex = _solutions.Count - 1;
-                solutionFound(this, new SolutionFoundEventArgs(solution, solutionIndex));
+                eventHandler(this, new SolutionFoundEventArgs(solution, solutionIndex));
             }
         }
 

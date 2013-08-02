@@ -34,7 +34,7 @@ namespace DlxLibDemo3
 
             Closing += (_, __) => _solver.Cancel();
 
-            var timer = new DispatcherTimer {Interval = TimeSpan.FromMilliseconds(100)};
+            var timer = new DispatcherTimer {Interval = TimeSpan.FromMilliseconds(500)};
             timer.Tick += (_, __) =>
                 {
                     IEnumerable<Tuple<RotatedPiece, int, int>> pieceDetails;
