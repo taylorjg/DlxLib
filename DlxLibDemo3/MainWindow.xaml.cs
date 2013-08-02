@@ -27,14 +27,12 @@ namespace DlxLibDemo3
         public MainWindow()
         {
             InitializeComponent();
-
-            ContentRendered += (_, __) => BoardControl.DrawGrid();
-
             DataContext = this;
 
+            ContentRendered += (_, __) => BoardControl.DrawGrid();
             Closing += (_, __) => _solver.Cancel();
 
-            var timer = new DispatcherTimer {Interval = TimeSpan.FromMilliseconds(500)};
+            var timer = new DispatcherTimer {Interval = TimeSpan.FromMilliseconds(100)};
             timer.Tick += (_, __) =>
                 {
                     IEnumerable<Tuple<RotatedPiece, int, int>> pieceDetails;
