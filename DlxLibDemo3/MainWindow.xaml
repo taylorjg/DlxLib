@@ -18,11 +18,20 @@
         <Grid>
             <local:BoardControl x:Name="BoardControl" Width="644" Height="644"></local:BoardControl>
         </Grid>
-        
-        <StackPanel Margin="0,20,0,0" Orientation="Horizontal">
+
+        <DockPanel Margin="0,20,0,0" LastChildFill="True">
             <Label Content="Iterations: " />
             <Label Content="{Binding Path=Iterations}" />
-        </StackPanel>
+            <Label Content="Step interval (ms): " Margin="50,0,0,0" />
+            <Slider DockPanel.Dock="Right" x:Name="IntervalSlider"
+                    Orientation="Horizontal"
+                    Minimum="0"
+                    Maximum="100"
+                    Value="{Binding Path=Interval}"
+                    TickFrequency="10"
+                    TickPlacement="Both" />
+        </DockPanel>
+
     </StackPanel>
     
 </Window>

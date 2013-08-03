@@ -11,7 +11,9 @@ namespace DlxLibDemo3
     public partial class MainWindow : INotifyPropertyChanged
     {
         private int _iterations;
+        private int _interval;
         private readonly Solver _solver = new Solver(Pieces.ThePieces, 8);
+        private readonly DispatcherTimer _timer = new DispatcherTimer();
 
         public int Iterations
         {
@@ -24,16 +26,30 @@ namespace DlxLibDemo3
             }
         }
 
+        public int Interval
+        {
+            get { return _interval; }
+            private set
+            {
+                if (value == _interval) return;
+                _interval = value;
+                OnPropertyChanged("Interval");
+                _timer.Interval = TimeSpan.FromMilliseconds(value);
+            }
+        }
+
         public MainWindow()
         {
             InitializeComponent();
             DataContext = this;
 
+            Iterations = 0;
+            Interval = 10;
+
             ContentRendered += (_, __) => BoardControl.DrawGrid();
             Closing += (_, __) => _solver.Cancel();
 
-            var timer = new DispatcherTimer {Interval = TimeSpan.FromMilliseconds(100)};
-            timer.Tick += (_, __) =>
+            _timer.Tick += (_, __) =>
                 {
                     IEnumerable<Tuple<RotatedPiece, int, int>> pieceDetails;
                     if (_solver.SearchSteps.TryDequeue(out pieceDetails))
@@ -42,14 +58,13 @@ namespace DlxLibDemo3
                         ProcessSearchStep(pieceDetailsList);
                         if (pieceDetailsList.Count == Pieces.ThePieces.Count())
                         {
-                            timer.Stop();
-                            _solver.Cancel();
+                            _timer.Stop();
                         }
                     }
                 };
-            timer.Start();
 
             _solver.Solve();
+            _timer.Start();
         }
 
         private void ProcessSearchStep(IList<Tuple<RotatedPiece, int, int>> pieceDetails)

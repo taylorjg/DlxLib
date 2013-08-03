@@ -122,7 +122,9 @@
       <Name>DlxLib</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="ViewModel\" />
+  </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\Pattern - Apple Wood%402x.png" />
   </ItemGroup>

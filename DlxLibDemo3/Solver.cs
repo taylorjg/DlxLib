@@ -52,6 +52,8 @@ namespace DlxLibDemo3
                     SearchSteps.Enqueue(pieceDetails);
                 };
 
+            _dlx.SolutionFound += (_, __) => _dlx.Cancel();
+
             _dlx.Solve(_matrix);
         }
 
