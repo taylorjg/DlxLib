@@ -67,6 +67,7 @@
     </Compile>
     <Compile Include="Properties\Annotations.cs" />
     <Compile Include="Solver.cs" />
+    <Compile Include="ViewModel\MainWindowViewModel.cs" />
     <Page Include="BoardControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -122,9 +123,7 @@
       <Name>DlxLib</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="ViewModel\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <Resource Include="Images\Pattern - Apple Wood%402x.png" />
   </ItemGroup>
