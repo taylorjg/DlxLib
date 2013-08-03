@@ -10,12 +10,24 @@ using Orientation = DlxLibDemo3.Model.Orientation;
 
 namespace DlxLibDemo3
 {
+    // TODO: use Coords instead of Point in lots of places below...
+    public class Coords
+    {
+        public Coords(int x, int y)
+        {
+            X = x;
+            Y = y;
+        }
+
+        public int X { get; private set; }
+        public int Y { get; private set; }
+    }
+
     public partial class PieceControl
     {
         private readonly RotatedPiece _rotatedPiece;
         private readonly double _squareSize;
-        private const double BorderWidth = 4;
-        private const double HalfBorderWidth = BorderWidth / 2;
+        private const double BorderWidth = 8; // half of this width will be clipped away
         private const double Epsilon = 0.1;
 
         public PieceControl(RotatedPiece rotatedPiece, double squareSize)
@@ -27,6 +39,8 @@ namespace DlxLibDemo3
             Width = squareSize * rotatedPiece.Width;
             Height = squareSize * rotatedPiece.Height;
 
+            var clipGeometryGroup = new GeometryGroup();
+
             for (var px = 0; px < rotatedPiece.Width; px++)
             {
                 for (var py = 0; py < rotatedPiece.Height; py++)
@@ -34,14 +48,19 @@ namespace DlxLibDemo3
                     var square = rotatedPiece.SquareAt(px, py);
                     if (square != null)
                     {
-                        var rectangle = new Rectangle { Width = squareSize, Height = squareSize };
-                        Canvas.SetLeft(rectangle, px * squareSize);
-                        Canvas.SetBottom(rectangle, py * squareSize);
+                        var rect = new Rect(px * squareSize, (rotatedPiece.Height - py - 1) * squareSize, squareSize, squareSize);
+                        var rectangle = new Rectangle { Width = rect.Width, Height = rect.Height };
+                        Canvas.SetLeft(rectangle, rect.Left);
+                        Canvas.SetTop(rectangle, rect.Top);
                         rectangle.Fill = new SolidColorBrush(square.Colour == Colour.Black ? Colors.Black : Colors.White);
                         PieceCanvas.Children.Add(rectangle);
+                        var clipRectangleGeometry = new RectangleGeometry(rect);
+                        clipGeometryGroup.Children.Add(clipRectangleGeometry);
                     }
                 }
             }
+
+            PieceCanvas.Clip = clipGeometryGroup;
 
             var piece = _rotatedPiece.Piece;
             var unrotatedPieceWidth = piece.Width;
@@ -63,8 +82,6 @@ namespace DlxLibDemo3
             var combinedOutsideEdges = CombineOutsideEdges(outsideEdges);
             var outsideEdgeLinePoints = CalculateEdgeLinePoints(combinedOutsideEdges);
 
-            // TODO (MASSIVE): the above will calculate the line points for a piece with an orientation of North!
-            // - need to adjust these line points for other orientations!
             TransformOutsideEdgeLinePoints(outsideEdgeLinePoints);
 
             var polyLineSegment = new PolyLineSegment(outsideEdgeLinePoints, true);
@@ -124,14 +141,6 @@ namespace DlxLibDemo3
         {
             Top,
             Bottom,
-            Left,
-            Right
-        };
-
-        private enum Direction
-        {
-            Up,
-            Down,
             Left,
             Right
         };
@@ -211,7 +220,7 @@ namespace DlxLibDemo3
             }
         }
 
-        private static IList<Point> CombineOutsideEdges(IList<Point> outsideEdges)
+        private static IEnumerable<Point> CombineOutsideEdges(IList<Point> outsideEdges)
         {
             var combinedOutsideEdges = new List<Point>();
 
@@ -265,114 +274,13 @@ namespace DlxLibDemo3
             throw new InvalidOperationException("FindNextLine failed to find the next line!");
         }
 
-        private IList<Point> CalculateEdgeLinePoints(IList<Point> combinedOutsideEdges)
+        private IList<Point> CalculateEdgeLinePoints(IEnumerable<Point> combinedOutsideEdges)
         {
-            var outsideEdgeLinePoints = new List<Point>();
-
-            var numCoords = combinedOutsideEdges.Count;
-
-            var firstCoords = combinedOutsideEdges.First();
-    
-            var lastXCoord = firstCoords.X;
-            var lastYCoord = firstCoords.Y;
-    
-            var temporaryFirstPoint = new Point();
-            outsideEdgeLinePoints.Add(temporaryFirstPoint);
-
-            for (var i = 1; i < numCoords; i++)
-            {
-                var isLastCoord = (i == numCoords - 1);
-
-                var thisCoords = combinedOutsideEdges[i];
-                var nextCoords = (!isLastCoord) ? combinedOutsideEdges[i + 1] : combinedOutsideEdges[1];
-
-                var thisXCoord = thisCoords.X;
-                var thisYCoord = thisCoords.Y;
-
-                var nextXCoord = nextCoords.X;
-                var nextYCoord = nextCoords.Y;
-
-                var thisDirection = DetermineDirection(lastXCoord, lastYCoord, thisXCoord, thisYCoord);
-                var nextDirection = DetermineDirection(thisXCoord, thisYCoord, nextXCoord, nextYCoord);
-
-                var unrotatedPieceHeight = _rotatedPiece.Piece.Height;
-                var pt = new Point {X = thisXCoord * _squareSize, Y = (unrotatedPieceHeight - thisYCoord) * _squareSize};
-
-                switch (thisDirection)
+            return combinedOutsideEdges.Select(coords => new Point
                 {
-                    case Direction.Up:
-                        pt.X += HalfBorderWidth;
-                        switch (nextDirection) {
-                            case Direction.Left:
-                                pt.Y -= HalfBorderWidth;
-                                break;
-                            case Direction.Right:
-                                pt.Y += HalfBorderWidth;
-                                break;
-                        }
-                    break;
-
-                    case Direction.Down:
-                        pt.X -= HalfBorderWidth;
-                        switch (nextDirection) {
-                            case Direction.Left:
-                                pt.Y -= HalfBorderWidth;
-                                break;
-                            case Direction.Right:
-                                pt.Y += HalfBorderWidth;
-                                break;
-                        }
-                        break;
-
-                    case Direction.Left:
-                        pt.Y -= HalfBorderWidth;
-                        switch (nextDirection) {
-                            case Direction.Up:
-                                pt.X += HalfBorderWidth;
-                                break;
-                            case Direction.Down:
-                                pt.X -= HalfBorderWidth;
-                                break;
-                        }
-                        break;
-
-                    case Direction.Right:
-                        pt.Y += HalfBorderWidth;
-                        switch (nextDirection) {
-                            case Direction.Up:
-                                pt.X += HalfBorderWidth;
-                                break;
-                            case Direction.Down:
-                                pt.X -= HalfBorderWidth;
-                                break;
-                        }
-                        break;
-                }
-                
-                outsideEdgeLinePoints.Add(pt);
-        
-                lastXCoord = thisXCoord;
-                lastYCoord = thisYCoord;
-            }
-
-            outsideEdgeLinePoints[0] = outsideEdgeLinePoints.Last();
-
-            return outsideEdgeLinePoints;
-        }
-
-        private static Direction DetermineDirection(double x1, double y1, double x2, double y2)
-        {
-            if (Math.Abs(x1 - x2) < Epsilon)
-            {
-                return y2 > y1 ? Direction.Up : Direction.Down;
-            }
-
-            if (Math.Abs(y1 - y2) < Epsilon)
-            {
-                return x2 > x1 ? Direction.Right : Direction.Left;
-            }
-
-            throw new InvalidOperationException(string.Format("DetermineDirection - cannot determine direction given ({0},{1}) & ({2},{3})", x1, y1, x2, y2));
+                    X = coords.X * _squareSize,
+                    Y = (_rotatedPiece.Piece.Height - coords.Y) * _squareSize
+                }).ToList();
         }
     }
 }

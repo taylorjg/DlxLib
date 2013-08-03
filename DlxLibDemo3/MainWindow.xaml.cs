@@ -1,4 +1,5 @@
-﻿using DlxLibDemo3.ViewModel;
+﻿using DlxLibDemo3.Model;
+using DlxLibDemo3.ViewModel;
 
 namespace DlxLibDemo3
 {
@@ -17,6 +18,7 @@ namespace DlxLibDemo3
             DataContext = new MainWindowViewModel(BoardControl);
 
             ContentRendered += (_, __) => BoardControl.DrawGrid();
+
             Closing += (_, __) => ((MainWindowViewModel) DataContext).Closing();
         }
     }
