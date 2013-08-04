@@ -2,8 +2,6 @@
 ## TODO
 
 * Make DlxLib available as a NuGet package ?
-* Add events and raise them as the algorithm progresses ? This would allow the calling program to visualise the progress in a GUI ? It could also harvest solutions as they are found rather than waiting to receive them all together at the end of the algorithm. (<font color="red">WORK IN PROGRESS</font>)
-    * Add a WPF demo program showing this all working ? Perhaps solving a pentomino puzzle.
 
 ## DlxLib (C#)
 
@@ -42,6 +40,19 @@ public IEnumerable<Solution> Solve<T>(T[,] matrix, Func<T, bool> predicate);
 ```
 
 This overload takes a 2D matrix of <code>T</code>. It returns an enumerable of <code>Solution</code>. Internally, it converts the supplied matrix to a matrix of <code>bool</code>. It uses the supplied predicate function to determine which elements represent <code>true</code>.
+
+#### TODO
+
+Document the following new events and methods of the Dlx class:
+
+* Events
+    * Started
+    * Finished
+    * Cancelled
+    * SearchStep
+    * SolutionFound
+* Methods
+    * Cancel
 
 ### The Solution Class
 
@@ -85,6 +96,12 @@ var solutions = dlx.Solve(matrix);
 ## Screenshot of DlxLibDemo2.exe
 
 ![Screenshot of DlxLibDemo2.exe](https://raw.github.com/taylorjg/DlxLib/master/Images/DlxLibDemo2_screenshot.png)
+
+## Screenshot of DlxLibDemo3.exe
+
+DlxLibDemo3.exe is a WPF application which shows a 14 piece drauthboard puzzle being solved.
+
+![Screenshot of DlxLibDemo3.exe](https://raw.github.com/taylorjg/DlxLib/master/Images/DlxLibDemo3_screenshot.png)
 
 ## Other Links
 
