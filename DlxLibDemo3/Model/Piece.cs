@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace DlxLibDemo3.Model
 {
-    public partial class Piece
+    public class Piece
     {
         private readonly IEnumerable<Square> _squares;
 

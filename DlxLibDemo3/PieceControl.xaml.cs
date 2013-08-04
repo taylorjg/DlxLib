@@ -6,7 +6,6 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using DlxLibDemo3.Model;
-using Orientation = DlxLibDemo3.Model.Orientation;
 
 namespace DlxLibDemo3
 {
@@ -26,6 +25,7 @@ namespace DlxLibDemo3
             Height = squareSize * rotatedPiece.Height;
 
             var clipGeometryGroup = new GeometryGroup();
+            var outsideEdges = new List<Coords>();
 
             for (var px = 0; px < rotatedPiece.Width; px++)
             {
@@ -42,31 +42,13 @@ namespace DlxLibDemo3
                         PieceCanvas.Children.Add(rectangle);
                         var clipRectangleGeometry = new RectangleGeometry(rect);
                         clipGeometryGroup.Children.Add(clipRectangleGeometry);
-                    }
-                }
-            }
-
-            var piece = _rotatedPiece.Piece;
-            var unrotatedPieceWidth = piece.Width;
-            var unrotatedPieceHeight = piece.Height;
-
-            var outsideEdges = new List<Coords>();
-
-            for (var x = 0; x < unrotatedPieceWidth; x++)
-            {
-                for (var y = 0; y < unrotatedPieceHeight; y++)
-                {
-                    if (piece.SquareAt(x, y) != null)
-                    {
-                        DetermineOutsideEdges(outsideEdges, x, y);
+                        DetermineOutsideEdges(outsideEdges, px, py);
                     }
                 }
             }
 
             var combinedOutsideEdges = CombineOutsideEdges(outsideEdges);
             var outsideEdgeLinePoints = CalculateEdgeLinePoints(combinedOutsideEdges);
-
-            TransformOutsideEdgeLinePoints(outsideEdgeLinePoints);
 
             var polyLineSegment = new PolyLineSegment(outsideEdgeLinePoints, true);
             var pathFigure = new PathFigure {StartPoint = outsideEdgeLinePoints.First()};
@@ -84,44 +66,6 @@ namespace DlxLibDemo3
             PieceCanvas.Clip = clipGeometryGroup;
         }
 
-        private void TransformOutsideEdgeLinePoints(IList<Point> outsideEdgeLinePoints)
-        {
-            var piece = _rotatedPiece.Piece;
-            var unrotatedPieceWidth = piece.Width;
-            var unrotatedPieceHeight = piece.Height;
-
-            for (var i = 0; i < outsideEdgeLinePoints.Count; i++)
-            {
-                var oldPt = outsideEdgeLinePoints[i];
-                var newPt = new Point();
-
-                switch (_rotatedPiece.Orientation)
-                {
-                    case Orientation.North:
-                        newPt.X = oldPt.X;
-                        newPt.Y = oldPt.Y;
-                        break;
-
-                    case Orientation.South:
-                        newPt.X = (unrotatedPieceWidth * _squareSize) - oldPt.X;
-                        newPt.Y = (unrotatedPieceHeight * _squareSize) - oldPt.Y;
-                        break;
-
-                    case Orientation.East:
-                        newPt.X = (unrotatedPieceHeight * _squareSize) - oldPt.Y;
-                        newPt.Y = oldPt.X;
-                        break;
-
-                    case Orientation.West:
-                        newPt.X = oldPt.Y;
-                        newPt.Y = (unrotatedPieceWidth * _squareSize) - oldPt.X;
-                        break;
-                }
-
-                outsideEdgeLinePoints[i] = newPt;
-            }
-        }
-
         private enum Side
         {
             Top,
@@ -132,9 +76,8 @@ namespace DlxLibDemo3
 
         private void DetermineOutsideEdges(ICollection<Coords> outsideEdges, int x, int y)
         {
-            var piece = _rotatedPiece.Piece;
-            var unrotatedPieceWidth = piece.Width;
-            var unrotatedPieceHeight = piece.Height;
+            var pieceWidth = _rotatedPiece.Width;
+            var pieceHeight = _rotatedPiece.Height;
 
             foreach (var side in Enum.GetValues(typeof (Side)).Cast<Side>())
             {
@@ -143,11 +86,11 @@ namespace DlxLibDemo3
                 switch (side)
                 {
                     case Side.Top:
-                        if (y + 1 >= unrotatedPieceHeight) {
+                        if (y + 1 >= pieceHeight) {
                             isOutsideEdge = true;
                         }
                         else {
-                            if (piece.SquareAt(x, y + 1) == null) {
+                            if (_rotatedPiece.SquareAt(x, y + 1) == null) {
                                 isOutsideEdge = true;
                             }
                         }
@@ -158,11 +101,11 @@ namespace DlxLibDemo3
                         break;
 
                     case Side.Right:
-                        if (x + 1 >= unrotatedPieceWidth) {
+                        if (x + 1 >= pieceWidth) {
                             isOutsideEdge = true;
                         }
                         else {
-                            if (piece.SquareAt(x + 1, y) == null) {
+                            if (_rotatedPiece.SquareAt(x + 1, y) == null) {
                                 isOutsideEdge = true;
                             }
                         }
@@ -177,7 +120,7 @@ namespace DlxLibDemo3
                             isOutsideEdge = true;
                         }
                         else {
-                            if (piece.SquareAt(x, y - 1) == null) {
+                            if (_rotatedPiece.SquareAt(x, y - 1) == null) {
                                 isOutsideEdge = true;
                             }
                         }
@@ -192,7 +135,7 @@ namespace DlxLibDemo3
                             isOutsideEdge = true;
                         }
                         else {
-                            if (piece.SquareAt(x - 1, y) == null) {
+                            if (_rotatedPiece.SquareAt(x - 1, y) == null) {
                                 isOutsideEdge = true;
                             }
                         }
@@ -261,7 +204,7 @@ namespace DlxLibDemo3
             return combinedOutsideEdges.Select(coords => new Point
                 {
                     X = coords.X * _squareSize,
-                    Y = (_rotatedPiece.Piece.Height - coords.Y) * _squareSize
+                    Y = (_rotatedPiece.Height - coords.Y) * _squareSize
                 }).ToList();
         }
     }

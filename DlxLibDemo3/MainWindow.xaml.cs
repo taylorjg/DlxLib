@@ -1,5 +1,4 @@
-﻿using DlxLibDemo3.Model;
-using DlxLibDemo3.ViewModel;
+﻿using DlxLibDemo3.ViewModel;
 
 namespace DlxLibDemo3
 {
