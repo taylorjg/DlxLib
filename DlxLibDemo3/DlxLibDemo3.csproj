@@ -58,6 +58,7 @@
     <Compile Include="BoardControl.xaml.cs">
       <DependentUpon>BoardControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Coords.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Model\RotatedPiece.cs" />
     <Compile Include="Model\Square.cs" />

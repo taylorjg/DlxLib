@@ -10,25 +10,11 @@ using Orientation = DlxLibDemo3.Model.Orientation;
 
 namespace DlxLibDemo3
 {
-    // TODO: use Coords instead of Point in lots of places below...
-    public class Coords
-    {
-        public Coords(int x, int y)
-        {
-            X = x;
-            Y = y;
-        }
-
-        public int X { get; private set; }
-        public int Y { get; private set; }
-    }
-
     public partial class PieceControl
     {
         private readonly RotatedPiece _rotatedPiece;
         private readonly double _squareSize;
         private const double BorderWidth = 8; // half of this width will be clipped away
-        private const double Epsilon = 0.1;
 
         public PieceControl(RotatedPiece rotatedPiece, double squareSize)
         {
@@ -60,13 +46,11 @@ namespace DlxLibDemo3
                 }
             }
 
-            PieceCanvas.Clip = clipGeometryGroup;
-
             var piece = _rotatedPiece.Piece;
             var unrotatedPieceWidth = piece.Width;
             var unrotatedPieceHeight = piece.Height;
 
-            var outsideEdges = new List<Point>();
+            var outsideEdges = new List<Coords>();
 
             for (var x = 0; x < unrotatedPieceWidth; x++)
             {
@@ -97,6 +81,7 @@ namespace DlxLibDemo3
                     Data = pathGeometry
                 };
             PieceCanvas.Children.Add(path);
+            PieceCanvas.Clip = clipGeometryGroup;
         }
 
         private void TransformOutsideEdgeLinePoints(IList<Point> outsideEdgeLinePoints)
@@ -145,7 +130,7 @@ namespace DlxLibDemo3
             Right
         };
 
-        private void DetermineOutsideEdges(ICollection<Point> outsideEdges, int x, int y)
+        private void DetermineOutsideEdges(ICollection<Coords> outsideEdges, int x, int y)
         {
             var piece = _rotatedPiece.Piece;
             var unrotatedPieceWidth = piece.Width;
@@ -167,8 +152,8 @@ namespace DlxLibDemo3
                             }
                         }
                         if (isOutsideEdge) {
-                            outsideEdges.Add(new Point(x, y + 1));
-                            outsideEdges.Add(new Point(x + 1, y + 1));
+                            outsideEdges.Add(new Coords(x, y + 1));
+                            outsideEdges.Add(new Coords(x + 1, y + 1));
                         }
                         break;
 
@@ -182,8 +167,8 @@ namespace DlxLibDemo3
                             }
                         }
                         if (isOutsideEdge) {
-                            outsideEdges.Add(new Point(x + 1, y + 1));
-                            outsideEdges.Add(new Point(x + 1, y));
+                            outsideEdges.Add(new Coords(x + 1, y + 1));
+                            outsideEdges.Add(new Coords(x + 1, y));
                         }
                         break;
 
@@ -197,8 +182,8 @@ namespace DlxLibDemo3
                             }
                         }
                         if (isOutsideEdge) {
-                            outsideEdges.Add(new Point(x + 1, y));
-                            outsideEdges.Add(new Point(x, y));
+                            outsideEdges.Add(new Coords(x + 1, y));
+                            outsideEdges.Add(new Coords(x, y));
                         }
                         break;
 
@@ -212,50 +197,47 @@ namespace DlxLibDemo3
                             }
                         }
                         if (isOutsideEdge) {
-                            outsideEdges.Add(new Point(x, y));
-                            outsideEdges.Add(new Point(x, y + 1));
+                            outsideEdges.Add(new Coords(x, y));
+                            outsideEdges.Add(new Coords(x, y + 1));
                         }
                         break;
                 }
             }
         }
 
-        private static IEnumerable<Point> CombineOutsideEdges(IList<Point> outsideEdges)
+        private static IEnumerable<Coords> CombineOutsideEdges(IList<Coords> outsideEdges)
         {
-            var combinedOutsideEdges = new List<Point>();
+            var combinedOutsideEdges = new List<Coords>();
 
-            var firstLineStartPoint = outsideEdges[0];
-            var firstLineEndPoint = outsideEdges[1];
+            var firstLineStartCoords = outsideEdges[0];
+            var firstLineEndCoords = outsideEdges[1];
 
-            combinedOutsideEdges.Add(firstLineStartPoint);
+            combinedOutsideEdges.Add(firstLineStartCoords);
 
-            var currentLineEndPoint = firstLineEndPoint;
+            var currentLineEndCoords = firstLineEndCoords;
 
             for (; ; )
             {
-                Point nextLineStartPoint;
-                Point nextLineEndPoint;
+                Coords nextLineStartCoords;
+                Coords nextLineEndCoords;
 
-                FindNextLine(outsideEdges, currentLineEndPoint, out nextLineStartPoint, out nextLineEndPoint);
+                FindNextLine(outsideEdges, currentLineEndCoords, out nextLineStartCoords, out nextLineEndCoords);
 
-                combinedOutsideEdges.Add(nextLineStartPoint);
-                currentLineEndPoint = nextLineEndPoint;
+                combinedOutsideEdges.Add(nextLineStartCoords);
+                currentLineEndCoords = nextLineEndCoords;
 
-                if (Math.Abs(nextLineEndPoint.X - firstLineStartPoint.X) < Epsilon && Math.Abs(nextLineEndPoint.Y - firstLineStartPoint.Y) < Epsilon) {
+                if (nextLineEndCoords.X == firstLineStartCoords.X && nextLineEndCoords.Y == firstLineStartCoords.Y) {
                     break;
                 }
             }
 
-            combinedOutsideEdges.Add(firstLineStartPoint);
+            combinedOutsideEdges.Add(firstLineStartCoords);
 
             return combinedOutsideEdges;
         }
 
-        private static void FindNextLine(IList<Point> outsideEdges, Point currentLineEndPoint, out Point nextLineStartPoint, out Point nextLineEndPoint)
+        private static void FindNextLine(IList<Coords> outsideEdges, Coords currentLineEndCoords, out Coords nextLineStartCoords, out Coords nextLineEndCoords)
         {
-            nextLineStartPoint = new Point();
-            nextLineEndPoint = new Point();
-
             var numLines = outsideEdges.Count / 2;
 
             for (var i = 0; i < numLines; i++)
@@ -263,10 +245,10 @@ namespace DlxLibDemo3
                 var pt1 = outsideEdges[i * 2];
                 var pt2 = outsideEdges[i * 2 + 1];
 
-                if (Math.Abs(pt1.X - currentLineEndPoint.X) < Epsilon && Math.Abs(pt1.Y - currentLineEndPoint.Y) < Epsilon)
+                if (pt1.X == currentLineEndCoords.X && pt1.Y == currentLineEndCoords.Y)
                 {
-                    nextLineStartPoint = pt1;
-                    nextLineEndPoint = pt2;
+                    nextLineStartCoords = pt1;
+                    nextLineEndCoords = pt2;
                     return;
                 }
             }
@@ -274,7 +256,7 @@ namespace DlxLibDemo3
             throw new InvalidOperationException("FindNextLine failed to find the next line!");
         }
 
-        private IList<Point> CalculateEdgeLinePoints(IEnumerable<Point> combinedOutsideEdges)
+        private IList<Point> CalculateEdgeLinePoints(IEnumerable<Coords> combinedOutsideEdges)
         {
             return combinedOutsideEdges.Select(coords => new Point
                 {
