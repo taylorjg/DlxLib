@@ -21,6 +21,11 @@ namespace DlxLib
 
         public IEnumerable<Solution> Solve(bool[,] matrix)
         {
+            if (matrix == null)
+            {
+                throw new ArgumentNullException("matrix");
+            }
+
             BuildInternalStructure(matrix);
             RaiseStarted();
 
@@ -56,8 +61,8 @@ namespace DlxLib
         public EventHandler Started;
         public EventHandler Finished;
         public EventHandler Cancelled;
-        public EventHandler<SolutionFoundEventArgs> SolutionFound;
         public EventHandler<SearchStepEventArgs> SearchStep;
+        public EventHandler<SolutionFoundEventArgs> SolutionFound;
 
         private static bool[,] ToBoolMatrix<T>(T[,] matrix, Func<T, bool> predicate)
         {
@@ -133,21 +138,24 @@ namespace DlxLib
             return _root.NextColumnObject == _root;
         }
 
-        private void Search(int k = 0)
+        private void Search()
         {
             if (_cancelEvent.IsSet)
             {
                 return;
             }
 
-            _iteration++;
+            RaiseSearchStep();
 
-            RaiseSearchStep(k);
+            _iteration++;
 
             if (MatrixIsEmpty())
             {
-                _solutions.Add(new Solution(_currentSolution));
-                RaiseSolutionFound();
+                if (_currentSolution.Count > 0)
+                {
+                    _solutions.Add(new Solution(_currentSolution));
+                    RaiseSolutionFound();
+                }
                 return;
             }
 
@@ -166,7 +174,7 @@ namespace DlxLib
                 for (var j = r.Right; j != r; j = j.Right)
                     CoverColumn(j.ListHeader);
 
-                Search(k + 1);
+                Search();
 
                 for (var j = r.Left; j != r; j = j.Left)
                     UncoverColumn(j.ListHeader);
@@ -222,54 +230,54 @@ namespace DlxLib
 
         private void RaiseStarted()
         {
-            var eventHandler = Started;
+            var handler = Started;
 
-            if (eventHandler != null)
+            if (handler != null)
             {
-                eventHandler(this, EventArgs.Empty);
+                handler(this, EventArgs.Empty);
             }
         }
 
         private void RaiseFinished()
         {
-            var eventHandler = Finished;
+            var handler = Finished;
 
-            if (eventHandler != null)
+            if (handler != null)
             {
-                eventHandler(this, EventArgs.Empty);
+                handler(this, EventArgs.Empty);
             }
         }
 
         private void RaiseCancelled()
         {
-            var eventHandler = Cancelled;
+            var handler = Cancelled;
 
-            if (eventHandler != null)
+            if (handler != null)
             {
-                eventHandler(this, EventArgs.Empty);
+                handler(this, EventArgs.Empty);
+            }
+        }
+
+        private void RaiseSearchStep()
+        {
+            var handler = SearchStep;
+
+            if (handler != null)
+            {
+                var rowIndexes = _currentSolution.ToList();
+                handler(this, new SearchStepEventArgs(_iteration, rowIndexes));
             }
         }
 
         private void RaiseSolutionFound()
         {
-            var eventHandler = SolutionFound;
+            var handler = SolutionFound;
 
-            if (eventHandler != null)
+            if (handler != null)
             {
                 var solution = _solutions.Last();
                 var solutionIndex = _solutions.Count - 1;
-                eventHandler(this, new SolutionFoundEventArgs(solution, solutionIndex));
-            }
-        }
-
-        private void RaiseSearchStep(int depth)
-        {
-            var searchStep = SearchStep;
-
-            if (searchStep != null)
-            {
-                var rowIndexes = _currentSolution.ToList();
-                searchStep(this, new SearchStepEventArgs(depth, _iteration, rowIndexes));
+                handler(this, new SolutionFoundEventArgs(solution, solutionIndex));
             }
         }
     }
