@@ -21,7 +21,9 @@ See the following link for a very nice tutorial on how DLX works and a practical
 
 ### The Dlx Class
 
-The Dlx class exposes three overloads of the <code>Solve()</code> method.
+#### Solve
+
+The <code>Dlx</code> class exposes three overloads of the <code>Solve()</code> method.
 
 ```C#
 public IEnumerable<Solution> Solve(bool[,] matrix);
@@ -41,18 +43,51 @@ public IEnumerable<Solution> Solve<T>(T[,] matrix, Func<T, bool> predicate);
 
 This overload takes a 2D matrix of <code>T</code>. It returns an enumerable of <code>Solution</code>. Internally, it converts the supplied matrix to a matrix of <code>bool</code>. It uses the supplied predicate function to determine which elements represent <code>true</code>.
 
-#### TODO
+#### Events
 
-Document the following new events and methods of the Dlx class:
+The <code>Dlx</code> class also exposes the events described below.
 
-* Events
-    * Started
-    * Finished
-    * Cancelled
-    * SearchStep
-    * SolutionFound
-* Methods
-    * Cancel
+##### Started
+
+This event is raised at the beginning of the <code>Solve</code> method.
+
+##### Finished
+
+This event is raised at the end of the <code>Solve</code> method (unless the <code>Cancel</code> method was called).
+
+##### Cancelled
+
+This event is raised at the end of the <code>Solve</code> method if the <code>Cancel</code> method was called.
+
+##### SearchStep
+
+This event is raised for each step of the algorithm.
+
+###### SearchStepEventArgs
+
+```C#
+        public int Iteration { get; private set; }
+        public IEnumerable<int> RowIndexes { get; private set; }
+```
+
+##### SolutionFound
+
+This event is raised for each solution found.
+
+###### SolutionFoundEventArgs
+
+```C#
+        public Solution Solution { get; private set; }
+        public int SolutionIndex { get; private set; }
+```
+
+#### Cancel
+
+Finally, the <code>Dlx</code> class exposes the following method to cancel the <code>Solve</code> method. This is useful when the <code>Solve</code> method has been called on a background thread and you want to cancel the operation.
+
+```C#
+public void Cancel();
+```
 
 ### The Solution Class
 
