@@ -8,3 +8,7 @@
     * SearchStep events - we build a data structure fully describing the placement of the pieces as they are at this step of the algorithm. We then enqueue this data structure to a ConcurrentQueue.
     * SolutionFound events - we call the Cancel() method as soon as we see the first solution because we are only interested in the first solution.
 * The main UI thread has a timer running (10ms interval by default - but this can be adjusted using the slider). Each time the timer callback function runs, we dequeue a data structure from the ConcurrentQueue and display the pieces on the board.
+
+## TODO
+
+* Improve the MVVM-ness of the code
