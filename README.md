@@ -17,6 +17,26 @@ See the following link for a very nice tutorial on how DLX works and a practical
 
 [CS575: Dancing Links - Colorado State University](http://www.cs.colostate.edu/~cs420dl/slides/DLX.ppt "CS575: Dancing Links - Colorado State University")
 
+## A Simple Example
+
+Here is a brief example of using DlxLib. I'm using a hardcoded 2D matrix of <code>int</code> - in fact, it is the example matrix from the original paper. I find that a 2D array of 0/1 <code>int</code> values is easier to read than a 2D array of <code>false</code>/<code>true</code> <code>bool</code> values.Therefore, this example uses the second overload of the <code>Solve()</code> method (see the "DlxLib API" section below).
+
+```C#
+var matrix = new[,]
+    {
+        {0, 0, 1, 0, 1, 1, 0},
+        {1, 0, 0, 1, 0, 0, 1},
+        {0, 1, 1, 0, 0, 1, 0},
+        {1, 0, 0, 1, 0, 0, 0},
+        {0, 1, 0, 0, 0, 0, 1},
+        {0, 0, 0, 1, 1, 0, 1}
+    };
+
+var dlx = new Dlx();
+var solutions = dlx.Solve(matrix);
+// Do something with the solutions here...
+```
+
 ## DlxLib API
 
 ### The Dlx Class
@@ -97,26 +117,6 @@ Each instance of the <code>Solution</code> class represents a solution to the ma
 public IEnumerable<int> RowIndexes { get; private set; }
 ```
 
-## Simple Example
-
-Here is a brief example of using DlxLib. The matrix is a hardcoded 2D matrix of <code>int</code> - in fact, it is the example matrix from the original paper. This example uses the second overload of the <code>Solve()</code> method. It is looks nicer to create a 2D array of 0/1 <code>int</code> values than a 2D array of <code>false</code>/<code>true</code> <code>bool</code> values.
-
-```C#
-var matrix = new[,]
-    {
-        {0, 0, 1, 0, 1, 1, 0},
-        {1, 0, 0, 1, 0, 0, 1},
-        {0, 1, 1, 0, 0, 1, 0},
-        {1, 0, 0, 1, 0, 0, 0},
-        {0, 1, 0, 0, 0, 0, 1},
-        {0, 0, 0, 1, 1, 0, 1}
-    };
-
-var dlx = new Dlx();
-var solutions = dlx.Solve(matrix);
-// Do something with the solutions here...
-```
-
 ## Differences between DlxLib and the pseudo-code in the original paper
 
 * The <code>Search()</code> method has no <code>k</code> param
@@ -126,15 +126,19 @@ var solutions = dlx.Solve(matrix);
 
 ## Screenshot of DlxLibDemo.exe
 
+The first demo application shows DlxLib being used to solve 2 simple matrices. For each solution, the entire matrix is written to the console with the solution row indexes and the 1's in the solution rows highlighted in yellow. This makes it clear to see that the solution rows have the property that there is exactly one 1 in each column.
+
 ![Screenshot of DlxLibDemo.exe](https://raw.github.com/taylorjg/DlxLib/master/Images/DlxLibDemo_screenshot.png)
 
 ## Screenshot of DlxLibDemo2.exe
+
+The second demo application shows DlxLib being used to solve the same 2 simple matrices as the first demo application. However, the solutions are in a different manner - only the rows that comprise the solution are displayed and we display the column names that correspond to the 1's.
 
 ![Screenshot of DlxLibDemo2.exe](https://raw.github.com/taylorjg/DlxLib/master/Images/DlxLibDemo2_screenshot.png)
 
 ## Screenshot of DlxLibDemo3.exe
 
-DlxLibDemo3.exe is a WPF application which shows a 14 piece drauthboard puzzle being solved.
+DlxLibDemo3.exe is a WPF application which shows a 14 piece draughtboard puzzle being solved. It redraws the board for each <code>SearchStep</code> event.
 
 ![Screenshot of DlxLibDemo3.exe](https://raw.github.com/taylorjg/DlxLib/master/Images/DlxLibDemo3_screenshot.png)
 
