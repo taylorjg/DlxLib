@@ -132,13 +132,13 @@ The first demo application shows DlxLib being used to solve 2 simple matrices. F
 
 ## Screenshot of DlxLibDemo2.exe
 
-The second demo application shows DlxLib being used to solve the same 2 simple matrices as the first demo application. However, the solutions are in a different manner - only the rows that comprise the solution are displayed and we display the column names that correspond to the 1's.
+The second demo application shows DlxLib being used to solve the same 2 simple matrices as the first demo application. However, the solutions are displayed in a different manner - only the rows that comprise the solution are displayed and we display the column names that correspond to the 1's.
 
 ![Screenshot of DlxLibDemo2.exe](https://raw.github.com/taylorjg/DlxLib/master/Images/DlxLibDemo2_screenshot.png)
 
 ## Screenshot of DlxLibDemo3.exe
 
-DlxLibDemo3.exe is a WPF application which shows a 14 piece draughtboard puzzle being solved. It redraws the board for each <code>SearchStep</code> event.
+The third demo application is a WPF application which shows a 14 piece draughtboard puzzle being solved. It redraws the board for each <code>SearchStep</code> event. It takes 23,316 iterations to find the first solution!
 
 ![Screenshot of DlxLibDemo3.exe](https://raw.github.com/taylorjg/DlxLib/master/Images/DlxLibDemo3_screenshot.png)
 
