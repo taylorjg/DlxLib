@@ -1,7 +1,9 @@
 
-## TODO
+## NuGet
 
-* Make DlxLib available as a NuGet package ?
+DlxLib is available as a NuGet package:
+
+http://www.nuget.org/packages/DlxLib/
 
 ## DlxLib (C#)
 
