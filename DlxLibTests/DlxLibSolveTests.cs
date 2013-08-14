@@ -35,7 +35,7 @@ namespace DlxLibTests
             var solutions = dlx.Solve(matrix).ToList();
             Assert.That(solutions, Has.Count.EqualTo(1));
             Assert.That(solutions[0].RowIndexes, Has.Count.EqualTo(1));
-            Assert.That(solutions[0].RowIndexes.First(), Is.EqualTo(0));
+            Assert.That(solutions.Select(s => s.RowIndexes), Contains.Item(new[] {0}));
         }
 
         [Test]
@@ -62,10 +62,7 @@ namespace DlxLibTests
             var dlx = new Dlx();
             var solutions = dlx.Solve(matrix).ToList();
             Assert.That(solutions, Has.Count.EqualTo(1));
-            Assert.That(solutions[0].RowIndexes, Has.Count.EqualTo(3));
-            Assert.That(solutions[0].RowIndexes.ElementAt(0), Is.EqualTo(0));
-            Assert.That(solutions[0].RowIndexes.ElementAt(1), Is.EqualTo(1));
-            Assert.That(solutions[0].RowIndexes.ElementAt(2), Is.EqualTo(2));
+            Assert.That(solutions.Select(s => s.RowIndexes), Contains.Item(new[] {0, 1, 2}));
         }
 
         [Test]
@@ -83,7 +80,7 @@ namespace DlxLibTests
             var dlx = new Dlx();
             var solutions = dlx.Solve(matrix).ToList();
             Assert.That(solutions, Has.Count.EqualTo(1));
-            Assert.That(solutions.Select(s => s.RowIndexes), Contains.Item(new[] { 0, 3, 4 }));
+            Assert.That(solutions.Select(s => s.RowIndexes), Contains.Item(new[] {0, 3, 4}));
         }
 
         [Test]
