@@ -62,9 +62,7 @@ namespace DlxLibDemo3.Model
         {
             get
             {
-                var min = (from s in _squares select s.X).Min();
-                var max = (from s in _squares select s.X).Max();
-                return max - min + 1;
+                return _squares.Max(s => s.X) + 1;
             }
         }
 
@@ -72,9 +70,7 @@ namespace DlxLibDemo3.Model
         {
             get
             {
-                var min = (from s in _squares select s.Y).Min();
-                var max = (from s in _squares select s.Y).Max();
-                return max - min + 1;
+                return _squares.Max(s => s.Y) + 1;
             }
         }
 
@@ -93,15 +89,12 @@ namespace DlxLibDemo3.Model
 
             var result = true;
 
-            var maxX = (from s in _squares select s.X).Max();
-            var maxY = (from s in _squares select s.Y).Max();
-
             var firstSquare = _squares.First();
             var colourOfSquareZeroZero = firstSquare.Colour.RelativeColour(firstSquare.X, firstSquare.Y);
 
-            for (int x = 0; x <= maxX; x++)
+            for (var x = 0; x < Width; x++)
             {
-                for (int y = 0; y <= maxY; y++)
+                for (var y = 0; y < Height; y++)
                 {
                     var square = SquareAt(x, y);
                     if (square != null)
