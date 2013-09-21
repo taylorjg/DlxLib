@@ -144,6 +144,14 @@ The third demo application is a WPF application which shows a 14 piece draughtbo
 
 ![Screenshot of DlxLibDemo3.exe](https://raw.github.com/taylorjg/DlxLib/master/Images/DlxLibDemo3_screenshot.png)
 
+## Flow Free Puzzle Solver
+
+See also the following project:
+
+* [FlowFreeDlx](https://github.com/taylorjg/FlowFreeDlx "FlowFreeDlx")
+
+![Screenshot](https://raw.github.com/taylorjg/FlowFreeDlx/master/Images/Screenshot.png "Screenshot")
+
 ## Other Links
 
 * [Dancing Links (Wikipedia)](http://en.wikipedia.org/wiki/Dancing_Links "Dancing Links (Wikipedia)")
