@@ -148,9 +148,9 @@ The third demo application is a WPF application which shows a 14 piece draughtbo
 
 See also the following project:
 
-* [FlowFreeDlx](https://github.com/taylorjg/FlowFreeDlx "FlowFreeDlx")
+* [FlowFreeSolverWpf](https://github.com/taylorjg/FlowFreeSolverWpf "FlowFreeSolverWpf")
 
-![Screenshot](https://raw.github.com/taylorjg/FlowFreeDlx/master/Images/Screenshot.png "Screenshot")
+![Flow Free Solver Screenshot](https://raw.github.com/taylorjg/FlowFreeSolverWpf/master/Images/Screenshot.png "Flow Free Solver Screenshot")
 
 ## Other Links
 
