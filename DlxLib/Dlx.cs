@@ -18,6 +18,17 @@ namespace DlxLib
         private Stack<int> _currentSolution;
         private int _iteration;
         private readonly ManualResetEventSlim _cancelEvent = new ManualResetEventSlim(false);
+        private readonly CancellationToken _cancellationToken;
+
+        public Dlx()
+            : this(CancellationToken.None)
+        {
+        }
+
+        public Dlx(CancellationToken cancellationToken)
+        {
+            _cancellationToken = cancellationToken;
+        }
 
         public IEnumerable<Solution> Solve(bool[,] matrix)
         {
@@ -31,7 +42,7 @@ namespace DlxLib
 
             Search();
 
-            if (_cancelEvent.IsSet)
+            if (IsCancelled())
                 RaiseCancelled();
             else
                 RaiseFinished();
@@ -53,6 +64,7 @@ namespace DlxLib
             return Solve(boolMatrix);
         }
 
+        [Obsolete("Pass a CancellationToken to the Dlx constructor instead")]
         public void Cancel()
         {
             _cancelEvent.Set();
@@ -63,6 +75,11 @@ namespace DlxLib
         public EventHandler Cancelled;
         public EventHandler<SearchStepEventArgs> SearchStep;
         public EventHandler<SolutionFoundEventArgs> SolutionFound;
+
+        private bool IsCancelled()
+        {
+            return _cancelEvent.IsSet || _cancellationToken.IsCancellationRequested;
+        }
 
         private static bool[,] ToBoolMatrix<T>(T[,] matrix, Func<T, bool> predicate)
         {
@@ -140,7 +157,7 @@ namespace DlxLib
 
         private void Search()
         {
-            if (_cancelEvent.IsSet)
+            if (IsCancelled())
             {
                 return;
             }
@@ -164,7 +181,7 @@ namespace DlxLib
 
             for (var r = c.Down; r != c; r = r.Down)
             {
-                if (_cancelEvent.IsSet)
+                if (IsCancelled())
                 {
                     return;
                 }

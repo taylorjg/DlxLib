@@ -1,4 +1,5 @@
-﻿using DlxLib;
+﻿using System.Threading;
+using DlxLib;
 using NUnit.Framework;
 
 namespace DlxLibTests
@@ -36,7 +37,22 @@ namespace DlxLibTests
             var cancelledEventHasBeenRaised = false;
             dlx.Cancelled += (_, __) => cancelledEventHasBeenRaised = true;
             dlx.Started += (sender, __) => ((Dlx)sender).Cancel();
-            var thread = new System.Threading.Thread(() => dlx.Solve(matrix));
+            var thread = new Thread(() => dlx.Solve(matrix));
+            thread.Start();
+            thread.Join();
+            Assert.That(cancelledEventHasBeenRaised, Is.True, "Expected the Cancelled event to have been raised");
+        }
+
+        [Test]
+        public void CancelledEventFiresUsingCancellationToken()
+        {
+            var matrix = new bool[0, 0];
+            var cancellationTokenSource = new CancellationTokenSource();
+            var dlx = new Dlx(cancellationTokenSource.Token);
+            var cancelledEventHasBeenRaised = false;
+            dlx.Cancelled += (_, __) => cancelledEventHasBeenRaised = true;
+            dlx.Started += (_, __) => cancellationTokenSource.Cancel();
+            var thread = new Thread(() => dlx.Solve(matrix));
             thread.Start();
             thread.Join();
             Assert.That(cancelledEventHasBeenRaised, Is.True, "Expected the Cancelled event to have been raised");
