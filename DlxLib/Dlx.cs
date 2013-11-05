@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using DlxLib.EnumerableArrayAdapter;
 
 // I have used variable names c, r and j deliberately to make it easier to
 // relate the code back to the original "Dancing Links" paper:
@@ -32,22 +33,7 @@ namespace DlxLib
 
         public IEnumerable<Solution> Solve(bool[,] matrix)
         {
-            if (matrix == null)
-            {
-                throw new ArgumentNullException("matrix");
-            }
-
-            BuildInternalStructure(matrix);
-            RaiseStarted();
-
-            Search();
-
-            if (IsCancelled())
-                RaiseCancelled();
-            else
-                RaiseFinished();
-
-            return _solutions;
+            return Solve<bool>(matrix);
         }
 
         public IEnumerable<Solution> Solve<T>(T[,] matrix)
@@ -60,8 +46,35 @@ namespace DlxLib
 
         public IEnumerable<Solution> Solve<T>(T[,] matrix, Func<T, bool> predicate)
         {
-            var boolMatrix = ToBoolMatrix(matrix, predicate);
-            return Solve(boolMatrix);
+            if (matrix == null)
+            {
+                throw new ArgumentNullException("matrix");
+            }
+
+            return Solve<T[,], IEnumerable<T>, T>(
+                matrix,
+                (m, f) => { foreach (var r in new Enumerable2DArray<T>(m)) f(r); },
+                (r, f) => { foreach (var c in r) f(c); },
+                predicate);
+        }
+
+        public IEnumerable<Solution> Solve<TData, TRow, TCol>(
+            TData data,
+            Action<TData, Action<TRow>> iterateRows,
+            Action<TRow, Action<TCol>> iterateCols,
+            Func<TCol, bool> predicate)
+        {
+            BuildInternalStructure(data, iterateRows, iterateCols, predicate);
+            RaiseStarted();
+
+            Search();
+
+            if (IsCancelled())
+                RaiseCancelled();
+            else
+                RaiseFinished();
+
+            return _solutions;
         }
 
         [Obsolete("Pass a CancellationToken to the Dlx constructor instead")]
@@ -81,74 +94,118 @@ namespace DlxLib
             return _cancelEvent.IsSet || _cancellationToken.IsCancellationRequested;
         }
 
-        private static bool[,] ToBoolMatrix<T>(T[,] matrix, Func<T, bool> predicate)
+        private void BuildInternalStructure<TData, TRow, TCol>(
+            TData data,
+            Action<TData, Action<TRow>> iterateRows,
+            Action<TRow, Action<TCol>> iterateCols,
+            Func<TCol, bool> predicate)
         {
-            var numRows = matrix.GetLength(0);
-            var numCols = matrix.GetLength(1);
-            var boolMatrix = new bool[numRows, numCols];
-
-            for (var rowIndex = 0; rowIndex < numRows; rowIndex++)
-            {
-                for (var colIndex = 0; colIndex < numCols; colIndex++)
-                {
-                    var element = matrix[rowIndex, colIndex];
-                    boolMatrix[rowIndex, colIndex] = predicate(element);
-                }
-            }
-
-            return boolMatrix;
-        }
-
-        private void BuildInternalStructure(bool[,] matrix)
-        {
-            _root = null;
+            _root = new ColumnObject();
             _solutions = new List<Solution>();
             _currentSolution = new Stack<int>();
             _iteration = 0;
             _cancelEvent.Reset();
 
-            var numRows = matrix.GetLength(0);
-            var numCols = matrix.GetLength(1);
+            int? numColumns = null;
+            var rowIndex = 0;
             var colIndexToListHeader = new Dictionary<int, ColumnObject>();
 
-            _root = new ColumnObject();
-
-            for (var colIndex = 0; colIndex < numCols; colIndex++)
+            iterateRows(data, row =>
             {
-                var listHeader = new ColumnObject();
-                _root.AppendColumnHeader(listHeader);
-                colIndexToListHeader[colIndex] = listHeader;
-            }
-
-            for (var rowIndex = 0; rowIndex < numRows; rowIndex++)
-            {
-                // We are starting a new row so indicate that this row is currently empty.
                 DataObject firstDataObjectInThisRow = null;
+                var localRowIndex = rowIndex;
+                var colIndex = 0;
 
-                for (var colIndex = 0; colIndex < numCols; colIndex++)
+                iterateCols(row, col =>
                 {
-                    // We are only interested in the 'true's in the matrix.
-                    // We create a DataObject for each 'true'. We ignore all the 'false's.
-                    if (!matrix[rowIndex, colIndex])
+                    if (localRowIndex == 0)
                     {
-                        continue;
+                        var listHeader = new ColumnObject();
+                        _root.AppendColumnHeader(listHeader);
+                        colIndexToListHeader[colIndex] = listHeader;
                     }
 
-                    // Create a new DataObject and add it to the appropriate list header.
-                    var listHeader = colIndexToListHeader[colIndex];
-                    var dataObject = new DataObject(listHeader, rowIndex);
+                    if (predicate(col))
+                    {
+                        // Create a new DataObject and add it to the appropriate list header.
+                        var listHeader = colIndexToListHeader[colIndex];
+                        var dataObject = new DataObject(listHeader, localRowIndex);
 
-                    if (firstDataObjectInThisRow != null)
-                    {
-                        firstDataObjectInThisRow.AppendToRow(dataObject);
+                        if (firstDataObjectInThisRow != null)
+                            firstDataObjectInThisRow.AppendToRow(dataObject);
+                        else
+                            firstDataObjectInThisRow = dataObject;
                     }
-                    else
+
+                    colIndex++;
+                });
+
+                if (numColumns.HasValue)
+                {
+                    if (colIndex != numColumns)
                     {
-                        firstDataObjectInThisRow = dataObject;
+                        throw new ArgumentException("All rows are meant to contain the same number of rows!", "data");
                     }
                 }
-            }
+                else
+                {
+                    numColumns = colIndex;
+                }
+
+                rowIndex++;
+            });
         }
+
+        //private void BuildInternalStructure(bool[,] matrix)
+        //{
+        //    _root = null;
+        //    _solutions = new List<Solution>();
+        //    _currentSolution = new Stack<int>();
+        //    _iteration = 0;
+        //    _cancelEvent.Reset();
+
+        //    var numRows = matrix.GetLength(0);
+        //    var numCols = matrix.GetLength(1);
+        //    var colIndexToListHeader = new Dictionary<int, ColumnObject>();
+
+        //    _root = new ColumnObject();
+
+        //    for (var colIndex = 0; colIndex < numCols; colIndex++)
+        //    {
+        //        var listHeader = new ColumnObject();
+        //        _root.AppendColumnHeader(listHeader);
+        //        colIndexToListHeader[colIndex] = listHeader;
+        //    }
+
+        //    for (var rowIndex = 0; rowIndex < numRows; rowIndex++)
+        //    {
+        //        // We are starting a new row so indicate that this row is currently empty.
+        //        DataObject firstDataObjectInThisRow = null;
+
+        //        for (var colIndex = 0; colIndex < numCols; colIndex++)
+        //        {
+        //            // We are only interested in the 'true's in the matrix.
+        //            // We create a DataObject for each 'true'. We ignore all the 'false's.
+        //            if (!matrix[rowIndex, colIndex])
+        //            {
+        //                continue;
+        //            }
+
+        //            // Create a new DataObject and add it to the appropriate list header.
+        //            var listHeader = colIndexToListHeader[colIndex];
+        //            var dataObject = new DataObject(listHeader, rowIndex);
+
+        //            if (firstDataObjectInThisRow != null)
+        //            {
+        //                firstDataObjectInThisRow.AppendToRow(dataObject);
+        //            }
+        //            else
+        //            {
+        //                firstDataObjectInThisRow = dataObject;
+        //            }
+        //        }
+        //    }
+        //}
 
         private bool MatrixIsEmpty()
         {

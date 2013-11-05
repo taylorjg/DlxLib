@@ -43,11 +43,14 @@
     <Compile Include="ColumnObject.cs" />
     <Compile Include="Dlx.cs" />
     <Compile Include="DataObject.cs" />
+    <Compile Include="EnumerableArrayAdapter\Enumerable2DArray.cs" />
+    <Compile Include="EnumerableArrayAdapter\Enumerable2DArrayRow.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SearchStepEventArgs.cs" />
     <Compile Include="Solution.cs" />
     <Compile Include="SolutionFoundEventArgs.cs" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
