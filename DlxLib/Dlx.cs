@@ -64,6 +64,11 @@ namespace DlxLib
             Action<TRow, Action<TCol>> iterateCols,
             Func<TCol, bool> predicate)
         {
+            if (data.Equals(default(TData)))
+            {
+                throw new ArgumentNullException("data");
+            }
+
             BuildInternalStructure(data, iterateRows, iterateCols, predicate);
             RaiseStarted();
 
@@ -155,57 +160,6 @@ namespace DlxLib
                 rowIndex++;
             });
         }
-
-        //private void BuildInternalStructure(bool[,] matrix)
-        //{
-        //    _root = null;
-        //    _solutions = new List<Solution>();
-        //    _currentSolution = new Stack<int>();
-        //    _iteration = 0;
-        //    _cancelEvent.Reset();
-
-        //    var numRows = matrix.GetLength(0);
-        //    var numCols = matrix.GetLength(1);
-        //    var colIndexToListHeader = new Dictionary<int, ColumnObject>();
-
-        //    _root = new ColumnObject();
-
-        //    for (var colIndex = 0; colIndex < numCols; colIndex++)
-        //    {
-        //        var listHeader = new ColumnObject();
-        //        _root.AppendColumnHeader(listHeader);
-        //        colIndexToListHeader[colIndex] = listHeader;
-        //    }
-
-        //    for (var rowIndex = 0; rowIndex < numRows; rowIndex++)
-        //    {
-        //        // We are starting a new row so indicate that this row is currently empty.
-        //        DataObject firstDataObjectInThisRow = null;
-
-        //        for (var colIndex = 0; colIndex < numCols; colIndex++)
-        //        {
-        //            // We are only interested in the 'true's in the matrix.
-        //            // We create a DataObject for each 'true'. We ignore all the 'false's.
-        //            if (!matrix[rowIndex, colIndex])
-        //            {
-        //                continue;
-        //            }
-
-        //            // Create a new DataObject and add it to the appropriate list header.
-        //            var listHeader = colIndexToListHeader[colIndex];
-        //            var dataObject = new DataObject(listHeader, rowIndex);
-
-        //            if (firstDataObjectInThisRow != null)
-        //            {
-        //                firstDataObjectInThisRow.AppendToRow(dataObject);
-        //            }
-        //            else
-        //            {
-        //                firstDataObjectInThisRow = dataObject;
-        //            }
-        //        }
-        //    }
-        //}
 
         private bool MatrixIsEmpty()
         {
