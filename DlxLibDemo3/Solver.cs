@@ -17,10 +17,13 @@ namespace DlxLibDemo3
         private readonly IDictionary<int, Tuple<RotatedPiece, int, int>> _dictionary;
 
         private bool[,] _matrix;
-        private readonly Dlx _dlx = new Dlx();
+        private readonly CancellationTokenSource _cancellationTokenSource;
+        private readonly Dlx _dlx;
 
         public Solver(IEnumerable<Piece> pieces, int boardSize)
         {
+            _cancellationTokenSource = new CancellationTokenSource();
+            _dlx = new Dlx(_cancellationTokenSource.Token);
             _pieces = pieces.ToArray();
             _dictionary = new Dictionary<int, Tuple<RotatedPiece, int, int>>();
             _board = new Board(boardSize);
@@ -36,7 +39,7 @@ namespace DlxLibDemo3
 
         public void Cancel()
         {
-            _dlx.Cancel();
+            _cancellationTokenSource.Cancel();
             _thread.Join();
         }
 
@@ -52,7 +55,7 @@ namespace DlxLibDemo3
                     SearchSteps.Enqueue(pieceDetails);
                 };
 
-            _dlx.SolutionFound += (_, __) => _dlx.Cancel();
+            _dlx.SolutionFound += (_, __) => _cancellationTokenSource.Cancel();
 
             _dlx.Solve(_matrix);
         }
