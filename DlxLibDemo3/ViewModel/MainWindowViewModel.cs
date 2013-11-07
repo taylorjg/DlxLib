@@ -24,12 +24,12 @@ namespace DlxLibDemo3.ViewModel
 
             _timer.Tick += (_, __) =>
             {
-                IEnumerable<Tuple<RotatedPiece, int, int>> pieceDetails;
-                if (_solver.SearchSteps.TryDequeue(out pieceDetails))
+                SearchStep searchStep;
+                if (_solver.SearchSteps.TryDequeue(out searchStep))
                 {
-                    var pieceDetailsList = pieceDetails.ToList();
-                    ProcessSearchStep(pieceDetailsList);
-                    if (pieceDetailsList.Count == Pieces.ThePieces.Count())
+                    var piecePlacements = searchStep.PiecePlacements.ToList();
+                    ProcessSearchStep(piecePlacements);
+                    if (piecePlacements.Count == Pieces.ThePieces.Count())
                     {
                         _timer.Stop();
                     }
@@ -40,17 +40,17 @@ namespace DlxLibDemo3.ViewModel
             _timer.Start();
         }
 
-        private void ProcessSearchStep(IList<Tuple<RotatedPiece, int, int>> pieceDetails)
+        private void ProcessSearchStep(IList<PiecePlacement> piecePlacements)
         {
             Iterations++;
 
-            foreach (var pd in pieceDetails)
+            foreach (var piecePlacement in piecePlacements)
             {
-                var rotatedPiece = pd.Item1;
+                var rotatedPiece = piecePlacement.RotatedPiece;
                 var pieceName = rotatedPiece.Piece.Name;
                 var orientation = rotatedPiece.Orientation;
-                var x = pd.Item2;
-                var y = pd.Item3;
+                var x = piecePlacement.Coords.X;
+                var y = piecePlacement.Coords.Y;
 
                 if (_boardControl.IsPieceOnBoard(pieceName))
                 {
@@ -66,7 +66,7 @@ namespace DlxLibDemo3.ViewModel
                 }
             }
 
-            _boardControl.RemovePiecesOtherThan(pieceDetails.Select(pd => pd.Item1.Piece.Name).ToList());
+            _boardControl.RemovePiecesOtherThan(piecePlacements.Select(pd => pd.RotatedPiece.Piece.Name).ToList());
         }
 
         public void Closing()

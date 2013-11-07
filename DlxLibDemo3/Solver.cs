@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -10,13 +9,26 @@ namespace DlxLibDemo3
 {
     internal class Solver
     {
+        private class InternalRow
+        {
+            public InternalRow(bool[] matrixRow, PiecePlacement piecePlacement)
+            {
+                MatrixRow = matrixRow;
+                PiecePlacement = piecePlacement;
+            }
+
+            public bool[] MatrixRow { get; private set; }
+            public PiecePlacement PiecePlacement { get; private set; }
+        }
+
         private readonly Piece[] _pieces;
         private readonly Board _board;
-        // Use Coords instead of int, int ?
-        // Create a new little class instead of using a Tuple ? class RowData ?
-        private readonly IList<Tuple<bool[], Tuple<RotatedPiece, int, int>>> _data = new List<Tuple<bool[], Tuple<RotatedPiece, int, int>>>();
+        private readonly IList<InternalRow> _data = new List<InternalRow>();
         private readonly CancellationTokenSource _cancellationTokenSource;
         private readonly Dlx _dlx;
+        private Thread _thread;
+
+        public ConcurrentQueue<SearchStep> SearchSteps { get; private set; }
 
         public Solver(IEnumerable<Piece> pieces, int boardSize)
         {
@@ -25,7 +37,7 @@ namespace DlxLibDemo3
             _pieces = pieces.ToArray();
             _board = new Board(boardSize);
             _board.ForceColourOfSquareZeroZeroToBeWhite();
-            SearchSteps = new ConcurrentQueue<IEnumerable<Tuple<RotatedPiece, int, int>>>();
+            SearchSteps = new ConcurrentQueue<SearchStep>();
         }
 
         public void Solve()
@@ -46,26 +58,16 @@ namespace DlxLibDemo3
 
             BuildMatrixAndDictionary();
 
-            _dlx.SearchStep += (_, e) =>
-                {
-                    var pieceDetails = e.RowIndexes.Select(rowIndex => _data[rowIndex].Item2);
-                    SearchSteps.Enqueue(pieceDetails);
-                };
+            _dlx.SearchStep += (_, e) => SearchSteps.Enqueue(new SearchStep(e.RowIndexes.Select(rowIndex => _data[rowIndex].PiecePlacement)));
 
             _dlx.SolutionFound += (_, __) => _cancellationTokenSource.Cancel();
 
-            _dlx.Solve<
-                IList<Tuple<bool[], Tuple<RotatedPiece, int, int>>>,
-                Tuple<bool[], Tuple<RotatedPiece, int, int>>,
-                bool>(
+            _dlx.Solve<IList<InternalRow>, InternalRow, bool>(
                     _data,
                     (d, f) => { foreach (var r in d) f(r); },
-                    (r, f) => { foreach (var c in r.Item1) f(c); },
+                    (r, f) => { foreach (var c in r.MatrixRow) f(c); },
                     c => c);
         }
-
-        private Thread _thread;
-        public ConcurrentQueue<IEnumerable<Tuple<RotatedPiece, int, int>>> SearchSteps { get; private set; }
 
         private void BuildMatrixAndDictionary()
         {
@@ -94,13 +96,13 @@ namespace DlxLibDemo3
                     _board.Reset();
                     _board.ForceColourOfSquareZeroZeroToBeWhite();
                     if (!_board.PlacePieceAt(rotatedPiece, x, y)) continue;
-                    var dataItem = BuildDataItem(pieceIndex, rotatedPiece, x, y);
+                    var dataItem = BuildDataItem(pieceIndex, rotatedPiece, new Coords(x, y));
                     _data.Add(dataItem);
                 }
             }
         }
 
-        private Tuple<bool[], Tuple<RotatedPiece, int, int>> BuildDataItem(int pieceIndex, RotatedPiece rotatedPiece, int x, int y)
+        private InternalRow BuildDataItem(int pieceIndex, RotatedPiece rotatedPiece, Coords coords)
         {
             var numColumns = _pieces.Length + _board.BoardSize * _board.BoardSize;
             var matrixRow = new bool[numColumns];
@@ -115,14 +117,14 @@ namespace DlxLibDemo3
                 for (var pieceY = 0; pieceY < h; pieceY++)
                 {
                     if (rotatedPiece.SquareAt(pieceX, pieceY) == null) continue;
-                    var boardX = x + pieceX;
-                    var boardY = y + pieceY;
+                    var boardX = coords.X + pieceX;
+                    var boardY = coords.Y + pieceY;
                     var boardLocationColumnIndex = _pieces.Length + (_board.BoardSize * boardX) + boardY;
                     matrixRow[boardLocationColumnIndex] = true;
                 }
             }
 
-            return Tuple.Create(matrixRow, Tuple.Create(rotatedPiece, x, y));
+            return new InternalRow(matrixRow, new PiecePlacement(rotatedPiece, coords));
         }
     }
 }

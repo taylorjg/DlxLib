@@ -66,7 +66,9 @@
     <Compile Include="PieceControl.xaml.cs">
       <DependentUpon>PieceControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="PiecePlacement.cs" />
     <Compile Include="Properties\Annotations.cs" />
+    <Compile Include="SearchStep.cs" />
     <Compile Include="Solver.cs" />
     <Compile Include="ViewModel\MainWindowViewModel.cs" />
     <Page Include="BoardControl.xaml">
