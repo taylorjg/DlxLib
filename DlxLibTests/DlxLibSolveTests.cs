@@ -108,18 +108,18 @@ namespace DlxLibTests
         public void CallerShapedDataSimpleTest()
         {
             // Arrange
-            var data = new List<Tuple<IList<int>, string>>
+            var data = new List<Tuple<int[], string>>
                 {
-                    Tuple.Create(new[] {1, 0, 0} as IList<int>, "Row 0"),
-                    Tuple.Create(new[] {0, 1, 0} as IList<int>, "Row 1"),
-                    Tuple.Create(new[] {0, 0, 1} as IList<int>, "Row 2")
+                    Tuple.Create(new[] {1, 0, 0}, "Some data associated with row 0"),
+                    Tuple.Create(new[] {0, 1, 0}, "Some data associated with row 1"),
+                    Tuple.Create(new[] {0, 0, 1}, "Some data associated with row 2")
                 };
 
             // Act
             var dlx = new Dlx();
             var solutions = dlx.Solve<
-                IList<Tuple<IList<int>, string>>,
-                Tuple<IList<int>, string>,
+                IList<Tuple<int[], string>>,
+                Tuple<int[], string>,
                 int>(
                     data,
                     (d, f) => { foreach (var r in d) f(r); },
