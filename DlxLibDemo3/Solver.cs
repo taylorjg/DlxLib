@@ -12,11 +12,9 @@ namespace DlxLibDemo3
     {
         private readonly Piece[] _pieces;
         private readonly Board _board;
-
-        // Maps from matrix row number (zero-based) to a tuple containing RotatedPiece + (x,y) board location.
-        private readonly IDictionary<int, Tuple<RotatedPiece, int, int>> _dictionary;
-
-        private bool[,] _matrix;
+        // Use Coords instead of int, int ?
+        // Create a new little class instead of using a Tuple ? class RowData ?
+        private readonly IList<Tuple<bool[], Tuple<RotatedPiece, int, int>>> _data = new List<Tuple<bool[], Tuple<RotatedPiece, int, int>>>();
         private readonly CancellationTokenSource _cancellationTokenSource;
         private readonly Dlx _dlx;
 
@@ -25,7 +23,6 @@ namespace DlxLibDemo3
             _cancellationTokenSource = new CancellationTokenSource();
             _dlx = new Dlx(_cancellationTokenSource.Token);
             _pieces = pieces.ToArray();
-            _dictionary = new Dictionary<int, Tuple<RotatedPiece, int, int>>();
             _board = new Board(boardSize);
             _board.ForceColourOfSquareZeroZeroToBeWhite();
             SearchSteps = new ConcurrentQueue<IEnumerable<Tuple<RotatedPiece, int, int>>>();
@@ -51,13 +48,20 @@ namespace DlxLibDemo3
 
             _dlx.SearchStep += (_, e) =>
                 {
-                    var pieceDetails = e.RowIndexes.Select(rowIndex => _dictionary[rowIndex]).ToList();
+                    var pieceDetails = e.RowIndexes.Select(rowIndex => _data[rowIndex].Item2);
                     SearchSteps.Enqueue(pieceDetails);
                 };
 
             _dlx.SolutionFound += (_, __) => _cancellationTokenSource.Cancel();
 
-            _dlx.Solve(_matrix);
+            _dlx.Solve<
+                IList<Tuple<bool[], Tuple<RotatedPiece, int, int>>>,
+                Tuple<bool[], Tuple<RotatedPiece, int, int>>,
+                bool>(
+                    _data,
+                    (d, f) => { foreach (var r in d) f(r); },
+                    (r, f) => { foreach (var c in r.Item1) f(c); },
+                    c => c);
         }
 
         private Thread _thread;
@@ -65,33 +69,21 @@ namespace DlxLibDemo3
 
         private void BuildMatrixAndDictionary()
         {
-            IList<IList<bool>> data = new List<IList<bool>>();
-
             for (var pieceIndex = 0; pieceIndex < _pieces.Length; pieceIndex++)
             {
                 var piece = _pieces[pieceIndex];
-                AddDataItemsForPieceWithSpecificOrientation(data, pieceIndex, piece, Orientation.North);
+                AddDataItemsForPieceWithSpecificOrientation(pieceIndex, piece, Orientation.North);
                 var isFirstPiece = (pieceIndex == 0);
                 if (!isFirstPiece)
                 {
-                    AddDataItemsForPieceWithSpecificOrientation(data, pieceIndex, piece, Orientation.South);
-                    AddDataItemsForPieceWithSpecificOrientation(data, pieceIndex, piece, Orientation.East);
-                    AddDataItemsForPieceWithSpecificOrientation(data, pieceIndex, piece, Orientation.West);
-                }
-            }
-
-            var numColumns = _pieces.Length + _board.BoardSize * _board.BoardSize;
-            _matrix = new bool[data.Count, numColumns];
-            for (var row = 0; row < data.Count; row++)
-            {
-                for (var col = 0; col < numColumns; col++)
-                {
-                    _matrix[row, col] = data[row][col];
+                    AddDataItemsForPieceWithSpecificOrientation(pieceIndex, piece, Orientation.South);
+                    AddDataItemsForPieceWithSpecificOrientation(pieceIndex, piece, Orientation.East);
+                    AddDataItemsForPieceWithSpecificOrientation(pieceIndex, piece, Orientation.West);
                 }
             }
         }
 
-        private void AddDataItemsForPieceWithSpecificOrientation(ICollection<IList<bool>> data, int pieceIndex, Piece piece, Orientation orientation)
+        private void AddDataItemsForPieceWithSpecificOrientation(int pieceIndex, Piece piece, Orientation orientation)
         {
             var rotatedPiece = new RotatedPiece(piece, orientation);
 
@@ -103,18 +95,17 @@ namespace DlxLibDemo3
                     _board.ForceColourOfSquareZeroZeroToBeWhite();
                     if (!_board.PlacePieceAt(rotatedPiece, x, y)) continue;
                     var dataItem = BuildDataItem(pieceIndex, rotatedPiece, x, y);
-                    data.Add(dataItem);
-                    _dictionary.Add(data.Count - 1, Tuple.Create(rotatedPiece, x, y));
+                    _data.Add(dataItem);
                 }
             }
         }
 
-        private IList<bool> BuildDataItem(int pieceIndex, RotatedPiece rotatedPiece, int x, int y)
+        private Tuple<bool[], Tuple<RotatedPiece, int, int>> BuildDataItem(int pieceIndex, RotatedPiece rotatedPiece, int x, int y)
         {
             var numColumns = _pieces.Length + _board.BoardSize * _board.BoardSize;
-            var dataItem = new bool[numColumns];
+            var matrixRow = new bool[numColumns];
 
-            dataItem[pieceIndex] = true;
+            matrixRow[pieceIndex] = true;
 
             var w = rotatedPiece.Width;
             var h = rotatedPiece.Height;
@@ -127,11 +118,11 @@ namespace DlxLibDemo3
                     var boardX = x + pieceX;
                     var boardY = y + pieceY;
                     var boardLocationColumnIndex = _pieces.Length + (_board.BoardSize * boardX) + boardY;
-                    dataItem[boardLocationColumnIndex] = true;
+                    matrixRow[boardLocationColumnIndex] = true;
                 }
             }
 
-            return dataItem;
+            return Tuple.Create(matrixRow, Tuple.Create(rotatedPiece, x, y));
         }
     }
 }
