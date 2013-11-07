@@ -149,7 +149,7 @@ namespace DlxLib
                 {
                     if (colIndex != numColumns)
                     {
-                        throw new ArgumentException("All rows are meant to contain the same number of rows!", "data");
+                        throw new ArgumentException("All rows must contain the same number of columns!", "data");
                     }
                 }
                 else
