@@ -7,7 +7,7 @@ http://www.nuget.org/packages/DlxLib/
 
 ## DlxLib (C#)
 
-DlxLib is C# class library that implements Dancing Links (DLX) as described in the following paper: 
+DlxLib is C# class library that implements the Dancing Links (DLX) algorithm as described in the following paper: 
 
 [Dancing Links (Donald E. Knuth, Stanford University)](http://arxiv.org/pdf/cs/0011047v1.pdf "Dancing Links (Donald E. Knuth, Stanford University)")
 
@@ -43,7 +43,9 @@ var solutions = dlx.Solve(matrix);
 
 ### The Dlx Class
 
-#### Solve
+#### Methods
+
+##### Solve
 
 The <code>Dlx</code> class exposes three overloads of the <code>Solve()</code> method.
 
@@ -65,6 +67,50 @@ public IEnumerable<Solution> Solve<T>(T[,] matrix, Func<T, bool> predicate);
 
 This overload takes a 2D matrix of <code>T</code>. It returns an enumerable of <code>Solution</code>. Internally, it converts the supplied matrix to a matrix of <code>bool</code>. It uses the supplied predicate function to determine which elements represent <code>true</code>.
 
+> NOTE: The following new <code>Solve</code> overload has been added in DlxLib 1.1.
+
+```C#
+        public IEnumerable<Solution> Solve<TData, TRow, TCol>(
+            TData data,
+            Action<TData, Action<TRow>> iterateRows,
+            Action<TRow, Action<TCol>> iterateCols,
+            Func<TCol, bool> predicate);
+```
+
+This overload allows the caller to pass in any shape of data. However, the caller also needs to supply a function to iterate the rows in the data, a function to iterate the columns in a row and a function to indicate whether a given row/column value represents <code>true</code>.
+
+Following is an example of its use:
+
+```C#
+            var data = new List<Tuple<int[], string>>
+                {
+                    Tuple.Create(new[] {1, 0, 0}, "Some data associated with row 0"),
+                    Tuple.Create(new[] {0, 1, 0}, "Some data associated with row 1"),
+                    Tuple.Create(new[] {0, 0, 1}, "Some data associated with row 2")
+                };
+
+            var dlx = new Dlx();
+            var solutions = dlx.Solve<
+                IList<Tuple<int[], string>>,
+                Tuple<int[], string>,
+                int>(
+                    data,
+                    (d, f) => { foreach (var r in d) f(r); },
+                    (r, f) => { foreach (var c in r.Item1) f(c); },
+                    c => c != 0);
+```
+
+##### Cancel
+
+> NOTE: This method has been made obsolete in DlxLib 1.1 in favour of passing a <code>CancellationToken</code> to a new constructor on the <code>Dlx</code> class.
+See also the following link on MSDN: [Managed Threading Basics | Cancellation](http://msdn.microsoft.com/en-us/library/dd997364(v=vs.100).aspx).
+
+Finally, the <code>Dlx</code> class exposes the following method to cancel the <code>Solve</code> method. This is useful when the <code>Solve</code> method has been called on a background thread and you want to cancel the operation.
+
+```C#
+public void Cancel();
+```
+
 #### Events
 
 The <code>Dlx</code> class also exposes the events described below.
@@ -79,7 +125,7 @@ This event is raised at the end of the <code>Solve</code> method (unless the <co
 
 ##### Cancelled
 
-This event is raised at the end of the <code>Solve</code> method if the <code>Cancel</code> method was called.
+This event is raised at the end of the <code>Solve</code> method if the operation has been cancelled via either the <code>Cancel</code> method or the <code>CancellationToken</code>.
 
 ##### SearchStep
 
@@ -101,14 +147,6 @@ This event is raised for each solution found.
 ```C#
         public Solution Solution { get; private set; }
         public int SolutionIndex { get; private set; }
-```
-
-#### Cancel
-
-Finally, the <code>Dlx</code> class exposes the following method to cancel the <code>Solve</code> method. This is useful when the <code>Solve</code> method has been called on a background thread and you want to cancel the operation.
-
-```C#
-public void Cancel();
 ```
 
 ### The Solution Class
