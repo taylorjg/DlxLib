@@ -102,8 +102,7 @@ var solutions = dlx.Solve<
 
 ##### Cancel
 
-> NOTE: This method has been made obsolete in DlxLib 1.1 in favour of passing a <code>CancellationToken</code> to a new constructor on the <code>Dlx</code> class.
-See also the following link on MSDN: [Managed Threading Basics | Cancellation](http://msdn.microsoft.com/en-us/library/dd997364(v=vs.100).aspx).
+> NOTE: This method has been made obsolete in DlxLib 1.1 in favour of passing a <code>CancellationToken</code> to a new <code>Dlx</code> constructor. See also the following link on MSDN: [Managed Threading Basics | Cancellation](http://msdn.microsoft.com/en-us/library/dd997364).
 
 Finally, the <code>Dlx</code> class exposes the following method to cancel the <code>Solve</code> method. This is useful when the <code>Solve</code> method has been called on a background thread and you want to cancel the operation.
 
