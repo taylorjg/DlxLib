@@ -1,4 +1,3 @@
-
 ## NuGet
 
 DlxLib is available as a NuGet package:
@@ -187,7 +186,13 @@ See also the following project:
 
 * [FlowFreeSolverWpf](https://github.com/taylorjg/FlowFreeSolverWpf "FlowFreeSolverWpf")
 
-![Flow Free Solver Screenshot](https://raw.github.com/taylorjg/FlowFreeSolverWpf/master/Images/Screenshot.png "Flow Free Solver Screenshot")
+![Flow Free Solver Screenshot](https://raw.github.com/taylorjg/FlowFreeSolverWpf/master/Images/Screenshot.png "Flow Free Solver Screenshot"
+
+## Potter Kata
+
+See also the following project:
+
+* [PotterKata2](https://github.com/taylorjg/PotterKata2 "PotterKata2")
 
 ## Other Links
 
