@@ -186,7 +186,7 @@ See also the following project:
 
 * [FlowFreeSolverWpf](https://github.com/taylorjg/FlowFreeSolverWpf "FlowFreeSolverWpf")
 
-![Flow Free Solver Screenshot](https://raw.github.com/taylorjg/FlowFreeSolverWpf/master/Images/Screenshot.png "Flow Free Solver Screenshot"
+![Flow Free Solver Screenshot](https://raw.github.com/taylorjg/FlowFreeSolverWpf/master/Images/Screenshot.png "Flow Free Solver Screenshot")
 
 ## Potter Kata
 
