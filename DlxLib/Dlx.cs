@@ -20,24 +20,33 @@ namespace DlxLib
         private readonly CancellationTokenSource _cancellationTokenSource;
         private readonly CancellationToken _cancellationToken;
 
-        // TODO: move this member variable into SearchData
-        private ColumnObject _root;
-
         private class SearchData
         {
+            public SearchData(ColumnObject root)
+            {
+                Root = root;
+            }
+
+            public ColumnObject Root { get; private set; }
             public int IterationCount { get; private set; }
+            public int SolutionCount { get; private set; }
 
             public void IncrementIterationCount()
             {
                 IterationCount++;
             }
 
-            public void PushRowIndexToCurrentSolution(int rowIndex)
+            public void IncrementSolutionCount()
+            {
+                SolutionCount++;
+            }
+
+            public void PushCurrentSolutionRowIndex(int rowIndex)
             {
                 _currentSolution.Push(rowIndex);
             }
 
-            public void PopRowIndexFromCurrentSolution()
+            public void PopCurrentSolutionRowIndex()
             {
                 _currentSolution.Pop();
             }
@@ -46,13 +55,6 @@ namespace DlxLib
             {
                 get { return new Solution(_currentSolution); }
             }
-
-            public void IncrementSolutionCount()
-            {
-                SolutionCount++;
-            }
-
-            public int SolutionCount { get; private set; }
 
             private readonly Stack<int> _currentSolution = new Stack<int>();
         }
@@ -139,8 +141,8 @@ namespace DlxLib
             Func<TCol, bool> predicate)
         {
             if (data.Equals(default(TData))) throw new ArgumentNullException("data");
-            BuildInternalStructure(data, iterateRows, iterateCols, predicate);
-            return Search(0, new SearchData());
+            var root = BuildInternalStructure(data, iterateRows, iterateCols, predicate);
+            return Search(0, new SearchData(root));
         }
 
         /// <summary>
@@ -185,13 +187,13 @@ namespace DlxLib
             return _cancellationToken.IsCancellationRequested;
         }
 
-        private void BuildInternalStructure<TData, TRow, TCol>(
+        private ColumnObject BuildInternalStructure<TData, TRow, TCol>(
             TData data,
             Action<TData, Action<TRow>> iterateRows,
             Action<TRow, Action<TCol>> iterateCols,
             Func<TCol, bool> predicate)
         {
-            _root = new ColumnObject();
+            var root = new ColumnObject();
 
             int? numColumns = null;
             var rowIndex = 0;
@@ -208,7 +210,7 @@ namespace DlxLib
                     if (localRowIndex == 0)
                     {
                         var listHeader = new ColumnObject();
-                        _root.AppendColumnHeader(listHeader);
+                        root.AppendColumnHeader(listHeader);
                         colIndexToListHeader[colIndex] = listHeader;
                     }
 
@@ -241,11 +243,13 @@ namespace DlxLib
 
                 rowIndex++;
             });
+
+            return root;
         }
 
-        private bool MatrixIsEmpty()
+        private static bool MatrixIsEmpty(ColumnObject root)
         {
-            return _root.NextColumnObject == _root;
+            return root.NextColumnObject == root;
         }
 
         private IEnumerable<Solution> Search(int k, SearchData searchData)
@@ -263,7 +267,7 @@ namespace DlxLib
                 RaiseSearchStep(searchData.IterationCount, searchData.CurrentSolution.RowIndexes);
                 searchData.IncrementIterationCount();
 
-                if (MatrixIsEmpty())
+                if (MatrixIsEmpty(searchData.Root))
                 {
                     if (searchData.CurrentSolution.RowIndexes.Any())
                     {
@@ -277,7 +281,7 @@ namespace DlxLib
                     yield break;
                 }
 
-                var c = GetListHeaderOfColumnWithLeastRows();
+                var c = GetListHeaderOfColumnWithLeastRows(searchData.Root);
                 CoverColumn(c);
 
                 for (var r = c.Down; r != c; r = r.Down)
@@ -288,7 +292,7 @@ namespace DlxLib
                         yield break;
                     }
 
-                    searchData.PushRowIndexToCurrentSolution(r.RowIndex);
+                    searchData.PushCurrentSolutionRowIndex(r.RowIndex);
 
                     for (var j = r.Right; j != r; j = j.Right)
                         CoverColumn(j.ListHeader);
@@ -299,7 +303,7 @@ namespace DlxLib
                     for (var j = r.Left; j != r; j = j.Left)
                         UncoverColumn(j.ListHeader);
 
-                    searchData.PopRowIndexFromCurrentSolution();
+                    searchData.PopCurrentSolutionRowIndex();
                 }
 
                 UncoverColumn(c);
@@ -311,12 +315,12 @@ namespace DlxLib
             }
         }
 
-        private ColumnObject GetListHeaderOfColumnWithLeastRows()
+        private ColumnObject GetListHeaderOfColumnWithLeastRows(ColumnObject root)
         {
             ColumnObject listHeader = null;
 
             var smallestNumberOfRows = int.MaxValue;
-            for (var columnHeader = _root.NextColumnObject; columnHeader != _root; columnHeader = columnHeader.NextColumnObject)
+            for (var columnHeader = root.NextColumnObject; columnHeader != root; columnHeader = columnHeader.NextColumnObject)
             {
                 if (columnHeader.NumberOfRows < smallestNumberOfRows)
                 {

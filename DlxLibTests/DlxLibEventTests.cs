@@ -68,10 +68,19 @@ namespace DlxLibTests
             var dlx = new Dlx();
             var cancelledEventHasBeenRaised = false;
             dlx.Cancelled += (_, __) => cancelledEventHasBeenRaised = true;
+
+            // 'DlxLib.Dlx.Cancel()' is obsolete: 'Pass a CancellationToken to the Dlx constructor instead'
+            #pragma warning disable 612,618
             dlx.Started += (sender, __) => ((Dlx)sender).Cancel();
+            #pragma warning restore 612,618
+
+            // ReSharper disable ReturnValueOfPureMethodIsNotUsed
             var thread = new Thread(() => dlx.Solve(matrix).First());
+            // ReSharper restore ReturnValueOfPureMethodIsNotUsed
+
             thread.Start();
             thread.Join();
+
             Assert.That(cancelledEventHasBeenRaised, Is.True, "Expected the Cancelled event to have been raised");
         }
 
@@ -84,9 +93,14 @@ namespace DlxLibTests
             var cancelledEventHasBeenRaised = false;
             dlx.Cancelled += (_, __) => cancelledEventHasBeenRaised = true;
             dlx.Started += (_, __) => cancellationTokenSource.Cancel();
+
+            // ReSharper disable ReturnValueOfPureMethodIsNotUsed
             var thread = new Thread(() => dlx.Solve(matrix).First());
+            // ReSharper restore ReturnValueOfPureMethodIsNotUsed
+
             thread.Start();
             thread.Join();
+
             Assert.That(cancelledEventHasBeenRaised, Is.True, "Expected the Cancelled event to have been raised");
         }
 
@@ -134,34 +148,10 @@ namespace DlxLibTests
             // ReSharper restore ReturnValueOfPureMethodIsNotUsed
 
             Assert.That(searchStepEventArgs.Count, Is.GreaterThanOrEqualTo(5));
-            Assert.That(searchStepEventArgs[0].Iteration, Is.EqualTo(0));
-            Assert.That(searchStepEventArgs[1].Iteration, Is.EqualTo(1));
-            Assert.That(searchStepEventArgs[2].Iteration, Is.EqualTo(2));
-            Assert.That(searchStepEventArgs[3].Iteration, Is.EqualTo(3));
-            Assert.That(searchStepEventArgs[4].Iteration, Is.EqualTo(4));
-        }
-
-        [Test]
-        public void SolutionFoundEventFires()
-        {
-            var matrix = new[,]
-                {
-                    {0, 0, 1, 0, 1, 1, 0},
-                    {1, 0, 0, 1, 0, 0, 1},
-                    {0, 1, 1, 0, 0, 1, 0},
-                    {1, 0, 0, 1, 0, 0, 0},
-                    {0, 1, 0, 0, 0, 0, 1},
-                    {0, 0, 0, 1, 1, 0, 1}
-                };
-            var dlx = new Dlx();
-            var solutionFoundEventHasBeenRaised = false;
-            dlx.SolutionFound += (_, __) => solutionFoundEventHasBeenRaised = true;
-
-            // ReSharper disable ReturnValueOfPureMethodIsNotUsed
-            dlx.Solve(matrix).First();
-            // ReSharper restore ReturnValueOfPureMethodIsNotUsed
-
-            Assert.That(solutionFoundEventHasBeenRaised, Is.True, "Expected the SolutionFound event to have been raised");
+            foreach (var index in Enumerable.Range(0, 5))
+            {
+                Assert.That(searchStepEventArgs[index].Iteration, Is.EqualTo(index));
+            }
         }
 
         [TestCase(0)]
