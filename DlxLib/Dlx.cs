@@ -23,16 +23,38 @@ namespace DlxLib
         // TODO: move this member variable into SearchData
         private ColumnObject _root;
 
-        // TODO: move this member variable into SearchData
-        private IList<Solution> _solutions;
-
-        // TODO: move this member variable into SearchData
-        private Stack<int> _currentSolution;
-
         private class SearchData
         {
-            public int Iteration { get; set; }
-            // TODO: move this member variable into SearchData
+            public int IterationCount { get; private set; }
+
+            public void IncrementIterationCount()
+            {
+                IterationCount++;
+            }
+
+            public void PushRowIndexToCurrentSolution(int rowIndex)
+            {
+                _currentSolution.Push(rowIndex);
+            }
+
+            public void PopRowIndexFromCurrentSolution()
+            {
+                _currentSolution.Pop();
+            }
+
+            public Solution CurrentSolution
+            {
+                get { return new Solution(_currentSolution); }
+            }
+
+            public void IncrementSolutionCount()
+            {
+                SolutionCount++;
+            }
+
+            public int SolutionCount { get; private set; }
+
+            private readonly Stack<int> _currentSolution = new Stack<int>();
         }
 
         /// <summary>
@@ -116,13 +138,8 @@ namespace DlxLib
             Action<TRow, Action<TCol>> iterateCols,
             Func<TCol, bool> predicate)
         {
-            if (data.Equals(default(TData)))
-            {
-                throw new ArgumentNullException("data");
-            }
-
+            if (data.Equals(default(TData))) throw new ArgumentNullException("data");
             BuildInternalStructure(data, iterateRows, iterateCols, predicate);
-
             return Search(0, new SearchData());
         }
 
@@ -175,8 +192,6 @@ namespace DlxLib
             Func<TCol, bool> predicate)
         {
             _root = new ColumnObject();
-            _solutions = new List<Solution>();
-            _currentSolution = new Stack<int>();
 
             int? numColumns = null;
             var rowIndex = 0;
@@ -245,16 +260,16 @@ namespace DlxLib
                     yield break;
                 }
 
-                var rowIndexes = _currentSolution.ToList();
-                RaiseSearchStep(searchData.Iteration++, rowIndexes);
+                RaiseSearchStep(searchData.IterationCount, searchData.CurrentSolution.RowIndexes);
+                searchData.IncrementIterationCount();
 
                 if (MatrixIsEmpty())
                 {
-                    if (_currentSolution.Count > 0)
+                    if (searchData.CurrentSolution.RowIndexes.Any())
                     {
-                        var solution = new Solution(_currentSolution);
-                        _solutions.Add(solution);
-                        var solutionIndex = _solutions.Count() - 1;
+                        searchData.IncrementSolutionCount();
+                        var solutionIndex = searchData.SolutionCount - 1;
+                        var solution = searchData.CurrentSolution;
                         RaiseSolutionFound(solution, solutionIndex);
                         yield return solution;
                     }
@@ -273,7 +288,7 @@ namespace DlxLib
                         yield break;
                     }
 
-                    _currentSolution.Push(r.RowIndex);
+                    searchData.PushRowIndexToCurrentSolution(r.RowIndex);
 
                     for (var j = r.Right; j != r; j = j.Right)
                         CoverColumn(j.ListHeader);
@@ -284,7 +299,7 @@ namespace DlxLib
                     for (var j = r.Left; j != r; j = j.Left)
                         UncoverColumn(j.ListHeader);
 
-                    _currentSolution.Pop();
+                    searchData.PopRowIndexFromCurrentSolution();
                 }
 
                 UncoverColumn(c);
