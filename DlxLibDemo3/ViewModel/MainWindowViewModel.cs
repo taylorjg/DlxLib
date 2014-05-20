@@ -88,7 +88,7 @@ namespace DlxLibDemo3.ViewModel
         public int Interval
         {
             get { return _interval; }
-            private set
+            set
             {
                 if (value == _interval) return;
                 _interval = value;

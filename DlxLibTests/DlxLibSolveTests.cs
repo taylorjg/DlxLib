@@ -22,7 +22,7 @@ namespace DlxLibTests
             var matrix = new bool[0, 0];
             var dlx = new Dlx();
             var solutions = dlx.Solve(matrix);
-            Assert.That(solutions, Has.Count.EqualTo(0));
+            Assert.That(solutions.Count(), Is.EqualTo(0));
         }
 
         [Test]
@@ -105,6 +105,30 @@ namespace DlxLibTests
         }
 
         [Test]
+        public void CanGetTheFirstSolutionUsingFirst()
+        {
+            var matrix = new[,]
+                {
+                    {1, 0, 0, 0},
+                    {0, 1, 1, 0},
+                    {1, 0, 0, 1},
+                    {0, 0, 1, 1},
+                    {0, 1, 0, 0},
+                    {0, 0, 1, 0}
+                };
+            var dlx = new Dlx();
+            var numSolutionFoundEventsRaised = 0;
+            dlx.SolutionFound += (_, __) => numSolutionFoundEventsRaised++;
+            var firstSolution = dlx.Solve(matrix).First();
+            Assert.That(firstSolution.RowIndexes, Is.EquivalentTo(new[] {0, 3, 4})
+                                                    .Or
+                                                    .EquivalentTo(new[] {1, 2})
+                                                    .Or
+                                                    .EquivalentTo(new[] {2, 4, 5}));
+            Assert.That(numSolutionFoundEventsRaised, Is.EqualTo(1));
+        }
+
+        [Test]
         public void CallerShapedDataSimpleTest()
         {
             // Arrange
@@ -124,7 +148,7 @@ namespace DlxLibTests
                     data,
                     (d, f) => { foreach (var r in d) f(r); },
                     (r, f) => { foreach (var c in r.Item1) f(c); },
-                    c => c != 0);
+                    c => c != 0).ToList();
 
             // Assert
             Assert.That(solutions, Has.Count.EqualTo(1));

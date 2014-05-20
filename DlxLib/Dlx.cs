@@ -12,30 +12,64 @@ using DlxLib.EnumerableArrayAdapter;
 
 namespace DlxLib
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class Dlx
     {
-        private ColumnObject _root;
-        private IList<Solution> _solutions;
-        private Stack<int> _currentSolution;
-        private int _iteration;
-        private readonly ManualResetEventSlim _cancelEvent = new ManualResetEventSlim(false);
+        private readonly CancellationTokenSource _cancellationTokenSource;
         private readonly CancellationToken _cancellationToken;
 
-        public Dlx()
-            : this(CancellationToken.None)
+        // TODO: move this member variable into SearchData
+        private ColumnObject _root;
+
+        // TODO: move this member variable into SearchData
+        private IList<Solution> _solutions;
+
+        // TODO: move this member variable into SearchData
+        private Stack<int> _currentSolution;
+
+        private class SearchData
         {
+            public int Iteration { get; set; }
+            // TODO: move this member variable into SearchData
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        public Dlx()
+        {
+            _cancellationTokenSource = new CancellationTokenSource();
+            _cancellationToken = _cancellationTokenSource.Token;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="cancellationToken"></param>
         public Dlx(CancellationToken cancellationToken)
         {
+            _cancellationTokenSource = null;
             _cancellationToken = cancellationToken;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="matrix"></param>
+        /// <returns></returns>
         public IEnumerable<Solution> Solve(bool[,] matrix)
         {
             return Solve<bool>(matrix);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="matrix"></param>
+        /// <returns></returns>
         public IEnumerable<Solution> Solve<T>(T[,] matrix)
         {
             var defaultEqualityComparerT = EqualityComparer<T>.Default;
@@ -44,6 +78,13 @@ namespace DlxLib
             return Solve(matrix, predicate);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="matrix"></param>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
         public IEnumerable<Solution> Solve<T>(T[,] matrix, Func<T, bool> predicate)
         {
             if (matrix == null)
@@ -58,6 +99,17 @@ namespace DlxLib
                 predicate);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TData"></typeparam>
+        /// <typeparam name="TRow"></typeparam>
+        /// <typeparam name="TCol"></typeparam>
+        /// <param name="data"></param>
+        /// <param name="iterateRows"></param>
+        /// <param name="iterateCols"></param>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
         public IEnumerable<Solution> Solve<TData, TRow, TCol>(
             TData data,
             Action<TData, Action<TRow>> iterateRows,
@@ -70,33 +122,50 @@ namespace DlxLib
             }
 
             BuildInternalStructure(data, iterateRows, iterateCols, predicate);
-            RaiseStarted();
 
-            Search();
-
-            if (IsCancelled())
-                RaiseCancelled();
-            else
-                RaiseFinished();
-
-            return _solutions;
+            return Search(0, new SearchData());
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         [Obsolete("Pass a CancellationToken to the Dlx constructor instead")]
         public void Cancel()
         {
-            _cancelEvent.Set();
+            if (_cancellationTokenSource == null)
+                throw new InvalidOperationException("Only use the Cancel method when Dlx was constructed using the default constructor.");
+
+            _cancellationTokenSource.Cancel();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public EventHandler Started;
+
+        /// <summary>
+        /// 
+        /// </summary>
         public EventHandler Finished;
+
+        /// <summary>
+        /// 
+        /// </summary>
         public EventHandler Cancelled;
+
+        /// <summary>
+        /// 
+        /// </summary>
         public EventHandler<SearchStepEventArgs> SearchStep;
+
+        /// <summary>
+        /// 
+        /// </summary>
         public EventHandler<SolutionFoundEventArgs> SolutionFound;
 
         private bool IsCancelled()
         {
-            return _cancelEvent.IsSet || _cancellationToken.IsCancellationRequested;
+            return _cancellationToken.IsCancellationRequested;
         }
 
         private void BuildInternalStructure<TData, TRow, TCol>(
@@ -108,8 +177,6 @@ namespace DlxLib
             _root = new ColumnObject();
             _solutions = new List<Solution>();
             _currentSolution = new Stack<int>();
-            _iteration = 0;
-            _cancelEvent.Reset();
 
             int? numColumns = null;
             var rowIndex = 0;
@@ -166,51 +233,67 @@ namespace DlxLib
             return _root.NextColumnObject == _root;
         }
 
-        private void Search()
+        private IEnumerable<Solution> Search(int k, SearchData searchData)
         {
-            if (IsCancelled())
+            try
             {
-                return;
-            }
+                if (k == 0) RaiseStarted();
 
-            RaiseSearchStep();
-
-            _iteration++;
-
-            if (MatrixIsEmpty())
-            {
-                if (_currentSolution.Count > 0)
-                {
-                    _solutions.Add(new Solution(_currentSolution));
-                    RaiseSolutionFound();
-                }
-                return;
-            }
-
-            var c = GetListHeaderOfColumnWithLeastRows();
-            CoverColumn(c);
-
-            for (var r = c.Down; r != c; r = r.Down)
-            {
                 if (IsCancelled())
                 {
-                    return;
+                    RaiseCancelled();
+                    yield break;
                 }
 
-                _currentSolution.Push(r.RowIndex);
+                var rowIndexes = _currentSolution.ToList();
+                RaiseSearchStep(searchData.Iteration++, rowIndexes);
 
-                for (var j = r.Right; j != r; j = j.Right)
-                    CoverColumn(j.ListHeader);
+                if (MatrixIsEmpty())
+                {
+                    if (_currentSolution.Count > 0)
+                    {
+                        var solution = new Solution(_currentSolution);
+                        _solutions.Add(solution);
+                        var solutionIndex = _solutions.Count() - 1;
+                        RaiseSolutionFound(solution, solutionIndex);
+                        yield return solution;
+                    }
 
-                Search();
+                    yield break;
+                }
 
-                for (var j = r.Left; j != r; j = j.Left)
-                    UncoverColumn(j.ListHeader);
+                var c = GetListHeaderOfColumnWithLeastRows();
+                CoverColumn(c);
 
-                _currentSolution.Pop();
+                for (var r = c.Down; r != c; r = r.Down)
+                {
+                    if (IsCancelled())
+                    {
+                        RaiseCancelled();
+                        yield break;
+                    }
+
+                    _currentSolution.Push(r.RowIndex);
+
+                    for (var j = r.Right; j != r; j = j.Right)
+                        CoverColumn(j.ListHeader);
+
+                    var recursivelyFoundSolutions = Search(k + 1, searchData);
+                    foreach (var solution in recursivelyFoundSolutions) yield return solution;
+
+                    for (var j = r.Left; j != r; j = j.Left)
+                        UncoverColumn(j.ListHeader);
+
+                    _currentSolution.Pop();
+                }
+
+                UncoverColumn(c);
+
             }
-
-            UncoverColumn(c);
+            finally
+            {
+                if (k == 0) RaiseFinished();
+            }
         }
 
         private ColumnObject GetListHeaderOfColumnWithLeastRows()
@@ -259,54 +342,31 @@ namespace DlxLib
         private void RaiseStarted()
         {
             var handler = Started;
-
-            if (handler != null)
-            {
-                handler(this, EventArgs.Empty);
-            }
+            if (handler != null) handler(this, EventArgs.Empty);
         }
 
         private void RaiseFinished()
         {
             var handler = Finished;
-
-            if (handler != null)
-            {
-                handler(this, EventArgs.Empty);
-            }
+            if (handler != null) handler(this, EventArgs.Empty);
         }
 
         private void RaiseCancelled()
         {
             var handler = Cancelled;
-
-            if (handler != null)
-            {
-                handler(this, EventArgs.Empty);
-            }
+            if (handler != null) handler(this, EventArgs.Empty);
         }
 
-        private void RaiseSearchStep()
+        private void RaiseSearchStep(int iteration, IEnumerable<int> rowIndexes)
         {
             var handler = SearchStep;
-
-            if (handler != null)
-            {
-                var rowIndexes = _currentSolution.ToList();
-                handler(this, new SearchStepEventArgs(_iteration, rowIndexes));
-            }
+            if (handler != null) handler(this, new SearchStepEventArgs(iteration, rowIndexes));
         }
 
-        private void RaiseSolutionFound()
+        private void RaiseSolutionFound(Solution solution, int solutionIndex)
         {
             var handler = SolutionFound;
-
-            if (handler != null)
-            {
-                var solution = _solutions.Last();
-                var solutionIndex = _solutions.Count - 1;
-                handler(this, new SolutionFoundEventArgs(solution, solutionIndex));
-            }
+            if (handler != null) handler(this, new SolutionFoundEventArgs(solution, solutionIndex));
         }
     }
 }

@@ -60,13 +60,13 @@ namespace DlxLibDemo3
 
             _dlx.SearchStep += (_, e) => SearchSteps.Enqueue(new SearchStep(e.RowIndexes.Select(rowIndex => _data[rowIndex].PiecePlacement)));
 
-            _dlx.SolutionFound += (_, __) => _cancellationTokenSource.Cancel();
+            //_dlx.SolutionFound += (_, __) => _cancellationTokenSource.Cancel();
 
-            _dlx.Solve<IList<InternalRow>, InternalRow, bool>(
+            var firstSolution = _dlx.Solve<IList<InternalRow>, InternalRow, bool>(
                     _data,
                     (d, f) => { foreach (var r in d) f(r); },
                     (r, f) => { foreach (var c in r.MatrixRow) f(c); },
-                    c => c);
+                    c => c).First();
         }
 
         private void BuildMatrixAndDictionary()
