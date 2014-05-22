@@ -187,7 +187,7 @@ namespace DlxLib
             return _cancellationToken.IsCancellationRequested;
         }
 
-        private ColumnObject BuildInternalStructure<TData, TRow, TCol>(
+        private static ColumnObject BuildInternalStructure<TData, TRow, TCol>(
             TData data,
             Action<TData, Action<TRow>> iterateRows,
             Action<TRow, Action<TCol>> iterateCols,
@@ -281,7 +281,7 @@ namespace DlxLib
                     yield break;
                 }
 
-                var c = GetListHeaderOfColumnWithLeastRows(searchData.Root);
+                var c = ChooseColumnWithLeastRows(searchData.Root);
                 CoverColumn(c);
 
                 for (var r = c.Down; r != c; r = r.Down)
@@ -315,21 +315,17 @@ namespace DlxLib
             }
         }
 
-        private ColumnObject GetListHeaderOfColumnWithLeastRows(ColumnObject root)
+        private static ColumnObject ChooseColumnWithLeastRows(ColumnObject root)
         {
-            ColumnObject listHeader = null;
+            ColumnObject chosenColumn = null;
 
-            var smallestNumberOfRows = int.MaxValue;
             for (var columnHeader = root.NextColumnObject; columnHeader != root; columnHeader = columnHeader.NextColumnObject)
             {
-                if (columnHeader.NumberOfRows < smallestNumberOfRows)
-                {
-                    listHeader = columnHeader;
-                    smallestNumberOfRows = columnHeader.NumberOfRows;
-                }
+                if (chosenColumn == null || columnHeader.NumberOfRows < chosenColumn.NumberOfRows)
+                    chosenColumn = columnHeader;
             }
 
-            return listHeader;
+            return chosenColumn;
         }
 
         private static void CoverColumn(ColumnObject c)
