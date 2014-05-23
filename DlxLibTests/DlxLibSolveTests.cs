@@ -129,7 +129,7 @@ namespace DlxLibTests
         }
 
         [Test]
-        public void CallerShapedDataSimpleTest()
+        public void CallerShapedDataUsingDefaultPredicate()
         {
             // Arrange
             var data = new List<Tuple<int[], string>>
@@ -140,15 +140,39 @@ namespace DlxLibTests
                 };
 
             // Act
-            var dlx = new Dlx();
-            var solutions = dlx.Solve<
+            var solutions = new Dlx().Solve<
                 IList<Tuple<int[], string>>,
                 Tuple<int[], string>,
                 int>(
                     data,
                     (d, f) => { foreach (var r in d) f(r); },
+                    (r, f) => { foreach (var c in r.Item1) f(c); }).ToList();
+
+            // Assert
+            Assert.That(solutions, Has.Count.EqualTo(1));
+            Assert.That(solutions.Select(s => s.RowIndexes), Contains.Item(new[] { 0, 1, 2 }));
+        }
+
+        [Test]
+        public void CallerShapedDataUsingCustomPredicate()
+        {
+            // Arrange
+            var data = new List<Tuple<char[], string>>
+                {
+                    Tuple.Create(new[] {'X', 'O', 'O'}, "Some data associated with row 0"),
+                    Tuple.Create(new[] {'O', 'X', 'O'}, "Some data associated with row 1"),
+                    Tuple.Create(new[] {'O', 'O', 'X'}, "Some data associated with row 2")
+                };
+
+            // Act
+            var solutions = new Dlx().Solve<
+                IList<Tuple<char[], string>>,
+                Tuple<char[], string>,
+                char>(
+                    data,
+                    (d, f) => { foreach (var r in d) f(r); },
                     (r, f) => { foreach (var c in r.Item1) f(c); },
-                    c => c != 0).ToList();
+                    c => c == 'X').ToList();
 
             // Assert
             Assert.That(solutions, Has.Count.EqualTo(1));

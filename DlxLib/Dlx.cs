@@ -132,6 +132,32 @@ namespace DlxLib
         /// <param name="data"></param>
         /// <param name="iterateRows"></param>
         /// <param name="iterateCols"></param>
+        /// <returns></returns>
+        public IEnumerable<Solution> Solve<TData, TRow, TCol>(
+            TData data,
+            Action<TData, Action<TRow>> iterateRows,
+            Action<TRow, Action<TCol>> iterateCols)
+        {
+            var defaultEqualityComparerTCol = EqualityComparer<TCol>.Default;
+            var defaultTCol = default(TCol);
+            Func<TCol, bool> predicate = col => !defaultEqualityComparerTCol.Equals(col, defaultTCol);
+
+            return Solve(
+                data,
+                iterateRows,
+                iterateCols,
+                predicate);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TData"></typeparam>
+        /// <typeparam name="TRow"></typeparam>
+        /// <typeparam name="TCol"></typeparam>
+        /// <param name="data"></param>
+        /// <param name="iterateRows"></param>
+        /// <param name="iterateCols"></param>
         /// <param name="predicate"></param>
         /// <returns></returns>
         public IEnumerable<Solution> Solve<TData, TRow, TCol>(
