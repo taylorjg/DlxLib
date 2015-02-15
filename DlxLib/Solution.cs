@@ -3,13 +3,24 @@ using System.Linq;
 
 namespace DlxLib
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class Solution
     {
-        public Solution(IEnumerable<int> rowIndexes)
+        internal Solution(IEnumerable<int> rowIndexes)
         {
-            RowIndexes = rowIndexes.OrderBy(rowIndex => rowIndex).ToList();
+            _rowIndexes = rowIndexes.OrderBy(rowIndex => rowIndex);
         }
 
-        public IEnumerable<int> RowIndexes { get; private set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public IEnumerable<int> RowIndexes
+        {
+            get { return _rowIndexes; }
+        }
+
+        private readonly IEnumerable<int> _rowIndexes;
     }
 }

@@ -3,15 +3,34 @@ using System.Collections.Generic;
 
 namespace DlxLib
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class SearchStepEventArgs : EventArgs
     {
-        public SearchStepEventArgs(int iteration, IEnumerable<int> rowIndexes)
+        internal SearchStepEventArgs(int iteration, IEnumerable<int> rowIndexes)
         {
-            Iteration = iteration;
-            RowIndexes = rowIndexes;
+            _iteration = iteration;
+            _rowIndexes = rowIndexes;
         }
 
-        public int Iteration { get; private set; }
-        public IEnumerable<int> RowIndexes { get; private set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public int Iteration
+        {
+            get { return _iteration; }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public IEnumerable<int> RowIndexes
+        {
+            get { return _rowIndexes; }
+        }
+
+        private readonly int _iteration;
+        private readonly IEnumerable<int> _rowIndexes;
     }
 }

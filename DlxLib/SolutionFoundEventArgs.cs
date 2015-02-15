@@ -1,16 +1,36 @@
 ﻿using System;
 
 namespace DlxLib
+
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class SolutionFoundEventArgs : EventArgs
     {
-        public SolutionFoundEventArgs(Solution solution, int solutionIndex)
+        internal SolutionFoundEventArgs(Solution solution, int solutionIndex)
         {
-            Solution = solution;
-            SolutionIndex = solutionIndex;
+            _solution = solution;
+            _solutionIndex = solutionIndex;
         }
 
-        public Solution Solution { get; private set; }
-        public int SolutionIndex { get; private set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public Solution Solution
+        {
+            get { return _solution; }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public int SolutionIndex
+        {
+            get { return _solutionIndex; }
+        }
+
+        private readonly Solution _solution;
+        private readonly int _solutionIndex;
     }
 }

@@ -52,7 +52,7 @@ namespace DlxLib
 
             public Solution CurrentSolution
             {
-                get { return new Solution(_currentSolution); }
+                get { return new Solution(_currentSolution.ToList()); }
             }
 
             private readonly Stack<int> _currentSolution = new Stack<int>();
@@ -171,27 +171,27 @@ namespace DlxLib
         /// <summary>
         /// 
         /// </summary>
-        public EventHandler Started;
+        public event EventHandler Started;
 
         /// <summary>
         /// 
         /// </summary>
-        public EventHandler Finished;
+        public event EventHandler Finished;
 
         /// <summary>
         /// 
         /// </summary>
-        public EventHandler Cancelled;
+        public event EventHandler Cancelled;
 
         /// <summary>
         /// 
         /// </summary>
-        public EventHandler<SearchStepEventArgs> SearchStep;
+        public event EventHandler<SearchStepEventArgs> SearchStep;
 
         /// <summary>
         /// 
         /// </summary>
-        public EventHandler<SolutionFoundEventArgs> SolutionFound;
+        public event EventHandler<SolutionFoundEventArgs> SolutionFound;
 
         private bool IsCancelled()
         {

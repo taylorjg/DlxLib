@@ -45,7 +45,7 @@ namespace DlxLibTests
 
             // Assert
             Assert.That(solutions, Has.Count.EqualTo(1));
-            Assert.That(solutions[0].RowIndexes, Has.Count.EqualTo(1));
+            Assert.That(solutions[0].RowIndexes.Count(), Is.EqualTo(1));
             Assert.That(solutions.Select(s => s.RowIndexes), Contains.Item(new[] {0}));
         }
 
