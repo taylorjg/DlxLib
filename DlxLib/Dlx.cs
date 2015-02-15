@@ -17,7 +17,6 @@ namespace DlxLib
     /// </summary>
     public class Dlx
     {
-        private readonly CancellationTokenSource _cancellationTokenSource;
         private readonly CancellationToken _cancellationToken;
 
         private class SearchData
@@ -63,9 +62,8 @@ namespace DlxLib
         /// 
         /// </summary>
         public Dlx()
+            : this(CancellationToken.None)
         {
-            _cancellationTokenSource = new CancellationTokenSource();
-            _cancellationToken = _cancellationTokenSource.Token;
         }
 
         /// <summary>
@@ -74,7 +72,6 @@ namespace DlxLib
         /// <param name="cancellationToken"></param>
         public Dlx(CancellationToken cancellationToken)
         {
-            _cancellationTokenSource = null;
             _cancellationToken = cancellationToken;
         }
 
@@ -169,18 +166,6 @@ namespace DlxLib
             if (data.Equals(default(TData))) throw new ArgumentNullException("data");
             var root = BuildInternalStructure(data, iterateRows, iterateCols, predicate);
             return Search(0, new SearchData(root));
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        [Obsolete("Pass a CancellationToken to the Dlx constructor instead")]
-        public void Cancel()
-        {
-            if (_cancellationTokenSource == null)
-                throw new InvalidOperationException("Only use the Cancel method when Dlx was constructed using the default constructor.");
-
-            _cancellationTokenSource.Cancel();
         }
 
         /// <summary>

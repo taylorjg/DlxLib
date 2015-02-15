@@ -28,9 +28,8 @@ namespace DlxLibTests
             var numStartedEventsRaised = 0;
             dlx.Started += (_, __) => numStartedEventsRaised++;
 
-            // ReSharper disable ReturnValueOfPureMethodIsNotUsed
+            // ReSharper disable once ReturnValueOfPureMethodIsNotUsed
             dlx.Solve(matrix).Take(numSolutionsToTake).ToList();
-            // ReSharper restore ReturnValueOfPureMethodIsNotUsed
 
             Assert.That(numStartedEventsRaised, expectStartedEventToBeRaisedOnce ? Is.EqualTo(1) : Is.EqualTo(0));
         }
@@ -54,34 +53,10 @@ namespace DlxLibTests
             var numFinishedEventsRaised = 0;
             dlx.Finished += (_, __) => numFinishedEventsRaised++;
 
-            // ReSharper disable ReturnValueOfPureMethodIsNotUsed
+            // ReSharper disable once ReturnValueOfPureMethodIsNotUsed
             dlx.Solve(matrix).Take(numSolutionsToTake).ToList();
-            // ReSharper restore ReturnValueOfPureMethodIsNotUsed
 
             Assert.That(numFinishedEventsRaised, expectFinishedEventToBeRaisedOnce ? Is.EqualTo(1) : Is.EqualTo(0));
-        }
-
-        [Test]
-        public void CancelledEventFiresUsingObsoleteCancelMethod()
-        {
-            var matrix = new bool[0, 0];
-            var dlx = new Dlx();
-            var cancelledEventHasBeenRaised = false;
-            dlx.Cancelled += (_, __) => cancelledEventHasBeenRaised = true;
-
-            // 'DlxLib.Dlx.Cancel()' is obsolete: 'Pass a CancellationToken to the Dlx constructor instead'
-            #pragma warning disable 612,618
-            dlx.Started += (sender, __) => ((Dlx)sender).Cancel();
-            #pragma warning restore 612,618
-
-            // ReSharper disable ReturnValueOfPureMethodIsNotUsed
-            var thread = new Thread(() => dlx.Solve(matrix).First());
-            // ReSharper restore ReturnValueOfPureMethodIsNotUsed
-
-            thread.Start();
-            thread.Join();
-
-            Assert.That(cancelledEventHasBeenRaised, Is.True, "Expected the Cancelled event to have been raised");
         }
 
         [Test]
@@ -94,9 +69,8 @@ namespace DlxLibTests
             dlx.Cancelled += (_, __) => cancelledEventHasBeenRaised = true;
             dlx.Started += (_, __) => cancellationTokenSource.Cancel();
 
-            // ReSharper disable ReturnValueOfPureMethodIsNotUsed
+            // ReSharper disable once ReturnValueOfPureMethodIsNotUsed
             var thread = new Thread(() => dlx.Solve(matrix).First());
-            // ReSharper restore ReturnValueOfPureMethodIsNotUsed
 
             thread.Start();
             thread.Join();
@@ -120,9 +94,8 @@ namespace DlxLibTests
             var searchStepEventHasBeenRaised = false;
             dlx.SearchStep += (_, __) => searchStepEventHasBeenRaised = true;
 
-            // ReSharper disable ReturnValueOfPureMethodIsNotUsed
+            // ReSharper disable once ReturnValueOfPureMethodIsNotUsed
             dlx.Solve(matrix).First();
-            // ReSharper restore ReturnValueOfPureMethodIsNotUsed
 
             Assert.That(searchStepEventHasBeenRaised, Is.True, "Expected the SearchStep event to have been raised");
         }
@@ -143,9 +116,8 @@ namespace DlxLibTests
             var searchStepEventArgs = new List<SearchStepEventArgs>();
             dlx.SearchStep += (_, e) => searchStepEventArgs.Add(e);
 
-            // ReSharper disable ReturnValueOfPureMethodIsNotUsed
+            // ReSharper disable once ReturnValueOfPureMethodIsNotUsed
             dlx.Solve(matrix).First();
-            // ReSharper restore ReturnValueOfPureMethodIsNotUsed
 
             Assert.That(searchStepEventArgs.Count, Is.GreaterThanOrEqualTo(5));
             foreach (var index in Enumerable.Range(0, 5))
@@ -173,9 +145,8 @@ namespace DlxLibTests
             var solutionFoundEventArgs = new List<SolutionFoundEventArgs>();
             dlx.SolutionFound += (_, e) => solutionFoundEventArgs.Add(e);
 
-            // ReSharper disable ReturnValueOfPureMethodIsNotUsed
+            // ReSharper disable once ReturnValueOfPureMethodIsNotUsed
             dlx.Solve(matrix).Take(numSolutionsToTake).ToList();
-            // ReSharper restore ReturnValueOfPureMethodIsNotUsed
 
             Assert.That(solutionFoundEventArgs.Count, Is.EqualTo(numSolutionsToTake));
             foreach (var index in Enumerable.Range(0, numSolutionsToTake))

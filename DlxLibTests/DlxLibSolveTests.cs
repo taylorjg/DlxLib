@@ -19,21 +19,31 @@ namespace DlxLibTests
         [Test]
         public void EmptyMatrixReturnsNoSolutions()
         {
+            // Arrange
             var matrix = new bool[0, 0];
             var dlx = new Dlx();
+
+            // Act
             var solutions = dlx.Solve(matrix);
+
+            // Assert
             Assert.That(solutions.Count(), Is.EqualTo(0));
         }
 
         [Test]
         public void MatrixWithSingleRowOfAllOnesReturnsOneSolution()
         {
+            // Arrange
             var matrix = new[,]
                 {
                     {1, 1, 1}
                 };
             var dlx = new Dlx();
+
+            // Act
             var solutions = dlx.Solve(matrix).ToList();
+
+            // Assert
             Assert.That(solutions, Has.Count.EqualTo(1));
             Assert.That(solutions[0].RowIndexes, Has.Count.EqualTo(1));
             Assert.That(solutions.Select(s => s.RowIndexes), Contains.Item(new[] {0}));
@@ -42,18 +52,24 @@ namespace DlxLibTests
         [Test]
         public void MatrixWithSingleRowOfAllZerosReturnsNoSolutions()
         {
+            // Arrange
             var matrix = new[,]
                 {
                     {0, 0, 0}
                 };
             var dlx = new Dlx();
+
+            // Act
             var solutions = dlx.Solve(matrix).ToList();
+
+            // Assert
             Assert.That(solutions, Has.Count.EqualTo(0));
         }
 
         [Test]
         public void IdentityMatrixThreeByThreeReturnsOneSolution()
         {
+            // Arrange
             var matrix = new[,]
                 {
                     {1, 0, 0},
@@ -61,7 +77,11 @@ namespace DlxLibTests
                     {0, 0, 1}
                 };
             var dlx = new Dlx();
+
+            // Act
             var solutions = dlx.Solve(matrix).ToList();
+
+            // Assert
             Assert.That(solutions, Has.Count.EqualTo(1));
             Assert.That(solutions.Select(s => s.RowIndexes), Contains.Item(new[] {0, 1, 2}));
         }
@@ -69,6 +89,7 @@ namespace DlxLibTests
         [Test]
         public void MatrixFromTheOriginalDlxPaperReturnsTheCorrectSingleSolution()
         {
+            // Arrange
             var matrix = new[,]
                 {
                     {0, 0, 1, 0, 1, 1, 0},
@@ -79,7 +100,11 @@ namespace DlxLibTests
                     {0, 0, 0, 1, 1, 0, 1}
                 };
             var dlx = new Dlx();
+
+            // Act
             var solutions = dlx.Solve(matrix).ToList();
+
+            // Assert
             Assert.That(solutions, Has.Count.EqualTo(1));
             Assert.That(solutions.Select(s => s.RowIndexes), Contains.Item(new[] {0, 3, 4}));
         }
@@ -87,6 +112,7 @@ namespace DlxLibTests
         [Test]
         public void MatrixWithThreeSolutionsReturnsTheCorrectThreeSolutions()
         {
+            // Arrange
             var matrix = new[,]
                 {
                     {1, 0, 0, 0},
@@ -97,7 +123,11 @@ namespace DlxLibTests
                     {0, 0, 1, 0}
                 };
             var dlx = new Dlx();
+
+            // Act
             var solutions = dlx.Solve(matrix).ToList();
+
+            // Assert
             Assert.That(solutions, Has.Count.EqualTo(3));
             Assert.That(solutions.Select(s => s.RowIndexes), Contains.Item(new[] {0, 3, 4}));
             Assert.That(solutions.Select(s => s.RowIndexes), Contains.Item(new[] {1, 2}));
@@ -107,6 +137,7 @@ namespace DlxLibTests
         [Test]
         public void CanGetTheFirstSolutionUsingFirst()
         {
+            // Arrange
             var matrix = new[,]
                 {
                     {1, 0, 0, 0},
@@ -119,7 +150,11 @@ namespace DlxLibTests
             var dlx = new Dlx();
             var numSolutionFoundEventsRaised = 0;
             dlx.SolutionFound += (_, __) => numSolutionFoundEventsRaised++;
+
+            // Act
             var firstSolution = dlx.Solve(matrix).First();
+
+            // Assert
             Assert.That(firstSolution.RowIndexes, Is.EquivalentTo(new[] {0, 3, 4})
                                                     .Or
                                                     .EquivalentTo(new[] {1, 2})
