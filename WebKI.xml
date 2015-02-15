@@ -1,17 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <HelpKI>
-  <HelpKINode Title="Cancel method" Url="html/6eb16021-4306-3bd3-b0d6-e2b075b54cec.htm" />
   <HelpKINode Title="Cancelled event" Url="html/f6a25f63-2c25-1925-a9b2-7d27e6236994.htm" />
   <HelpKINode Title="Dlx class">
     <HelpKINode Title="Dlx Class" Url="html/e3d043b6-6b7f-5ab1-02e0-84af4b5f1053.htm" />
-    <HelpKINode Title="Dlx Members" Url="html/5e00fd8d-754f-0c0b-fe3b-d95bc6a4ac88.htm" />
     <HelpKINode Title="about Dlx class" Url="html/e3d043b6-6b7f-5ab1-02e0-84af4b5f1053.htm" />
-    <HelpKINode Title="all members" Url="html/5e00fd8d-754f-0c0b-fe3b-d95bc6a4ac88.htm" />
     <HelpKINode Title="constructor" Url="html/97adea8d-2684-fd9b-b52c-e84e92174c27.htm" />
     <HelpKINode Title="events" Url="html/a1069ad3-582b-ce24-f524-207471aa952d.htm" />
     <HelpKINode Title="methods" Url="html/b5d84583-cfd8-4e7e-594c-51c57ad400c9.htm" />
   </HelpKINode>
-  <HelpKINode Title="Dlx.Cancel method" Url="html/6eb16021-4306-3bd3-b0d6-e2b075b54cec.htm" />
   <HelpKINode Title="Dlx.Cancelled event" Url="html/f6a25f63-2c25-1925-a9b2-7d27e6236994.htm" />
   <HelpKINode Title="Dlx.Dlx constructor" Url="html/97adea8d-2684-fd9b-b52c-e84e92174c27.htm" />
   <HelpKINode Title="Dlx.Finished event" Url="html/f9d2e035-af09-09e0-558b-2898660b012b.htm" />
@@ -20,22 +16,10 @@
   <HelpKINode Title="Dlx.Solve method" Url="html/21bdf80d-c2a5-69a0-c07b-ab6343d42675.htm" />
   <HelpKINode Title="Dlx.Started event" Url="html/623bbb78-c952-d789-3dcb-f760597504ac.htm" />
   <HelpKINode Title="DlxLib namespace" Url="html/bd811f37-26ea-c78d-0ac2-242379d6e9d7.htm" />
-  <HelpKINode Title="DlxLib.Dlx class">
-    <HelpKINode Title="Dlx Class" Url="html/e3d043b6-6b7f-5ab1-02e0-84af4b5f1053.htm" />
-    <HelpKINode Title="Dlx Members" Url="html/5e00fd8d-754f-0c0b-fe3b-d95bc6a4ac88.htm" />
-  </HelpKINode>
-  <HelpKINode Title="DlxLib.SearchStepEventArgs class">
-    <HelpKINode Title="SearchStepEventArgs Class" Url="html/5c8c1357-c329-71f1-0fa0-9d557174f75b.htm" />
-    <HelpKINode Title="SearchStepEventArgs Members" Url="html/8df5e1de-3c16-f8c1-c262-c2f3e148f201.htm" />
-  </HelpKINode>
-  <HelpKINode Title="DlxLib.Solution class">
-    <HelpKINode Title="Solution Class" Url="html/1cbfa28f-e465-086f-edc0-6f729b28b127.htm" />
-    <HelpKINode Title="Solution Members" Url="html/98629c4d-fbab-1b0c-53d7-f5e2a160412e.htm" />
-  </HelpKINode>
-  <HelpKINode Title="DlxLib.SolutionFoundEventArgs class">
-    <HelpKINode Title="SolutionFoundEventArgs Class" Url="html/e61ea22d-8dd9-430e-2c48-824fa69ff3e1.htm" />
-    <HelpKINode Title="SolutionFoundEventArgs Members" Url="html/cfcef3e0-297f-3e80-fa2a-109174e1d842.htm" />
-  </HelpKINode>
+  <HelpKINode Title="DlxLib.Dlx class" Url="html/e3d043b6-6b7f-5ab1-02e0-84af4b5f1053.htm" />
+  <HelpKINode Title="DlxLib.SearchStepEventArgs class" Url="html/5c8c1357-c329-71f1-0fa0-9d557174f75b.htm" />
+  <HelpKINode Title="DlxLib.Solution class" Url="html/1cbfa28f-e465-086f-edc0-6f729b28b127.htm" />
+  <HelpKINode Title="DlxLib.SolutionFoundEventArgs class" Url="html/e61ea22d-8dd9-430e-2c48-824fa69ff3e1.htm" />
   <HelpKINode Title="Finished event" Url="html/f9d2e035-af09-09e0-558b-2898660b012b.htm" />
   <HelpKINode Title="Iteration property" Url="html/1bec1cd9-9d32-1884-7c8b-fb2545033090.htm" />
   <HelpKINode Title="RowIndexes property">
@@ -45,40 +29,28 @@
   <HelpKINode Title="SearchStep event" Url="html/5352c066-c5bf-dd55-26c8-84d3e34fa498.htm" />
   <HelpKINode Title="SearchStepEventArgs class">
     <HelpKINode Title="SearchStepEventArgs Class" Url="html/5c8c1357-c329-71f1-0fa0-9d557174f75b.htm" />
-    <HelpKINode Title="SearchStepEventArgs Members" Url="html/8df5e1de-3c16-f8c1-c262-c2f3e148f201.htm" />
     <HelpKINode Title="about SearchStepEventArgs class" Url="html/5c8c1357-c329-71f1-0fa0-9d557174f75b.htm" />
-    <HelpKINode Title="all members" Url="html/8df5e1de-3c16-f8c1-c262-c2f3e148f201.htm" />
-    <HelpKINode Title="constructor" Url="html/30b202e2-2685-beef-69ad-2f428b463a6e.htm" />
     <HelpKINode Title="methods" Url="html/088b4aa8-90f7-e8ad-7107-126f33f1f9b4.htm" />
     <HelpKINode Title="properties" Url="html/ec1ebc34-d361-b0fb-d275-ebbbc2cec011.htm" />
   </HelpKINode>
   <HelpKINode Title="SearchStepEventArgs.Iteration property" Url="html/1bec1cd9-9d32-1884-7c8b-fb2545033090.htm" />
   <HelpKINode Title="SearchStepEventArgs.RowIndexes property" Url="html/43d915f7-fea7-02dc-58f8-5c3e8baf55fb.htm" />
-  <HelpKINode Title="SearchStepEventArgs.SearchStepEventArgs constructor" Url="html/30b202e2-2685-beef-69ad-2f428b463a6e.htm" />
   <HelpKINode Title="Solution class">
     <HelpKINode Title="Solution Class" Url="html/1cbfa28f-e465-086f-edc0-6f729b28b127.htm" />
-    <HelpKINode Title="Solution Members" Url="html/98629c4d-fbab-1b0c-53d7-f5e2a160412e.htm" />
     <HelpKINode Title="about Solution class" Url="html/1cbfa28f-e465-086f-edc0-6f729b28b127.htm" />
-    <HelpKINode Title="all members" Url="html/98629c4d-fbab-1b0c-53d7-f5e2a160412e.htm" />
-    <HelpKINode Title="constructor" Url="html/dc842392-c5cf-15d0-925f-ab74c623227c.htm" />
     <HelpKINode Title="methods" Url="html/8a7508fd-4aed-118d-4b38-7910ed186d0a.htm" />
     <HelpKINode Title="properties" Url="html/a69ecc40-69d3-166d-295f-43e8627c824a.htm" />
   </HelpKINode>
   <HelpKINode Title="Solution property" Url="html/8988792f-a8fa-5b88-103f-88e2da54b7ce.htm" />
   <HelpKINode Title="Solution.RowIndexes property" Url="html/4526f1e5-aa71-d538-f781-7648c44b9702.htm" />
-  <HelpKINode Title="Solution.Solution constructor" Url="html/dc842392-c5cf-15d0-925f-ab74c623227c.htm" />
   <HelpKINode Title="SolutionFound event" Url="html/9ec8b7a5-a0ce-9df2-6a4b-1b5ef8b8a03f.htm" />
   <HelpKINode Title="SolutionFoundEventArgs class">
     <HelpKINode Title="SolutionFoundEventArgs Class" Url="html/e61ea22d-8dd9-430e-2c48-824fa69ff3e1.htm" />
-    <HelpKINode Title="SolutionFoundEventArgs Members" Url="html/cfcef3e0-297f-3e80-fa2a-109174e1d842.htm" />
     <HelpKINode Title="about SolutionFoundEventArgs class" Url="html/e61ea22d-8dd9-430e-2c48-824fa69ff3e1.htm" />
-    <HelpKINode Title="all members" Url="html/cfcef3e0-297f-3e80-fa2a-109174e1d842.htm" />
-    <HelpKINode Title="constructor" Url="html/e27ab649-3940-41f8-5d86-d2a22f43c37d.htm" />
     <HelpKINode Title="methods" Url="html/787ae607-7bdd-5014-7f11-26bb9a246499.htm" />
     <HelpKINode Title="properties" Url="html/42ee591a-8267-b86a-e8c9-f68dd9784ea1.htm" />
   </HelpKINode>
   <HelpKINode Title="SolutionFoundEventArgs.Solution property" Url="html/8988792f-a8fa-5b88-103f-88e2da54b7ce.htm" />
-  <HelpKINode Title="SolutionFoundEventArgs.SolutionFoundEventArgs constructor" Url="html/e27ab649-3940-41f8-5d86-d2a22f43c37d.htm" />
   <HelpKINode Title="SolutionFoundEventArgs.SolutionIndex property" Url="html/45d1f360-1ec8-6158-c6ae-633147bbb203.htm" />
   <HelpKINode Title="SolutionIndex property" Url="html/45d1f360-1ec8-6158-c6ae-633147bbb203.htm" />
   <HelpKINode Title="Solve method" Url="html/21bdf80d-c2a5-69a0-c07b-ab6343d42675.htm" />

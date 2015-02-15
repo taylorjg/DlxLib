@@ -1,16 +1,14 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <HelpTOC>
 
-  <HelpTOCNode Id="7f4432d2-0f87-4861-b007-829cbd5737c6" Title="DlxLib Namespace" Url="html/bd811f37-26ea-c78d-0ac2-242379d6e9d7.htm">
-    <HelpTOCNode Id="3af2fa5a-a426-499b-be23-d5006ccf18bf" Title="Dlx Class" Url="html/e3d043b6-6b7f-5ab1-02e0-84af4b5f1053.htm">
-      <HelpTOCNode Title="Dlx Members" Url="html/5e00fd8d-754f-0c0b-fe3b-d95bc6a4ac88.htm" />
-      <HelpTOCNode Id="4c6dd8f1-6dcc-429c-95f9-d506691148f4" Title="Dlx Constructor " Url="html/97adea8d-2684-fd9b-b52c-e84e92174c27.htm">
+  <HelpTOCNode Id="774b076c-7f0b-41ef-8a29-e9c2a2531f3c" Title="DlxLib" Url="html/bd811f37-26ea-c78d-0ac2-242379d6e9d7.htm">
+    <HelpTOCNode Id="b0a63d88-b1a9-412f-bdf1-af5ec91c2ee7" Title="Dlx Class" Url="html/e3d043b6-6b7f-5ab1-02e0-84af4b5f1053.htm">
+      <HelpTOCNode Id="87db146a-8b74-430d-acc5-0dc26fd308c6" Title="Dlx Constructor " Url="html/97adea8d-2684-fd9b-b52c-e84e92174c27.htm">
         <HelpTOCNode Title="Dlx Constructor " Url="html/0216d257-7e15-f8cd-fb37-870b9c9da671.htm" />
         <HelpTOCNode Title="Dlx Constructor (CancellationToken)" Url="html/6d700789-5bcb-cf33-9c47-345c4ac0d541.htm" />
       </HelpTOCNode>
-      <HelpTOCNode Id="9a7d00e0-3088-4bb1-973e-5742dee017cc" Title="Dlx Methods" Url="html/b5d84583-cfd8-4e7e-594c-51c57ad400c9.htm">
-        <HelpTOCNode Title="Cancel Method " Url="html/6eb16021-4306-3bd3-b0d6-e2b075b54cec.htm" />
-        <HelpTOCNode Id="4f1bd90e-3305-4d6c-8481-e644fd9ec5e2" Title="Solve Method " Url="html/21bdf80d-c2a5-69a0-c07b-ab6343d42675.htm">
+      <HelpTOCNode Id="57df7605-84b8-4e3d-9811-1fd0aeb99155" Title="Dlx Methods" Url="html/b5d84583-cfd8-4e7e-594c-51c57ad400c9.htm">
+        <HelpTOCNode Id="609aa848-3e8c-41bc-942b-c07eb1681e55" Title="Solve Method " Url="html/21bdf80d-c2a5-69a0-c07b-ab6343d42675.htm">
           <HelpTOCNode Title="Solve Method (Boolean[,])" Url="html/670439aa-0b68-2784-9dc1-21267a8b2307.htm" />
           <HelpTOCNode Title="Solve(T) Method (T[,])" Url="html/52eff918-a08a-4df3-8767-08dce24d06eb.htm" />
           <HelpTOCNode Title="Solve(T) Method (T[,], Func(T, Boolean))" Url="html/5cf63d59-cee1-346a-60b5-713afc4847bf.htm" />
@@ -18,7 +16,7 @@
           <HelpTOCNode Title="Solve(TData, TRow, TCol) Method (TData, Action(TData, Action(TRow)), Action(TRow, Action(TCol)), Func(TCol, Boolean))" Url="html/5479c4ec-ada1-8f84-a19a-9cbace33e3f2.htm" />
         </HelpTOCNode>
       </HelpTOCNode>
-      <HelpTOCNode Id="0f930386-49dd-494d-854a-a42debec41bc" Title="Dlx Events" Url="html/a1069ad3-582b-ce24-f524-207471aa952d.htm">
+      <HelpTOCNode Id="828a92ad-1e22-484c-875c-dc107a41196e" Title="Dlx Events" Url="html/a1069ad3-582b-ce24-f524-207471aa952d.htm">
         <HelpTOCNode Title="Cancelled Event" Url="html/f6a25f63-2c25-1925-a9b2-7d27e6236994.htm" />
         <HelpTOCNode Title="Finished Event" Url="html/f9d2e035-af09-09e0-558b-2898660b012b.htm" />
         <HelpTOCNode Title="SearchStep Event" Url="html/5352c066-c5bf-dd55-26c8-84d3e34fa498.htm" />
@@ -26,28 +24,22 @@
         <HelpTOCNode Title="Started Event" Url="html/623bbb78-c952-d789-3dcb-f760597504ac.htm" />
       </HelpTOCNode>
     </HelpTOCNode>
-    <HelpTOCNode Id="07834cb3-5dba-4ec6-852e-d9c2bb652e4a" Title="SearchStepEventArgs Class" Url="html/5c8c1357-c329-71f1-0fa0-9d557174f75b.htm">
-      <HelpTOCNode Title="SearchStepEventArgs Members" Url="html/8df5e1de-3c16-f8c1-c262-c2f3e148f201.htm" />
-      <HelpTOCNode Title="SearchStepEventArgs Constructor " Url="html/30b202e2-2685-beef-69ad-2f428b463a6e.htm" />
+    <HelpTOCNode Id="6534891d-d54a-4353-b8b8-451d29d03337" Title="SearchStepEventArgs Class" Url="html/5c8c1357-c329-71f1-0fa0-9d557174f75b.htm">
       <HelpTOCNode Title="SearchStepEventArgs Methods" Url="html/088b4aa8-90f7-e8ad-7107-126f33f1f9b4.htm" />
-      <HelpTOCNode Id="1ff7ef29-9e3a-4036-acb6-136fc7c75308" Title="SearchStepEventArgs Properties" Url="html/ec1ebc34-d361-b0fb-d275-ebbbc2cec011.htm">
+      <HelpTOCNode Id="4a9d9073-9ccc-493a-b899-225bf65f27a2" Title="SearchStepEventArgs Properties" Url="html/ec1ebc34-d361-b0fb-d275-ebbbc2cec011.htm">
         <HelpTOCNode Title="Iteration Property " Url="html/1bec1cd9-9d32-1884-7c8b-fb2545033090.htm" />
         <HelpTOCNode Title="RowIndexes Property " Url="html/43d915f7-fea7-02dc-58f8-5c3e8baf55fb.htm" />
       </HelpTOCNode>
     </HelpTOCNode>
-    <HelpTOCNode Id="9715e521-f8be-416d-9af4-d4ae5893df7e" Title="Solution Class" Url="html/1cbfa28f-e465-086f-edc0-6f729b28b127.htm">
-      <HelpTOCNode Title="Solution Members" Url="html/98629c4d-fbab-1b0c-53d7-f5e2a160412e.htm" />
-      <HelpTOCNode Title="Solution Constructor " Url="html/dc842392-c5cf-15d0-925f-ab74c623227c.htm" />
+    <HelpTOCNode Id="e1dd8c00-a0b8-44d3-8c89-366ca8f8e6dc" Title="Solution Class" Url="html/1cbfa28f-e465-086f-edc0-6f729b28b127.htm">
       <HelpTOCNode Title="Solution Methods" Url="html/8a7508fd-4aed-118d-4b38-7910ed186d0a.htm" />
-      <HelpTOCNode Id="3ec0887c-3de8-4185-9129-2c34aef39943" Title="Solution Properties" Url="html/a69ecc40-69d3-166d-295f-43e8627c824a.htm">
+      <HelpTOCNode Id="8ac5abbe-86d8-4e16-8126-560cc2f4d77d" Title="Solution Properties" Url="html/a69ecc40-69d3-166d-295f-43e8627c824a.htm">
         <HelpTOCNode Title="RowIndexes Property " Url="html/4526f1e5-aa71-d538-f781-7648c44b9702.htm" />
       </HelpTOCNode>
     </HelpTOCNode>
-    <HelpTOCNode Id="16bd65c6-5968-4f0b-b27e-db4462c1c5ed" Title="SolutionFoundEventArgs Class" Url="html/e61ea22d-8dd9-430e-2c48-824fa69ff3e1.htm">
-      <HelpTOCNode Title="SolutionFoundEventArgs Members" Url="html/cfcef3e0-297f-3e80-fa2a-109174e1d842.htm" />
-      <HelpTOCNode Title="SolutionFoundEventArgs Constructor " Url="html/e27ab649-3940-41f8-5d86-d2a22f43c37d.htm" />
+    <HelpTOCNode Id="8b9a9ba9-9415-4b05-b444-245a2e2780ce" Title="SolutionFoundEventArgs Class" Url="html/e61ea22d-8dd9-430e-2c48-824fa69ff3e1.htm">
       <HelpTOCNode Title="SolutionFoundEventArgs Methods" Url="html/787ae607-7bdd-5014-7f11-26bb9a246499.htm" />
-      <HelpTOCNode Id="afa9d58b-af83-4fbe-a35f-81b8e1897652" Title="SolutionFoundEventArgs Properties" Url="html/42ee591a-8267-b86a-e8c9-f68dd9784ea1.htm">
+      <HelpTOCNode Id="eed2c9f4-a446-4e7c-a5a8-784ca9396165" Title="SolutionFoundEventArgs Properties" Url="html/42ee591a-8267-b86a-e8c9-f68dd9784ea1.htm">
         <HelpTOCNode Title="Solution Property " Url="html/8988792f-a8fa-5b88-103f-88e2da54b7ce.htm" />
         <HelpTOCNode Title="SolutionIndex Property " Url="html/45d1f360-1ec8-6158-c6ae-633147bbb203.htm" />
       </HelpTOCNode>

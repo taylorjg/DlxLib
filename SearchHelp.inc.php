@@ -52,7 +52,7 @@ function ParseKeywords($keywords)
 /// <returns>A block of HTML representing the search results.</returns>
 function Search($keywords, $fileInfo, $wordDictionary, $sortByTitle)
 {
-    $sb = "";
+    $sb = "<ol>";
     $matches = array();
     $matchingFileIndices = array();
     $rankings = array();
@@ -63,7 +63,7 @@ function Search($keywords, $fileInfo, $wordDictionary, $sortByTitle)
     {
         if (!array_key_exists($word, $wordDictionary))
         {
-            return "<b class=\"PaddedText\">Nothing found</b>";
+            return "<strong>Nothing found</strong>";
         }
         $occurrences = $wordDictionary[$word];
 
@@ -99,7 +99,7 @@ function Search($keywords, $fileInfo, $wordDictionary, $sortByTitle)
 
     if(count($matchingFileIndices) == 0)
     {
-        return "<b class=\"PaddedText\">Nothing found</b>";
+        return "<strong>Nothing found</strong>";
     }
 
     // Rank the files based on the number of times the words occurs
@@ -126,6 +126,9 @@ function Search($keywords, $fileInfo, $wordDictionary, $sortByTitle)
 
         $r = new Ranking($filename, $title, $matchCount * 1000 / $wordCount);
         array_push($rankings, $r);
+
+        if(count($rankings) > 99)
+            break;
     }
 
     // Sort by rank in descending order or by page title in ascending order
@@ -143,15 +146,16 @@ function Search($keywords, $fileInfo, $wordDictionary, $sortByTitle)
     {
         $f = $r->filename;
         $t = $r->pageTitle;
-        $sb .= "<div class=\"TreeItem\">\r\n<img src=\"Item.gif\"/>" .
-            "<a class=\"UnselectedNode\" target=\"TopicContent\" " .
-            "href=\"$f\" onclick=\"javascript: SelectSearchNode(this);\">" .
-            "$t</a>\r\n</div>\r\n";
+        $sb .= "<li><a href=\"$f\" target=\"_blank\">$t</a></li>";
     }
 
-    // Return the keywords used as well in a hidden span
-    $k = implode(" ", $keywords);
-    $sb .= "<span id=\"SearchKeywords\" style=\"display: none\">$k</span>";
+    $sb .= "</ol";
+
+    if(count($rankings) < count($matchingFileIndices))
+    {
+        $c = count(matchingFileIndices) - count(rankings);
+        $sb .= "<p>Omitted $c more results</p>";
+    }
 
     return $sb;
 }
