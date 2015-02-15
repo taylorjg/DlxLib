@@ -4,7 +4,7 @@ using System.Linq;
 namespace DlxLib
 {
     /// <summary>
-    /// 
+    /// This class represents a single solution to the original matrix.
     /// </summary>
     public class Solution
     {
@@ -14,7 +14,8 @@ namespace DlxLib
         }
 
         /// <summary>
-        /// 
+        /// The indexes of the set of rows, in the original matrix, that form a solution.
+        /// The indexes are always sorted in ascending order.
         /// </summary>
         public IEnumerable<int> RowIndexes
         {

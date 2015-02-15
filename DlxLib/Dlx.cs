@@ -13,7 +13,7 @@ using DlxLib.EnumerableArrayAdapter;
 namespace DlxLib
 {
     /// <summary>
-    /// 
+    /// Use this class to solve exact cover problems.
     /// </summary>
     public class Dlx
     {
@@ -59,7 +59,7 @@ namespace DlxLib
         }
 
         /// <summary>
-        /// 
+        /// Callers should use this constructor when they do not need to be able to request cancellation.
         /// </summary>
         public Dlx()
             : this(CancellationToken.None)
@@ -67,30 +67,31 @@ namespace DlxLib
         }
 
         /// <summary>
-        /// 
+        /// Callers should use this constructor when they need to be able to request cancellation.
         /// </summary>
-        /// <param name="cancellationToken"></param>
+        /// <param name="cancellationToken">The <see cref="System.Threading.CancellationToken" /> that
+        /// the <see cref="Dlx.Solve" /> method will observe.</param>
         public Dlx(CancellationToken cancellationToken)
         {
             _cancellationToken = cancellationToken;
         }
 
         /// <summary>
-        /// 
+        /// Find all possible solutions to an exact cover problem given a 2-dimensional array of <see cref="System.Boolean" />.
         /// </summary>
-        /// <param name="matrix"></param>
-        /// <returns></returns>
+        /// <param name="matrix">A matrix of <see cref="System.Boolean" /> values representing an exact cover problem.</param>
+        /// <returns>Yields <see cref="Solution" /> objects as they are found.</returns>
         public IEnumerable<Solution> Solve(bool[,] matrix)
         {
             return Solve<bool>(matrix);
         }
 
         /// <summary>
-        /// 
+        /// Find all possible solutions to an exact cover problem given a 2-dimensional array of <typeparamref name="T"/>.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="matrix"></param>
-        /// <returns></returns>
+        /// <typeparam name="T">The type of elements in the matrix.</typeparam>
+        /// <param name="matrix">A matrix of <typeparamref name="T"/> values representing an exact cover problem.</param>
+        /// <returns>Yields <see cref="Solution" /> objects as they are found.</returns>
         public IEnumerable<Solution> Solve<T>(T[,] matrix)
         {
             var defaultEqualityComparerT = EqualityComparer<T>.Default;
@@ -100,12 +101,15 @@ namespace DlxLib
         }
 
         /// <summary>
-        /// 
+        /// Find all possible solutions to an exact cover problem given a 2-dimensional array of <typeparamref name="T"/>
+        /// and a predicate.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="matrix"></param>
-        /// <param name="predicate"></param>
-        /// <returns></returns>
+        /// <typeparam name="T">The type of elements in the matrix.</typeparam>
+        /// <param name="matrix">A matrix of <typeparamref name="T"/> values representing an exact cover problem.</param>
+        /// <param name="predicate">A predicate which is invoked for each value in the matrix to determine
+        /// whether the value represents a logical 1 or a logical 0 indicated by returning <c>true</c>
+        /// or <c>false</c> respectively.</param>
+        /// <returns>Yields <see cref="Solution" /> objects as they are found.</returns>
         public IEnumerable<Solution> Solve<T>(T[,] matrix, Func<T, bool> predicate)
         {
             if (matrix == null)
@@ -121,15 +125,17 @@ namespace DlxLib
         }
 
         /// <summary>
-        /// 
+        /// Find all possible solutions to an exact cover problem given an arbitrary data structure representing
+        /// the matrix.
         /// </summary>
-        /// <typeparam name="TData"></typeparam>
-        /// <typeparam name="TRow"></typeparam>
-        /// <typeparam name="TCol"></typeparam>
-        /// <param name="data"></param>
-        /// <param name="iterateRows"></param>
-        /// <param name="iterateCols"></param>
-        /// <returns></returns>
+        /// <typeparam name="TData">The type of the data structure that represents the exact cover problem.</typeparam>
+        /// <typeparam name="TRow">The type of the data structure that represents rows in the matrix.</typeparam>
+        /// <typeparam name="TCol">The type of the data structure that represents columns in the matrix.</typeparam>
+        /// <param name="data">The top-level data structure that represents the exact cover problem.</param>
+        /// <param name="iterateRows">An <see cref="System.Action" /> that will be called to iterate the rows in the matrix.</param>
+        /// <param name="iterateCols">An <see cref="System.Action" /> that will be called to iterate the columns
+        /// in a particular row in the matrix.</param>
+        /// <returns>Yields <see cref="Solution" /> objects as they are found.</returns>
         public IEnumerable<Solution> Solve<TData, TRow, TCol>(
             TData data,
             Action<TData, Action<TRow>> iterateRows,
@@ -147,16 +153,20 @@ namespace DlxLib
         }
 
         /// <summary>
-        /// 
+        /// Find all possible solutions to an exact cover problem given an arbitrary data structure representing
+        /// the matrix and a predicate.
         /// </summary>
-        /// <typeparam name="TData"></typeparam>
-        /// <typeparam name="TRow"></typeparam>
-        /// <typeparam name="TCol"></typeparam>
-        /// <param name="data"></param>
-        /// <param name="iterateRows"></param>
-        /// <param name="iterateCols"></param>
-        /// <param name="predicate"></param>
-        /// <returns></returns>
+        /// <typeparam name="TData">The type of the data structure that represents the exact cover problem.</typeparam>
+        /// <typeparam name="TRow">The type of the data structure that represents rows in the matrix.</typeparam>
+        /// <typeparam name="TCol">The type of the data structure that represents columns in the matrix.</typeparam>
+        /// <param name="data">The top-level data structure that represents the exact cover problem.</param>
+        /// <param name="iterateRows">An <see cref="System.Action" /> that will be called to iterate the rows in the matrix.</param>
+        /// <param name="iterateCols">An <see cref="System.Action" /> that will be called to iterate the columns
+        /// in a particular row in the matrix.</param>
+        /// <param name="predicate">A predicate which is invoked for each value in the matrix to determine
+        /// whether the value represents a logical 1 or a logical 0 indicated by returning <c>true</c>
+        /// or <c>false</c> respectively.</param>
+        /// <returns>Yields <see cref="Solution" /> objects as they are found.</returns>
         public IEnumerable<Solution> Solve<TData, TRow, TCol>(
             TData data,
             Action<TData, Action<TRow>> iterateRows,
@@ -169,27 +179,27 @@ namespace DlxLib
         }
 
         /// <summary>
-        /// 
+        /// Occurs once when the internal search algorithm starts.
         /// </summary>
         public event EventHandler Started;
 
         /// <summary>
-        /// 
+        /// Occurs once when the internal search algorithm finishes.
         /// </summary>
         public event EventHandler Finished;
 
         /// <summary>
-        /// 
+        /// Occurs when the caller requests cancellation via the CancellationToken passed to <see cref="Dlx(CancellationToken)" />.
         /// </summary>
         public event EventHandler Cancelled;
 
         /// <summary>
-        /// 
+        /// Occurs for each set of rows considered by the internal search algorithm.
         /// </summary>
         public event EventHandler<SearchStepEventArgs> SearchStep;
 
         /// <summary>
-        /// 
+        /// Occurs for each solution found to the original matrix.
         /// </summary>
         public event EventHandler<SolutionFoundEventArgs> SolutionFound;
 
