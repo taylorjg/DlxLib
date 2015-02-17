@@ -55,19 +55,12 @@ namespace DlxLibDemo3
         private void SolveOnBackgroundThread()
         {
             Thread.CurrentThread.Name = "Dlx";
-
             BuildMatrixAndDictionary();
-
             _dlx.SearchStep += (_, e) => SearchSteps.Enqueue(new SearchStep(e.RowIndexes.Select(rowIndex => _data[rowIndex].PiecePlacement)));
-
-            //_dlx.SolutionFound += (_, __) => _cancellationTokenSource.Cancel();
-
-            var firstSolution = _dlx.Solve<IList<InternalRow>, InternalRow, bool>(
-                    _data,
-                    (d, f) => { foreach (var r in d) f(r); },
-                    (r, f) => { foreach (var c in r.MatrixRow) f(c); },
-                    c => c).First();
+            FirstSolution = _dlx.Solve(_data, d => d, r => r.MatrixRow).First();
         }
+
+        public Solution FirstSolution { get; private set; }
 
         private void BuildMatrixAndDictionary()
         {

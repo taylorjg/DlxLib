@@ -7,7 +7,7 @@ using NUnit.Framework;
 namespace DlxLibTests
 {
     [TestFixture]
-    internal class DlxLibEventTests
+    public class DlxLibEventTests
     {
         [TestCase(0, false)]
         [TestCase(1, true)]

@@ -7,13 +7,13 @@ using NUnit.Framework;
 namespace DlxLibTests
 {
     [TestFixture]
-    internal class DlxLibSolveTests
+    public class DlxLibSolveTests
     {
         [Test]
         public void NullMatrixThrowsArgumentNullException()
         {
             var dlx = new Dlx();
-            Assert.Throws<ArgumentNullException>(() => dlx.Solve(null));
+            Assert.Throws<ArgumentNullException>(() => dlx.Solve<int>(null));
         }
 
         [Test]
@@ -67,14 +67,14 @@ namespace DlxLibTests
         }
 
         [Test]
-        public void IdentityMatrixThreeByThreeReturnsOneSolution()
+        public void SolveWithMatrixOfBool()
         {
             // Arrange
             var matrix = new[,]
                 {
-                    {1, 0, 0},
-                    {0, 1, 0},
-                    {0, 0, 1}
+                    {true, false, false},
+                    {false, true, false},
+                    {false, false, true}
                 };
             var dlx = new Dlx();
 
@@ -83,7 +83,47 @@ namespace DlxLibTests
 
             // Assert
             Assert.That(solutions, Has.Count.EqualTo(1));
+            Assert.That(solutions.Select(s => s.RowIndexes), Contains.Item(new[] { 0, 1, 2 }));
+        }
+
+        [Test]
+        public void SolveWithMatrixOfInt()
+        {
+            // Arrange
+            var matrix = new[,]
+            {
+                {1, 0, 0},
+                {0, 1, 0},
+                {0, 0, 1}
+            };
+            var dlx = new Dlx();
+
+            // Act
+            var solutions = dlx.Solve(matrix).ToList();
+
+            // Assert
+            Assert.That(solutions, Has.Count.EqualTo(1));
             Assert.That(solutions.Select(s => s.RowIndexes), Contains.Item(new[] {0, 1, 2}));
+        }
+
+        [Test]
+        public void SolveWithMatrixOfCharAndCustomPredicate()
+        {
+            // Arrange
+            var matrix = new[,]
+                {
+                    {'X', 'O', 'O'},
+                    {'O', 'X', 'O'},
+                    {'O', 'O', 'X'}
+                };
+            var dlx = new Dlx();
+
+            // Act
+            var solutions = dlx.Solve(matrix, c=> c == 'X').ToList();
+
+            // Assert
+            Assert.That(solutions, Has.Count.EqualTo(1));
+            Assert.That(solutions.Select(s => s.RowIndexes), Contains.Item(new[] { 0, 1, 2 }));
         }
 
         [Test]
@@ -175,13 +215,7 @@ namespace DlxLibTests
                 };
 
             // Act
-            var solutions = new Dlx().Solve<
-                IList<Tuple<int[], string>>,
-                Tuple<int[], string>,
-                int>(
-                    data,
-                    (d, f) => { foreach (var r in d) f(r); },
-                    (r, f) => { foreach (var c in r.Item1) f(c); }).ToList();
+            var solutions = new Dlx().Solve(data, d => d, r => r.Item1).ToList();
 
             // Assert
             Assert.That(solutions, Has.Count.EqualTo(1));
@@ -200,14 +234,7 @@ namespace DlxLibTests
                 };
 
             // Act
-            var solutions = new Dlx().Solve<
-                IList<Tuple<char[], string>>,
-                Tuple<char[], string>,
-                char>(
-                    data,
-                    (d, f) => { foreach (var r in d) f(r); },
-                    (r, f) => { foreach (var c in r.Item1) f(c); },
-                    c => c == 'X').ToList();
+            var solutions = new Dlx().Solve(data, d => d, r => r.Item1, c => c == 'X').ToList();
 
             // Assert
             Assert.That(solutions, Has.Count.EqualTo(1));

@@ -4,7 +4,7 @@ using System.Linq;
 namespace DlxLib
 {
     /// <summary>
-    /// This class represents a single solution to the original matrix.
+    /// Represents a single solution to an exact cover problem.
     /// </summary>
     public class Solution
     {

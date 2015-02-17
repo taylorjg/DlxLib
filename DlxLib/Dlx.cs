@@ -70,25 +70,32 @@ namespace DlxLib
         /// Callers should use this constructor when they need to be able to request cancellation.
         /// </summary>
         /// <param name="cancellationToken">The <see cref="System.Threading.CancellationToken" /> that
-        /// the <see cref="Dlx.Solve" /> method will observe.</param>
+        /// the
+        /// <see cref="Dlx.Solve{T}(T[,])" />,
+        /// <see cref="Dlx.Solve{T}(T[,], Func{T, Boolean})" />,
+        /// <see cref="Dlx.Solve{TData, TRow, TCol}(TData, Func{TData, IEnumerable{TRow}}, Func{TRow, IEnumerable{TCol}})" /> and 
+        /// <see cref="Dlx.Solve{TData, TRow, TCol}(TData, Func{TData, IEnumerable{TRow}}, Func{TRow, IEnumerable{TCol}}, Func{TCol, Boolean})" />
+        /// method overloads will observe.</param>
         public Dlx(CancellationToken cancellationToken)
         {
             _cancellationToken = cancellationToken;
         }
 
         /// <summary>
-        /// Find all possible solutions to an exact cover problem given a 2-dimensional array of <see cref="System.Boolean" />.
-        /// </summary>
-        /// <param name="matrix">A matrix of <see cref="System.Boolean" /> values representing an exact cover problem.</param>
-        /// <returns>Yields <see cref="Solution" /> objects as they are found.</returns>
-        public IEnumerable<Solution> Solve(bool[,] matrix)
-        {
-            return Solve<bool>(matrix);
-        }
-
-        /// <summary>
         /// Find all possible solutions to an exact cover problem given a 2-dimensional array of <typeparamref name="T"/>.
         /// </summary>
+        /// <example>
+        /// <code>
+        /// var matrix = new[,]
+        ///     {
+        ///         {1, 0, 0},
+        ///         {0, 1, 0},
+        ///         {0, 0, 1}
+        ///     };
+        /// var dlx = new Dlx();
+        /// var solutions = dlx.Solve(matrix);
+        /// </code>
+        /// </example>
         /// <typeparam name="T">The type of elements in the matrix.</typeparam>
         /// <param name="matrix">A matrix of <typeparamref name="T"/> values representing an exact cover problem.</param>
         /// <returns>Yields <see cref="Solution" /> objects as they are found.</returns>
@@ -104,6 +111,18 @@ namespace DlxLib
         /// Find all possible solutions to an exact cover problem given a 2-dimensional array of <typeparamref name="T"/>
         /// and a predicate.
         /// </summary>
+        /// <example>
+        /// <code>
+        /// var matrix = new[,]
+        ///     {
+        ///         {'X', 'O', 'O'},
+        ///         {'O', 'X', 'O'},
+        ///         {'O', 'O', 'X'}
+        ///     };
+        /// var dlx = new Dlx();
+        /// var solutions = dlx.Solve(matrix, c => c == 'X');
+        /// </code>
+        /// </example>
         /// <typeparam name="T">The type of elements in the matrix.</typeparam>
         /// <param name="matrix">A matrix of <typeparamref name="T"/> values representing an exact cover problem.</param>
         /// <param name="predicate">A predicate which is invoked for each value in the matrix to determine
@@ -120,73 +139,17 @@ namespace DlxLib
         /// Find all possible solutions to an exact cover problem given an arbitrary data structure representing
         /// the matrix.
         /// </summary>
-        /// <typeparam name="TData">The type of the data structure that represents the exact cover problem.</typeparam>
-        /// <typeparam name="TRow">The type of the data structure that represents rows in the matrix.</typeparam>
-        /// <typeparam name="TCol">The type of the data structure that represents columns in the matrix.</typeparam>
-        /// <param name="data">The top-level data structure that represents the exact cover problem.</param>
-        /// <param name="iterateRows">A System.Action delegate that will be invoked to iterate the rows in the matrix.</param>
-        /// <param name="iterateCols">A System.Action delegate that will be invoked to iterate the columns
-        /// in a particular row in the matrix.</param>
-        /// <returns>Yields <see cref="Solution" /> objects as they are found.</returns>
-        [Obsolete("The API of this method is too complicated - use the Solve<TData, TRow, TCol> overload that has Funcs that return IEnumerable instead", false)]
-        public IEnumerable<Solution> Solve<TData, TRow, TCol>(
-            TData data,
-            Action<TData, Action<TRow>> iterateRows,
-            Action<TRow, Action<TCol>> iterateCols)
-        {
-            var defaultEqualityComparerTCol = EqualityComparer<TCol>.Default;
-            var defaultTCol = default(TCol);
-            Func<TCol, bool> predicate = col => !defaultEqualityComparerTCol.Equals(col, defaultTCol);
-            return Solve(data, iterateRows, iterateCols, predicate);
-        }
-
-        /// <summary>
-        /// Find all possible solutions to an exact cover problem given an arbitrary data structure representing
-        /// the matrix and a predicate.
-        /// </summary>
-        /// <typeparam name="TData">The type of the data structure that represents the exact cover problem.</typeparam>
-        /// <typeparam name="TRow">The type of the data structure that represents rows in the matrix.</typeparam>
-        /// <typeparam name="TCol">The type of the data structure that represents columns in the matrix.</typeparam>
-        /// <param name="data">The top-level data structure that represents the exact cover problem.</param>
-        /// <param name="iterateRows">A System.Action delegate that will be invoked to iterate the rows in the matrix.</param>
-        /// <param name="iterateCols">A System.Action delegate that will be invoked to iterate the columns
-        /// in a particular row in the matrix.</param>
-        /// <param name="predicate">A predicate which is invoked for each value in the matrix to determine
-        /// whether the value represents a logical 1 or a logical 0 indicated by returning <c>true</c>
-        /// or <c>false</c> respectively.</param>
-        /// <returns>Yields <see cref="Solution" /> objects as they are found.</returns>
-        [Obsolete("The API of this method is too complicated - use the Solve<TData, TRow, TCol> overload that has Funcs that return IEnumerable instead", false)]
-        public IEnumerable<Solution> Solve<TData, TRow, TCol>(
-            TData data,
-            Action<TData, Action<TRow>> iterateRows,
-            Action<TRow, Action<TCol>> iterateCols,
-            Func<TCol, bool> predicate)
-        {
-            if (data.Equals(default(TData))) throw new ArgumentNullException("data");
-            var root = BuildInternalStructure(
-                data,
-                 d =>
-                 {
-                     // Could we yield return instead ?
-                     var rows = new List<TRow>();
-                     iterateRows(d, row => rows.Add(row));
-                     return rows;
-                 },
-                row =>
-                {
-                    // Could we yield return instead ?
-                    var cols = new List<TCol>();
-                    iterateCols(row, col => cols.Add(col));
-                    return cols;
-                },
-                predicate);
-            return Search(0, new SearchData(root));
-        }
-
-        /// <summary>
-        /// Find all possible solutions to an exact cover problem given an arbitrary data structure representing
-        /// the matrix.
-        /// </summary>
+        /// <example>
+        /// <code>
+        /// var data = new List&lt;Tuple&lt;int[], string&gt;&gt;
+        ///     {
+        ///         Tuple.Create(new[] {1, 0, 0}, "Some data associated with row 0"),
+        ///         Tuple.Create(new[] {0, 1, 0}, "Some data associated with row 1"),
+        ///         Tuple.Create(new[] {0, 0, 1}, "Some data associated with row 2")
+        ///     };
+        /// var solutions = new Dlx().Solve(data, d => d, r => r.Item1);
+        /// </code>
+        /// </example>
         /// <typeparam name="TData">The type of the data structure that represents the exact cover problem.</typeparam>
         /// <typeparam name="TRow">The type of the data structure that represents rows in the matrix.</typeparam>
         /// <typeparam name="TCol">The type of the data structure that represents columns in the matrix.</typeparam>
@@ -210,6 +173,17 @@ namespace DlxLib
         /// Find all possible solutions to an exact cover problem given an arbitrary data structure representing
         /// the matrix and a predicate.
         /// </summary>
+        /// <example>
+        /// <code>
+        /// var data = new List&lt;Tuple&lt;char[], string&gt;&gt;
+        ///     {
+        ///         Tuple.Create(new[] {'X', 'O', 'O'}, "Some data associated with row 0"),
+        ///         Tuple.Create(new[] {'O', 'X', 'O'}, "Some data associated with row 1"),
+        ///         Tuple.Create(new[] {'O', 'O', 'X'}, "Some data associated with row 2")
+        ///     };
+        /// var solutions = new Dlx().Solve(data, d => d, r => r.Item1, c => c == 'X');
+        /// </code>
+        /// </example>
         /// <typeparam name="TData">The type of the data structure that represents the exact cover problem.</typeparam>
         /// <typeparam name="TRow">The type of the data structure that represents rows in the matrix.</typeparam>
         /// <typeparam name="TCol">The type of the data structure that represents columns in the matrix.</typeparam>
@@ -243,7 +217,7 @@ namespace DlxLib
         public event EventHandler Finished;
 
         /// <summary>
-        /// Occurs when the caller requests cancellation via the CancellationToken passed to <see cref="Dlx(CancellationToken)" />.
+        /// Occurs when the caller requests cancellation via the <see cref="System.Threading.CancellationToken" /> passed to <see cref="Dlx(CancellationToken)" />.
         /// </summary>
         public event EventHandler Cancelled;
 
@@ -253,7 +227,7 @@ namespace DlxLib
         public event EventHandler<SearchStepEventArgs> SearchStep;
 
         /// <summary>
-        /// Occurs for each solution found to the original matrix.
+        /// Occurs for each solution found to the exact cover problem.
         /// </summary>
         public event EventHandler<SolutionFoundEventArgs> SolutionFound;
 
