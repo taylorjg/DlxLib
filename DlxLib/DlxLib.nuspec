@@ -9,7 +9,7 @@
     <projectUrl>https://github.com/taylorjg/DlxLib</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>$description$</description>
-    <copyright>Copyright 2013</copyright>
+    <copyright>Copyright © 2013-2015</copyright>
     <tags>C# algorithms</tags>
   </metadata>
 </package>

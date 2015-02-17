@@ -5,10 +5,10 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("DlxLib")]
-[assembly: AssemblyDescription("A C# class library that implements Donald E. Knuth's Dancing Links (DLX) algorithm")]
+[assembly: AssemblyDescription("DlxLib is a C# class library that implements Donald E. Knuth's Algorithm X using the Dancing Links technique as described in his paper, Dancing Links.")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyProduct("DlxLib")]
-[assembly: AssemblyCopyright("Copyright © 2015")]
+[assembly: AssemblyCopyright("Copyright © 2013-2015")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
