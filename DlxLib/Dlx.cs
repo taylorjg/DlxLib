@@ -69,6 +69,52 @@ namespace DlxLib
         /// <summary>
         /// Callers should use this constructor when they need to be able to request cancellation.
         /// </summary>
+        /// <example>
+        /// <code>
+        /// var matrix = new[,]
+        ///     {
+        ///         {0, 0, 1, 0, 1, 1, 0},
+        ///         {1, 0, 0, 1, 0, 0, 1},
+        ///         {0, 1, 1, 0, 0, 1, 0},
+        ///         {1, 0, 0, 1, 0, 0, 0},
+        ///         {0, 1, 0, 0, 0, 0, 1},
+        ///         {0, 0, 0, 1, 1, 0, 1}
+        ///     };
+        /// 
+        /// var cancellationTokenSource = new CancellationTokenSource();
+        /// var dlx = new Dlx(cancellationTokenSource.Token);
+        /// 
+        /// dlx.SolutionFound += (_, e) =>
+        /// {
+        ///     var managedThreadId1 = Thread.CurrentThread.ManagedThreadId;
+        ///     Console.WriteLine("[{0}] Found solution {1} - now sleeping", managedThreadId1, e.SolutionIndex);
+        ///     Thread.Sleep(2000);
+        ///     Console.WriteLine("[{0}] Found solution {1} - now waking", managedThreadId1, e.SolutionIndex);
+        /// };
+        /// 
+        /// var thread = new Thread(() => dlx.Solve(matrix).ToList());
+        /// 
+        /// thread.Start();
+        /// 
+        /// var managedThreadId2 = Thread.CurrentThread.ManagedThreadId;
+        /// Console.WriteLine("[{0}] Sleeping before calling Cancel...", managedThreadId2);
+        /// Thread.Sleep(1000);
+        /// Console.WriteLine("[{0}] Calling Cancel...", managedThreadId2);
+        /// cancellationTokenSource.Cancel();
+        /// 
+        /// Console.WriteLine("[{0}] Before Join...", managedThreadId2);
+        /// thread.Join();
+        /// Console.WriteLine("[{0}] After Join", managedThreadId2);
+        /// 
+        /// // The example displays the following output:
+        /// //    [5] Sleeping before calling Cancel...
+        /// //    [6] Found solution 0 - now sleeping
+        /// //    [5] Calling Cancel...
+        /// //    [5] Before Join...
+        /// //    [6] Found solution 0 - now waking
+        /// //    [5] After Join
+        /// </code>
+        /// </example>
         /// <param name="cancellationToken">The <see cref="System.Threading.CancellationToken" /> that
         /// the Solve method overloads will observe.</param>
         public Dlx(CancellationToken cancellationToken)
@@ -91,15 +137,22 @@ namespace DlxLib
         /// var solutions = dlx.Solve(matrix);
         /// </code>
         /// </example>
+        /// <remarks>
+        /// This Solve method overload determines whether a matrix value is a logical 1 or a logical 0
+        /// using the following default predicate:
+        /// <code>
+        /// private static Func&lt;T, bool&gt; DefaultPredicate&lt;T&gt;()
+        /// {
+        ///     return t => !EqualityComparer&lt;T&gt;.Default.Equals(t, default(T));
+        /// }
+        /// </code>
+        /// </remarks>
         /// <typeparam name="T">The type of elements in the matrix.</typeparam>
         /// <param name="matrix">A matrix of <typeparamref name="T"/> values representing an exact cover problem.</param>
         /// <returns>Yields <see cref="Solution" /> objects as they are found.</returns>
         public IEnumerable<Solution> Solve<T>(T[,] matrix)
         {
-            var defaultEqualityComparerT = EqualityComparer<T>.Default;
-            var defaultT = default(T);
-            Func<T, bool> predicate = t => !defaultEqualityComparerT.Equals(t, defaultT);
-            return Solve(matrix, predicate);
+            return Solve(matrix, DefaultPredicate<T>());
         }
 
         /// <summary>
@@ -145,6 +198,16 @@ namespace DlxLib
         /// var solutions = new Dlx().Solve(data, d => d, r => r.Item1);
         /// </code>
         /// </example>
+        /// <remarks>
+        /// This Solve method overload determines whether a matrix value is a logical 1 or a logical 0
+        /// using the following default predicate:
+        /// <code>
+        /// private static Func&lt;T, bool&gt; DefaultPredicate&lt;T&gt;()
+        /// {
+        ///     return t => !EqualityComparer&lt;T&gt;.Default.Equals(t, default(T));
+        /// }
+        /// </code>
+        /// </remarks>
         /// <typeparam name="TData">The type of the data structure that represents the exact cover problem.</typeparam>
         /// <typeparam name="TRow">The type of the data structure that represents rows in the matrix.</typeparam>
         /// <typeparam name="TCol">The type of the data structure that represents columns in the matrix.</typeparam>
@@ -158,10 +221,7 @@ namespace DlxLib
             Func<TData, IEnumerable<TRow>> iterateRows,
             Func<TRow, IEnumerable<TCol>> iterateCols)
         {
-            var defaultEqualityComparerTCol = EqualityComparer<TCol>.Default;
-            var defaultTCol = default(TCol);
-            Func<TCol, bool> predicate = col => !defaultEqualityComparerTCol.Equals(col, defaultTCol);
-            return Solve(data, iterateRows, iterateCols, predicate);
+            return Solve(data, iterateRows, iterateCols, DefaultPredicate<TCol>());
         }
 
         /// <summary>
@@ -226,6 +286,11 @@ namespace DlxLib
         /// </summary>
         public event EventHandler<SolutionFoundEventArgs> SolutionFound;
 
+        private static Func<T, bool> DefaultPredicate<T>()
+        {
+            return t => !EqualityComparer<T>.Default.Equals(t, default(T));
+        }
+
         private bool IsCancelled()
         {
             return _cancellationToken.IsCancellationRequested;
@@ -260,7 +325,6 @@ namespace DlxLib
 
                     if (predicate(col))
                     {
-                        // Create a new DataObject and add it to the appropriate list header.
                         var listHeader = colIndexToListHeader[colIndex];
                         var dataObject = new DataObject(listHeader, localRowIndex);
 
