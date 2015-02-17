@@ -70,12 +70,7 @@ namespace DlxLib
         /// Callers should use this constructor when they need to be able to request cancellation.
         /// </summary>
         /// <param name="cancellationToken">The <see cref="System.Threading.CancellationToken" /> that
-        /// the
-        /// <see cref="Dlx.Solve{T}(T[,])" />,
-        /// <see cref="Dlx.Solve{T}(T[,], Func{T, Boolean})" />,
-        /// <see cref="Dlx.Solve{TData, TRow, TCol}(TData, Func{TData, IEnumerable{TRow}}, Func{TRow, IEnumerable{TCol}})" /> and 
-        /// <see cref="Dlx.Solve{TData, TRow, TCol}(TData, Func{TData, IEnumerable{TRow}}, Func{TRow, IEnumerable{TCol}}, Func{TCol, Boolean})" />
-        /// method overloads will observe.</param>
+        /// the Solve method overloads will observe.</param>
         public Dlx(CancellationToken cancellationToken)
         {
             _cancellationToken = cancellationToken;
@@ -235,66 +230,6 @@ namespace DlxLib
         {
             return _cancellationToken.IsCancellationRequested;
         }
-
-        // private static ColumnObject BuildInternalStructure<TData, TRow, TCol>(
-        //     TData data,
-        //     Action<TData, Action<TRow>> iterateRows,
-        //     Action<TRow, Action<TCol>> iterateCols,
-        //     Func<TCol, bool> predicate)
-        // {
-        //     var root = new ColumnObject();
-        // 
-        //     int? numColumns = null;
-        //     var rowIndex = 0;
-        //     var colIndexToListHeader = new Dictionary<int, ColumnObject>();
-        // 
-        //     iterateRows(data, row =>
-        //     {
-        //         DataObject firstDataObjectInThisRow = null;
-        //         var localRowIndex = rowIndex;
-        //         var colIndex = 0;
-        // 
-        //         iterateCols(row, col =>
-        //         {
-        //             if (localRowIndex == 0)
-        //             {
-        //                 var listHeader = new ColumnObject();
-        //                 root.AppendColumnHeader(listHeader);
-        //                 colIndexToListHeader[colIndex] = listHeader;
-        //             }
-        // 
-        //             if (predicate(col))
-        //             {
-        //                 // Create a new DataObject and add it to the appropriate list header.
-        //                 var listHeader = colIndexToListHeader[colIndex];
-        //                 var dataObject = new DataObject(listHeader, localRowIndex);
-        // 
-        //                 if (firstDataObjectInThisRow != null)
-        //                     firstDataObjectInThisRow.AppendToRow(dataObject);
-        //                 else
-        //                     firstDataObjectInThisRow = dataObject;
-        //             }
-        // 
-        //             colIndex++;
-        //         });
-        // 
-        //         if (numColumns.HasValue)
-        //         {
-        //             if (colIndex != numColumns)
-        //             {
-        //                 throw new ArgumentException("All rows must contain the same number of columns!", "data");
-        //             }
-        //         }
-        //         else
-        //         {
-        //             numColumns = colIndex;
-        //         }
-        // 
-        //         rowIndex++;
-        //     });
-        // 
-        //     return root;
-        // }
 
         private static ColumnObject BuildInternalStructure<TData, TRow, TCol>(
             TData data,

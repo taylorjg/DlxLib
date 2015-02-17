@@ -127,7 +127,45 @@ namespace DlxLibTests
         }
 
         [Test]
-        public void MatrixFromTheOriginalDlxPaperReturnsTheCorrectSingleSolution()
+        public void SolveWithArbitraryDataStucture()
+        {
+            // Arrange
+            var data = new List<Tuple<int[], string>>
+                {
+                    Tuple.Create(new[] {1, 0, 0}, "Some data associated with row 0"),
+                    Tuple.Create(new[] {0, 1, 0}, "Some data associated with row 1"),
+                    Tuple.Create(new[] {0, 0, 1}, "Some data associated with row 2")
+                };
+
+            // Act
+            var solutions = new Dlx().Solve(data, d => d, r => r.Item1).ToList();
+
+            // Assert
+            Assert.That(solutions, Has.Count.EqualTo(1));
+            Assert.That(solutions.Select(s => s.RowIndexes), Contains.Item(new[] { 0, 1, 2 }));
+        }
+
+        [Test]
+        public void SolveWithArbitraryDataStuctureAndCustomPredicate()
+        {
+            // Arrange
+            var data = new List<Tuple<char[], string>>
+                {
+                    Tuple.Create(new[] {'X', 'O', 'O'}, "Some data associated with row 0"),
+                    Tuple.Create(new[] {'O', 'X', 'O'}, "Some data associated with row 1"),
+                    Tuple.Create(new[] {'O', 'O', 'X'}, "Some data associated with row 2")
+                };
+
+            // Act
+            var solutions = new Dlx().Solve(data, d => d, r => r.Item1, c => c == 'X').ToList();
+
+            // Assert
+            Assert.That(solutions, Has.Count.EqualTo(1));
+            Assert.That(solutions.Select(s => s.RowIndexes), Contains.Item(new[] { 0, 1, 2 }));
+        }
+
+        [Test]
+        public void MatrixFromTheOriginalDancingLinksPaperReturnsTheCorrectSolution()
         {
             // Arrange
             var matrix = new[,]
@@ -201,44 +239,6 @@ namespace DlxLibTests
                                                     .Or
                                                     .EquivalentTo(new[] {2, 4, 5}));
             Assert.That(numSolutionFoundEventsRaised, Is.EqualTo(1));
-        }
-
-        [Test]
-        public void CallerShapedDataUsingDefaultPredicate()
-        {
-            // Arrange
-            var data = new List<Tuple<int[], string>>
-                {
-                    Tuple.Create(new[] {1, 0, 0}, "Some data associated with row 0"),
-                    Tuple.Create(new[] {0, 1, 0}, "Some data associated with row 1"),
-                    Tuple.Create(new[] {0, 0, 1}, "Some data associated with row 2")
-                };
-
-            // Act
-            var solutions = new Dlx().Solve(data, d => d, r => r.Item1).ToList();
-
-            // Assert
-            Assert.That(solutions, Has.Count.EqualTo(1));
-            Assert.That(solutions.Select(s => s.RowIndexes), Contains.Item(new[] { 0, 1, 2 }));
-        }
-
-        [Test]
-        public void CallerShapedDataUsingCustomPredicate()
-        {
-            // Arrange
-            var data = new List<Tuple<char[], string>>
-                {
-                    Tuple.Create(new[] {'X', 'O', 'O'}, "Some data associated with row 0"),
-                    Tuple.Create(new[] {'O', 'X', 'O'}, "Some data associated with row 1"),
-                    Tuple.Create(new[] {'O', 'O', 'X'}, "Some data associated with row 2")
-                };
-
-            // Act
-            var solutions = new Dlx().Solve(data, d => d, r => r.Item1, c => c == 'X').ToList();
-
-            // Assert
-            Assert.That(solutions, Has.Count.EqualTo(1));
-            Assert.That(solutions.Select(s => s.RowIndexes), Contains.Item(new[] { 0, 1, 2 }));
         }
     }
 }
