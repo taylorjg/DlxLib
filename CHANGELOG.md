@@ -4,7 +4,7 @@
 
 #### Features
 
-* Added new <code>Solve</code> methods overloads allowing the caller to pass an arbitrary data structure representing the matrix to replace the ones added in DlxLib 1.1 (see breaking changes below). The new overloads are easier to use than their predecessors. The new overloads have the following signatures:
+* Added new <code>Solve</code> method overloads allowing the caller to pass an arbitrary data structure representing the matrix to replace the one added in DlxLib 1.1 (see breaking changes below). The new overloads are easier to use than their predecessor. The new overloads have the following signatures:
 
 ```C#
 public IEnumerable<Solution> Solve<TData, TRow, TCol>(
@@ -38,14 +38,9 @@ because it is unnecessary due to the following overload when <code>T</code> is a
 public IEnumerable<Solution> Solve<T>(T[,] matrix)
 ```
 
-* Removed the following <code>Solve</code> method overloads because they are unnecessarily complicated (what was I smoking ?!?):
+* Removed the following <code>Solve</code> method overload because it was unnecessarily complicated (what was I smoking ?!?):
  
 ```C#
-public IEnumerable<Solution> Solve<TData, TRow, TCol>(
-    TData data,
-    Action<TData, Action<TRow>> iterateRows,
-    Action<TRow, Action<TCol>> iterateCols)
-
 public IEnumerable<Solution> Solve<TData, TRow, TCol>(
     TData data,
     Action<TData, Action<TRow>> iterateRows,
@@ -60,7 +55,7 @@ public IEnumerable<Solution> Solve<TData, TRow, TCol>(
 
 * Added a Dlx constructor taking a <code>CancellationToken</code> because this is a more idiomatic way to provide support for cancellation in .NET.
 * Marked the <code>Cancel</code> method as obsolete.
-* Added a <code>Solve</code> method overload allowing the caller to pass an arbitrary data structure representing the matrix along with a couple of actions to iterate rows and columns.  
+* Added a <code>Solve</code> method overload allowing the caller to pass an arbitrary data structure representing the matrix along with a couple of actions to iterate rows and columns and a predicate.  
 
 
 ### 1.0  (8th Aug 2013)
