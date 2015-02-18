@@ -4,7 +4,7 @@ using System.Linq;
 namespace DlxLib
 {
     /// <summary>
-    /// Represents a single solution to an exact cover problem.
+    /// Represents a solution to an exact cover problem.
     /// </summary>
     public class Solution
     {
@@ -14,7 +14,7 @@ namespace DlxLib
         }
 
         /// <summary>
-        /// The indexes of the set of rows, in the original matrix, that form a solution.
+        /// The indexes of the set of rows, in the original matrix, that constitute the solution.
         /// The indexes are always sorted in ascending order.
         /// </summary>
         public IEnumerable<int> RowIndexes

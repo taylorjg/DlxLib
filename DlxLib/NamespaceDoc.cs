@@ -1,9 +1,10 @@
 ﻿﻿﻿namespace DlxLib
 ﻿﻿{
 ﻿﻿    /// <summary>
-﻿﻿    /// <see cref="DlxLib" /> is a C# class library that implements
-﻿﻿    /// Donald E. Knuth's Algorithm X using the Dancing Links technique
-﻿﻿    /// as described in his paper, <a href="http://arxiv.org/pdf/cs/0011047v1.pdf">Dancing Links</a>.
+﻿﻿    /// DlxLib is a C# class library that solves exact cover problems by
+﻿﻿    /// implementing Donald E. Knuth's Algorithm X using the
+﻿﻿    /// Dancing Links technique as described in his paper,
+﻿﻿    /// <a href="http://arxiv.org/pdf/cs/0011047v1.pdf">Dancing Links</a>.
 ﻿﻿    /// </summary>
     /// <remarks>
     /// See the following links for more information:
