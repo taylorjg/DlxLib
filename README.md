@@ -83,4 +83,4 @@ See also the following project:
 
 ## License
 
-DlxLib is licensed under MIT. Refer to license.txt for more information.
+DlxLib is licensed under MIT. Refer to [license.txt](https://github.com/taylorjg/DlxLib/blob/master/license.txt) for more information.
