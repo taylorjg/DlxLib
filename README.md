@@ -1,6 +1,6 @@
 ## DlxLib (C#)
 
-DlxLib is a C# class library that solves [exact cover](http://en.wikipedia.org/wiki/Exact_cover) problems by implementing Donald E. Knuth's Algorithm X using the Dancing Links technique as described in his paper, [Dancing Links](http://arxiv.org/pdf/cs/0011047v1.pdf "Dancing Links").
+DlxLib is a C# class library that solves [exact cover](http://en.wikipedia.org/wiki/Exact_cover) problems by implementing Donald E. Knuth's [Algorithm X](http://en.wikipedia.org/wiki/Algorithm_X) using the Dancing Links technique as described in his paper, [Dancing Links](http://arxiv.org/pdf/cs/0011047v1.pdf "Dancing Links").
 
 Given a matrix of 0s and 1s, it finds all solutions where a solution identifies a subset of the rows in the matrix such that every column contains exactly one 1.
 
@@ -10,9 +10,9 @@ See the following link for a very nice tutorial on how DLX works and a practical
 
 [CS575: Dancing Links - Colorado State University](http://www.cs.colostate.edu/~cs420dl/slides/DLX.ppt "CS575: Dancing Links - Colorado State University")
 
-## A Simple Example
+## Example
 
-Here is a brief example of using DlxLib using the example matrix from the original [Dancing Links](http://arxiv.org/pdf/cs/0011047v1.pdf "Dancing Links") paper.
+The following example shows how to use DlxLib to find the first two (of three) solutions to the matrix in the original [Dancing Links](http://arxiv.org/pdf/cs/0011047v1.pdf "Dancing Links") paper.
 
 ```C#
 var matrix = new[,]
@@ -24,13 +24,8 @@ var matrix = new[,]
         {0, 1, 0, 0, 0, 0, 1},
         {0, 0, 0, 1, 1, 0, 1}
     };
-
 var dlx = new Dlx();
-
-// Get the first two solutions.
-var solutions = dlx.Solve(matrix).Take(2);
-
-// Do something with the solutions here...
+var firstTwoSolutions = dlx.Solve(matrix).Take(2);
 ```
 
 ## NuGet
@@ -79,7 +74,7 @@ See also the following project:
 
 * [PotterKata2](https://github.com/taylorjg/PotterKata2 "PotterKata2")
 
-## Other Links
+## References
 
 * [Knuth's Algorithm X (Wikipedia)](http://en.wikipedia.org/wiki/Algorithm_X "Knuth's Algorithm X (Wikipedia)")
 * [Dancing Links (Wikipedia)](http://en.wikipedia.org/wiki/Dancing_Links "Dancing Links (Wikipedia)")
