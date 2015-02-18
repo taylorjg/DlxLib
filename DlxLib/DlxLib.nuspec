@@ -6,6 +6,7 @@
     <title>$title$</title>
     <authors>Jonathan Taylor</authors>
     <owners>Jonathan Taylor</owners>
+	<licenseUrl>https://github.com/taylorjg/DlxLib/blob/master/license.txt</licenseUrl>
     <projectUrl>https://github.com/taylorjg/DlxLib</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>$description$</description>
