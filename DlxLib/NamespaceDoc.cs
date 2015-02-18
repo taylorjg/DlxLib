@@ -16,6 +16,9 @@
 ﻿﻿    /// <item>
 ﻿﻿﻿﻿    /// <description><a href="http://en.wikipedia.org/wiki/Dancing_Links">Dancing Links (Wikipedia)</a></description>
 ﻿﻿    /// </item>
+﻿﻿    /// <item>
+﻿﻿﻿﻿    /// <description><a href="http://en.wikipedia.org/wiki/Exact_cover">Exact cover (Wikipedia)</a></description>
+﻿﻿    /// </item>
 ﻿﻿    /// </list>
 ﻿﻿    /// </remarks>
 ﻿﻿    [System.Runtime.CompilerServices.CompilerGenerated]
