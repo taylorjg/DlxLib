@@ -15,39 +15,69 @@ namespace DlxLibPropertyTests
         public Property ExactCoverProblemsWithNoSolutions()
         {
             return Spec
-                .For(GenMatrixWithNoSolutions(Any.OfType<int>()), matrix => !new Dlx().Solve(matrix).Any())
+                .For(GenMatrixOfIntWithNoSolutions(), matrix => !new Dlx().Solve(matrix).Any())
                 .Build();
         }
 
-        [FsCheck.NUnit.Property]
-        public Property ExactCoverProblemsWithSingleSolution()
+        //[FsCheck.NUnit.Property]
+        //public Property ExactCoverProblemsWithSingleSolution()
+        //{
+        //    return Spec
+        //        .For(GenMatrixOfIntWithSingleSolution(), matrix => new Dlx().Solve(matrix).Count() == 1)
+        //        .Build();
+        //}
+
+        //[FsCheck.NUnit.Property]
+        //public Property ExactCoverProblemsWithMultipleSolutions(int nParam)
+        //{
+        //    return Spec
+        //        .For(Any.Value(nParam), GenMatrixOfIntWithMultipleSolutions(nParam), (n, matrix) => new Dlx().Solve(matrix).Count() == n)
+        //        .When((n, _) => n > 1)
+        //        .Build();
+        //}
+
+        private static Gen<int[,]> GenMatrixOfIntWithNoSolutions()
         {
-            return Spec
-                .For(GenMatrixWithSingleSolution(Any.OfType<int>()), matrix => new Dlx().Solve(matrix).Count() == 1)
-                .Build();
+            return
+                from numRows in Any.IntBetween(20, 100)
+                from numCols in Any.IntBetween(4, 100)
+                let genRowsA = Any.Value(Enumerable.Repeat(0, numCols).ToArray())
+                let genRowsB =
+                    from numOnes in Any.IntBetween(1, numCols - 1)
+                    select Enumerable.Repeat(1, numOnes).Concat(Enumerable.Repeat(0, numCols - numOnes)).ToArray()
+                let genRows = Any.WeighedGeneratorIn(
+                    new WeightAndValue<Gen<int[]>>(90, genRowsA),
+                    new WeightAndValue<Gen<int[]>>(10, genRowsB))
+                from rows in genRows.MakeListOfLength(numRows).Select(x => x.ToArray())
+                select JaggedArrayTo2DArray(rows);
         }
 
-        [FsCheck.NUnit.Property]
-        public Property ExactCoverProblemsWithMultipleSolutions(int nParam)
-        {
-            return Spec
-                .For(Any.Value(nParam), GenMatrixWithMultipleSolutions(Any.OfType<int>(), nParam), (n, matrix) => new Dlx().Solve(matrix).Count() == n)
-                .When((n, _) => n > 1)
-                .Build();
-        }
+        //private static Gen<int[,]> GenMatrixOfIntWithSingleSolution()
+        //{
+        //    return Any.OfType<int[,]>();
+        //}
 
-        private static Gen<T[,]> GenMatrixWithNoSolutions<T>(Gen<T> genT)
-        {
-            return Any.OfType<T[,]>();
-        }
-        private static Gen<T[,]> GenMatrixWithSingleSolution<T>(Gen<T> genT)
-        {
-            return Any.OfType<T[,]>();
-        }
+        //private static Gen<int[,]> GenMatrixOfIntWithMultipleSolutions(int n)
+        //{
+        //    return Any.OfType<int[,]>();
+        //}
 
-        private static Gen<T[,]> GenMatrixWithMultipleSolutions<T>(Gen<T> genT, int n)
+        private static T[,] JaggedArrayTo2DArray<T>(T[][] jaggedArray)
         {
-            return Any.OfType<T[,]>();
+            var numRows = jaggedArray.Length;
+            var numCols = jaggedArray[0].Length;
+
+            var twoDimensionalArray = new T[numRows, numCols];
+
+            for (var row = 0; row < numRows; row++)
+            {
+                for (var col = 0; col < numCols; col++)
+                {
+                    twoDimensionalArray[row, col] = jaggedArray[row][col];
+                }
+            }
+
+            return twoDimensionalArray;
         }
     }
 }
