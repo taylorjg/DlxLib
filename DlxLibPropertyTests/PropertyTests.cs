@@ -31,7 +31,7 @@ namespace DlxLibPropertyTests
         //}
 
         [FsCheck.NUnit.Property(Verbose = true, MaxTest = 10)]
-        public Property PieceLengthsSample()
+        public Property GenPieceLengthsSample()
         {
             var gen = GenPieceLengths(18, 3);
             var samples = Gen.sample(10, 10, gen);
@@ -40,7 +40,7 @@ namespace DlxLibPropertyTests
         }
 
         [FsCheck.NUnit.Property(Verbose = true)]
-        public Property PartialSolutionRowsSample()
+        public Property GenPartialSolutionRowsSample()
         {
             var gen = GenPartialSolutionRows(18, 5);
             var samples = Gen.sample(10, 10, gen);
@@ -54,6 +54,31 @@ namespace DlxLibPropertyTests
                     Dump("sampleIndex: {0}; rowIndex: {1}; sample: {2}", sampleIndex, rowIndex, SequenceToString(row));
                     rowIndex++;
                 }
+                sampleIndex++;
+            }
+
+            return Prop.ofTestable(true);
+        }
+
+        [FsCheck.NUnit.Property(Verbose = true)]
+        public Property GenMatrixOfIntWithSingleSolutionSample()
+        {
+            var gen = GenMatrixOfIntWithSingleSolution();
+            var samples = Gen.sample(10, 10, gen);
+
+            var sampleIndex = 0;
+            foreach (var sample in samples)
+            {
+                for (var rowIndex = 0; rowIndex < sample.GetLength(0); rowIndex++)
+                {
+                    var rowValues = new List<int>();
+                    for (var colIndex = 0; colIndex < sample.GetLength(1); colIndex++)
+                    {
+                        rowValues.Add(sample[rowIndex, colIndex]);
+                    }
+                    Dump("sampleIndex: {0}; row[{1}]: {2}", sampleIndex, rowIndex, SequenceToString(rowValues));
+                }
+                Dump("\n");
                 sampleIndex++;
             }
 
@@ -97,17 +122,16 @@ namespace DlxLibPropertyTests
                 select rows.To2DArray();
         }
 
-        //private static Gen<int[,]> GenMatrixOfIntWithSingleSolution()
-        //{
-        //    return
-        //        //from numCols in Any.IntBetween(2, 100)
-        //        from numCols in Any.IntBetween(2, 20)
-        //        //from numPieces in Any.IntBetween(1, Math.Min(5, numCols))
-        //        from numPieces in Any.IntBetween(1, Math.Min(2, numCols))
-        //        from partialSolutionRows in GenPartialSolutionRows(numCols, numPieces)
-        //        // TODO: need to generate a mix of 90% rows of all 0s, 10% partial solution rows
-        //        select partialSolutionRows.To2DArray();
-        //}
+        private static Gen<int[,]> GenMatrixOfIntWithSingleSolution()
+        {
+            return
+                //from numCols in Any.IntBetween(2, 100)
+                from numCols in Any.IntBetween(2, 20)
+                from numPieces in Any.IntBetween(1, Math.Min(5, numCols))
+                from partialSolutionRows in GenPartialSolutionRows(numCols, numPieces)
+                // TODO: need to generate a mix of 90% rows of all 0s, 10% partial solution rows
+                select partialSolutionRows.To2DArray();
+        }
 
         // TODO: add an FsCheckUtils method to shuffle a list of items...
 
