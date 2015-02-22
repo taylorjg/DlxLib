@@ -4,6 +4,7 @@ using System.Linq;
 using DlxLib;
 using FsCheck;
 using FsCheck.Fluent;
+using FsCheckUtils;
 using NUnit.Framework;
 
 namespace DlxLibPropertyTests
@@ -21,20 +22,41 @@ namespace DlxLibPropertyTests
                 .Build();
         }
 
-        [FsCheck.NUnit.Property(Verbose = true, MaxTest = 10)]
-        public Property ExactCoverProblemsWithSingleSolution()
-        {
-            return Spec
-                .For(GenMatrixOfIntWithSingleSolution(), matrix => new Dlx().Solve(matrix).Count() == 1)
-                .Build();
-        }
+        //[FsCheck.NUnit.Property(Verbose = true, MaxTest = 10)]
+        //public Property ExactCoverProblemsWithSingleSolution()
+        //{
+        //    return Spec
+        //        .For(GenMatrixOfIntWithSingleSolution(), matrix => new Dlx().Solve(matrix).Count() == 1)
+        //        .Build();
+        //}
 
         [FsCheck.NUnit.Property(Verbose = true, MaxTest = 10)]
-        public Property PieceLengthsTest()
+        public Property PieceLengthsSample()
         {
             var gen = GenPieceLengths(18, 3);
             var samples = Gen.sample(10, 10, gen);
-            foreach (var sample in samples) Console.WriteLine("sample: {0}", SequenceToString(sample));
+            foreach (var sample in samples) Dump("GenPieceLengths sample: {0}", SequenceToString(sample));
+            return Prop.ofTestable(true);
+        }
+
+        [FsCheck.NUnit.Property(Verbose = true, MaxTest = 1)]
+        public Property PartialSolutionRowsSample()
+        {
+            var gen = GenPartialSolutionRows(18, 3);
+            var samples = Gen.sample(10, 10, gen);
+
+            var sampleIndex = 0;
+            foreach (var sample in samples)
+            {
+                var rowIndex = 0;
+                foreach (var row in sample)
+                {
+                    Dump("sampleIndex: {0}; rowIndex: {1}; sample: {2}", sampleIndex, rowIndex, SequenceToString(row));
+                    rowIndex++;
+                }
+                sampleIndex++;
+            }
+
             return Prop.ofTestable(true);
         }
 
@@ -75,17 +97,17 @@ namespace DlxLibPropertyTests
                 select rows.To2DArray();
         }
 
-        private static Gen<int[,]> GenMatrixOfIntWithSingleSolution()
-        {
-            return
-                //from numCols in Any.IntBetween(2, 100)
-                from numCols in Any.IntBetween(2, 20)
-                //from numPieces in Any.IntBetween(1, Math.Min(5, numCols))
-                from numPieces in Any.IntBetween(1, Math.Min(2, numCols))
-                from partialSolutionRows in GenPartialSolutionRows(numCols, numPieces)
-                // TODO: need to generate a mix of 90% rows of all 0s, 10% partial solution rows
-                select partialSolutionRows.To2DArray();
-        }
+        //private static Gen<int[,]> GenMatrixOfIntWithSingleSolution()
+        //{
+        //    return
+        //        //from numCols in Any.IntBetween(2, 100)
+        //        from numCols in Any.IntBetween(2, 20)
+        //        //from numPieces in Any.IntBetween(1, Math.Min(5, numCols))
+        //        from numPieces in Any.IntBetween(1, Math.Min(2, numCols))
+        //        from partialSolutionRows in GenPartialSolutionRows(numCols, numPieces)
+        //        // TODO: need to generate a mix of 90% rows of all 0s, 10% partial solution rows
+        //        select partialSolutionRows.To2DArray();
+        //}
 
         // TODO: add an FsCheckUtils method to shuffle a list of items...
 
@@ -102,38 +124,62 @@ namespace DlxLibPropertyTests
 
         private static Gen<List<List<int>>> GenPartialSolutionRows(int numCols, int numPieces)
         {
-            // how long should each piece be ? random length
-            // e.g. numCols = 10, numPieces = 3
-            // choose random lengths
-            // e.g. p1 = length 3, p2 = length 2, p3 = remaining length e.g. 10 - 3 - 2 = 5
-            // could keep choosing a random value between 1 and remaining length/2
-            // e.g. initially (1,10/2) then (1,7/2) then remainder
-            // start with set of all available idxs e.g. [0,1,2,3,4,5,6,7,8,9]
-            // p1 = pick 3 e.g. [0,1,2] leaving [3,4,5,6,7,8,9]
-            // p2 = pick 2 e.g. [3,4] leaving [5,6,7,8,9]
-            // p3 = last piece is the remainder e.g. [5,6,7,8,9]
-
-            return null;
+            return
+                from pieceLengths in GenPieceLengths(numCols, numPieces)
+                from pieceIndexLists in GenPieceIndexLists(numCols, pieceLengths)
+                select pieceIndexLists.Select(selectedIdxs => MakePartialSolutionRow(numCols, selectedIdxs)).ToList();
         }
 
-        private static object Dump(string format, params object[] args)
+        private static Gen<List<List<int>>> GenPieceIndexLists(int numCols, IEnumerable<int> pieceLengths)
         {
-            Console.WriteLine(format, args);
-            return null;
+            var remainingIdxs = Enumerable.Range(0, numCols).ToList();
+
+            Dump("GenPieceIndexLists numCols: {0}", numCols);
+            Dump("GenPieceIndexLists pieceLengths: {0}", SequenceToString(pieceLengths));
+
+            var gens = new List<Gen<List<int>>>();
+
+            // ReSharper disable once LoopCanBeConvertedToQuery
+            foreach (var pieceLength in pieceLengths)
+            {
+                Dump("GenPieceIndexLists (loop) pieceLength: {0}", pieceLength);
+                Dump("GenPieceIndexLists (loop) remainingIdxs: {0}", SequenceToString(remainingIdxs));
+
+                // **********************************************************************
+                // BUG: I think the problem is here...
+                // We always pass in the full initial list of all remaining idxs
+                // e.g. [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17]
+                // **********************************************************************
+                var g1 = GenExtensions.PickValues(pieceLength, remainingIdxs.ToArray());
+
+                var g2 = g1.Select(selectedIdxs =>
+                {
+                    Dump("g2 remainingIdxs before in place removal: {0}", SequenceToString(remainingIdxs));
+                    Dump("g2 selectedIdxs: {0}", SequenceToString(selectedIdxs));
+                    InPlaceRemoveSelectedIdxs(remainingIdxs, selectedIdxs);
+                    Dump("g2 remainingIdxs after in place removal: {0}", SequenceToString(remainingIdxs));
+                    return selectedIdxs;
+                });
+                gens.Add(g2);
+            }
+
+            return Any.SequenceOf(gens);
         }
 
-        private static string SequenceToString<T>(IEnumerable<T> xs)
+        private static List<int> MakePartialSolutionRow(int numCols, IEnumerable<int> selectedIdxs)
         {
-            return "[" + string.Join(",", xs.Select(x => Convert.ToString(x))) + "]";
+            var partialSolutionRow = Enumerable.Repeat(0, numCols).ToList();
+            foreach (var selectedIdx in selectedIdxs) partialSolutionRow[selectedIdx] = 1;
+            return partialSolutionRow;
         }
 
-        private static List<int> MakePartialSolutionRow(int numCols, IList<int> remainingIdxs, IList<int> selectedIdxs)
-        {
-            var result = Enumerable.Repeat(0, numCols).ToList();
-            foreach (var idx in selectedIdxs) result[idx] = 1;
-            InPlaceRemoveSelectedIdxs(remainingIdxs, selectedIdxs);
-            return result;
-        }
+        //private static List<int> MakePartialSolutionRow(int numCols, IList<int> remainingIdxs, IList<int> selectedIdxs)
+        //{
+        //    var result = Enumerable.Repeat(0, numCols).ToList();
+        //    foreach (var idx in selectedIdxs) result[idx] = 1;
+        //    InPlaceRemoveSelectedIdxs(remainingIdxs, selectedIdxs);
+        //    return result;
+        //}
 
         //private static IEnumerable<int> RemoveSelectedIdxs(IEnumerable<int> remainingIdxs, IEnumerable<int> selectedIdxs)
         //{
@@ -149,5 +195,15 @@ namespace DlxLibPropertyTests
         //{
         //    return Any.OfType<int[,]>();
         //}
+
+        private static void Dump(string format, params object[] args)
+        {
+            Console.WriteLine(format, args);
+        }
+
+        private static string SequenceToString<T>(IEnumerable<T> xs)
+        {
+            return "[" + string.Join(",", xs.Select(x => Convert.ToString(x))) + "]";
+        }
     }
 }
