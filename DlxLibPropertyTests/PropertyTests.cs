@@ -4,8 +4,6 @@ using System.Linq;
 using DlxLib;
 using FsCheck;
 using FsCheck.Fluent;
-using FsCheckUtils;
-using Microsoft.FSharp.Collections;
 using NUnit.Framework;
 
 namespace DlxLibPropertyTests
@@ -27,9 +25,17 @@ namespace DlxLibPropertyTests
         public Property ExactCoverProblemsWithSingleSolution()
         {
             return Spec
-                //.For(GenMatrixOfIntWithSingleSolution(), matrix => new Dlx().Solve(matrix).Count() == 1)
-                .For(GenMatrixOfIntWithSingleSolution(), _ => true)
+                .For(GenMatrixOfIntWithSingleSolution(), matrix => new Dlx().Solve(matrix).Count() == 1)
                 .Build();
+        }
+
+        [FsCheck.NUnit.Property(Verbose = true, MaxTest = 10)]
+        public Property PieceLengthsTest()
+        {
+            var gen = GenPieceLengths(18, 3);
+            var samples = Gen.sample(10, 10, gen);
+            foreach (var sample in samples) Console.WriteLine("sample: {0}", SequenceToString(sample));
+            return Prop.ofTestable(true);
         }
 
         //[FsCheck.NUnit.Property]
@@ -83,6 +89,17 @@ namespace DlxLibPropertyTests
 
         // TODO: add an FsCheckUtils method to shuffle a list of items...
 
+        private static Gen<List<int>> GenPieceLengths(int numCols, int numPieces)
+        {
+            if (numPieces == 1) return Any.Value(new[] { numCols }.ToList());
+
+            return
+                from x in Any.IntBetween(1, numCols / 2).MakeListOfLength(numPieces - 1)
+                let sum = x.Sum()
+                where sum < numCols
+                select x.Concat(new[] { numCols - sum }).ToList();
+        }
+
         private static Gen<List<List<int>>> GenPartialSolutionRows(int numCols, int numPieces)
         {
             // how long should each piece be ? random length
@@ -96,66 +113,7 @@ namespace DlxLibPropertyTests
             // p2 = pick 2 e.g. [3,4] leaving [5,6,7,8,9]
             // p3 = last piece is the remainder e.g. [5,6,7,8,9]
 
-            var remainingIdxs = Enumerable.Range(0, numCols).ToList();
-            return Helper(numCols, numPieces, remainingIdxs);
-        }
-
-        private static Gen<List<List<int>>> Helper(
-            int numCols,
-            int numPieces,
-            IList<int> remainingIdxs)
-        {
-            Dump("Helper: numCols: {0}", numCols);
-            Dump("Helper: numPieces: {0}", numPieces);
-            Dump("Helper: remainingIdxs: {0}", SequenceToString(remainingIdxs));
-
-            var remainingPiecesCountDown = Enumerable.Range(1, numPieces).Reverse().ToList();
-            Dump("remainingPiecesCountDown: {0}", SequenceToString(remainingPiecesCountDown));
-
-            var sequenceOfGen = remainingPiecesCountDown
-                .Select(remainingPieces =>
-                    GenPartialSolutionRow(numCols, remainingPieces, remainingIdxs)
-                        .Select(partialSolutionRow => partialSolutionRow));
-
-            Dump("Before calling Any.SequenceOf");
-            var result = Any.SequenceOf(sequenceOfGen);
-            Dump("After calling Any.SequenceOf");
-            return result;
-        }
-
-        private static Gen<List<int>> GenPartialSolutionRow(
-            int numCols,
-            int remainingPieces,
-            IList<int> remainingIdxs)
-        {
-            var lastPiece = remainingPieces == 1;
-
-            Dump("GenPartialSolutionRow: numCols: {0}", numCols);
-            Dump("GenPartialSolutionRow: remainingPieces: {0}", remainingPieces);
-            Dump("GenPartialSolutionRow: remainingIdxs: {0}", SequenceToString(remainingIdxs));
-            Dump("GenPartialSolutionRow: lastPiece: {0}", lastPiece);
-
-            if (lastPiece)
-            {
-                Dump("GenPartialSolutionRow(lastPiece): numCols: {0}", numCols);
-                Dump("GenPartialSolutionRow(lastPiece): remainingPieces: {0}", remainingPieces);
-                Dump("GenPartialSolutionRow(lastPiece): remainingIdxs.Count: {0}", remainingIdxs.Count);
-                Dump("GenPartialSolutionRow(lastPiece): remainingIdxs: {0}", SequenceToString(remainingIdxs));
-                var selectedIdxs = new List<int>(remainingIdxs);
-                Dump("GenPartialSolutionRow(lastPiece): selectedIdxs: {0}", SequenceToString(selectedIdxs));
-                return Any.Value(MakePartialSolutionRow(numCols, remainingIdxs, selectedIdxs));
-            }
-
-            return
-                from pieceLength in Any.IntBetween(1, remainingIdxs.Count/2)
-                let _1 = Dump("GenPartialSolutionRow(!lastPiece): numCols: {0}", numCols)
-                let _2 = Dump("GenPartialSolutionRow(!lastPiece): remainingPieces: {0}", remainingPieces)
-                let _3 = Dump("GenPartialSolutionRow(!lastPiece): pieceLength: {0}", pieceLength)
-                let _4 = Dump("GenPartialSolutionRow(!lastPiece): remainingIdxs.Count: {0}", remainingIdxs.Count)
-                let _5 = Dump("GenPartialSolutionRow(!lastPiece): remainingIdxs: {0}", SequenceToString(remainingIdxs))
-                from selectedIdxs in GenExtensions.PickValues(pieceLength, remainingIdxs.ToArray())
-                let _6 = Dump("GenPartialSolutionRow(!lastPiece): selectedIdxs: {0}", SequenceToString(selectedIdxs))
-                select MakePartialSolutionRow(numCols, remainingIdxs, selectedIdxs);
+            return null;
         }
 
         private static object Dump(string format, params object[] args)
