@@ -39,10 +39,10 @@ namespace DlxLibPropertyTests
             return Prop.ofTestable(true);
         }
 
-        [FsCheck.NUnit.Property(Verbose = true, MaxTest = 1)]
+        [FsCheck.NUnit.Property(Verbose = true)]
         public Property PartialSolutionRowsSample()
         {
-            var gen = GenPartialSolutionRows(18, 3);
+            var gen = GenPartialSolutionRows(18, 5);
             var samples = Gen.sample(10, 10, gen);
 
             var sampleIndex = 0;
@@ -130,40 +130,26 @@ namespace DlxLibPropertyTests
                 select pieceIndexLists.Select(selectedIdxs => MakePartialSolutionRow(numCols, selectedIdxs)).ToList();
         }
 
+        private static Gen<List<List<int>>> RecursiveHelper(
+            IList<int> remainingPieceLengths,
+            int[] remainingIdxs)
+        {
+            if (!remainingPieceLengths.Any()) return Any.Value(new List<List<int>>());
+
+            var pieceLength = remainingPieceLengths.First();
+
+            return
+                from selectedIdxs in GenExtensions.PickValues(pieceLength, remainingIdxs)
+                let newRemainingIdxs = RemoveSelectedIdxs(remainingIdxs, selectedIdxs).ToArray()
+                from rest in RecursiveHelper(remainingPieceLengths.Skip(1).ToList(), newRemainingIdxs)
+                let x = new[] {selectedIdxs}.ToList()
+                select x.Concat(rest).ToList();
+        }
+
         private static Gen<List<List<int>>> GenPieceIndexLists(int numCols, IEnumerable<int> pieceLengths)
         {
-            var remainingIdxs = Enumerable.Range(0, numCols).ToList();
-
-            Dump("GenPieceIndexLists numCols: {0}", numCols);
-            Dump("GenPieceIndexLists pieceLengths: {0}", SequenceToString(pieceLengths));
-
-            var gens = new List<Gen<List<int>>>();
-
-            // ReSharper disable once LoopCanBeConvertedToQuery
-            foreach (var pieceLength in pieceLengths)
-            {
-                Dump("GenPieceIndexLists (loop) pieceLength: {0}", pieceLength);
-                Dump("GenPieceIndexLists (loop) remainingIdxs: {0}", SequenceToString(remainingIdxs));
-
-                // **********************************************************************
-                // BUG: I think the problem is here...
-                // We always pass in the full initial list of all remaining idxs
-                // e.g. [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17]
-                // **********************************************************************
-                var g1 = GenExtensions.PickValues(pieceLength, remainingIdxs.ToArray());
-
-                var g2 = g1.Select(selectedIdxs =>
-                {
-                    Dump("g2 remainingIdxs before in place removal: {0}", SequenceToString(remainingIdxs));
-                    Dump("g2 selectedIdxs: {0}", SequenceToString(selectedIdxs));
-                    InPlaceRemoveSelectedIdxs(remainingIdxs, selectedIdxs);
-                    Dump("g2 remainingIdxs after in place removal: {0}", SequenceToString(remainingIdxs));
-                    return selectedIdxs;
-                });
-                gens.Add(g2);
-            }
-
-            return Any.SequenceOf(gens);
+            var remainingIdxs = Enumerable.Range(0, numCols).ToArray();
+            return RecursiveHelper(pieceLengths.ToList(), remainingIdxs);
         }
 
         private static List<int> MakePartialSolutionRow(int numCols, IEnumerable<int> selectedIdxs)
@@ -173,22 +159,9 @@ namespace DlxLibPropertyTests
             return partialSolutionRow;
         }
 
-        //private static List<int> MakePartialSolutionRow(int numCols, IList<int> remainingIdxs, IList<int> selectedIdxs)
-        //{
-        //    var result = Enumerable.Repeat(0, numCols).ToList();
-        //    foreach (var idx in selectedIdxs) result[idx] = 1;
-        //    InPlaceRemoveSelectedIdxs(remainingIdxs, selectedIdxs);
-        //    return result;
-        //}
-
-        //private static IEnumerable<int> RemoveSelectedIdxs(IEnumerable<int> remainingIdxs, IEnumerable<int> selectedIdxs)
-        //{
-        //    return remainingIdxs.Except(selectedIdxs);
-        //}
-
-        private static void InPlaceRemoveSelectedIdxs(ICollection<int> remainingIdxs, IEnumerable<int> selectedIdxs)
+        private static IEnumerable<int> RemoveSelectedIdxs(IEnumerable<int> remainingIdxs, IEnumerable<int> selectedIdxs)
         {
-            foreach (var selectedIdx in selectedIdxs) remainingIdxs.Remove(selectedIdx);
+            return remainingIdxs.Except(selectedIdxs);
         }
 
         //private static Gen<int[,]> GenMatrixOfIntWithMultipleSolutions(int n)
