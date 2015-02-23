@@ -5,6 +5,7 @@ using DlxLib;
 using FsCheck;
 using FsCheck.Fluent;
 using FsCheckUtils;
+using Microsoft.FSharp.Core;
 using NUnit.Framework;
 
 namespace DlxLibPropertyTests
@@ -14,51 +15,77 @@ namespace DlxLibPropertyTests
     [TestFixture]
     public class PropertyTests
     {
+        private static readonly Config Config = Config.VerboseThrowOnFailure;
+
         [FsCheck.NUnit.Property(Verbose = false)]
-        public Property ExactCoverProblemsWithNoSolutions()
+        public Property ExactCoverProblemsWithNoSolutionsProperty()
         {
             return Spec
                 .For(GenMatrixOfIntWithNoSolutions(), matrix => !new Dlx().Solve(matrix).Any())
+                .Shrink(_ => Enumerable.Empty<int[,]>())
                 .Build();
         }
 
-        [FsCheck.NUnit.Property(Verbose = false)]
-        public Property ExactCoverProblemsWithSingleSolution()
+        [Test]
+        public void ExactCoverProblemsWithSingleSolutionTest()
         {
-            return Spec
-                .For(GenMatrixOfIntWithSingleSolution(), matrix =>
-                {
-                    var solutions = new Dlx().Solve(matrix).ToList();
-                    return solutions.Count == 1 && CheckSolution(solutions.First(), matrix);
-                })
-                .Build();
+            var arb = Arb.fromGen(GenMatrixOfIntWithSingleSolution());
+            var property = Prop.forAll(arb, FSharpFunc<int[,], Property>.FromConverter(matrix =>
+            {
+                var solutions = new Dlx().Solve(matrix).ToList();
+                var p1 = PropExtensions.Label(solutions.Count() == 1, "Expected exactly one solution");
+                var p2 = CheckSolution(solutions.First(), matrix);
+                return PropExtensions.And(p1, p2);
+            }));
+            Check.One(Config, property);
         }
 
         //[FsCheck.NUnit.Property(Verbose = false)]
-        //public Property ExactCoverProblemsWithMultipleSolutions(int nParam)
+        //public Property ExactCoverProblemsWithMultipleSolutionsProperty(int nParam)
         //{
         //    return Spec
         //        .For(Any.Value(nParam), GenMatrixOfIntWithMultipleSolutions(nParam), (n, matrix) => new Dlx().Solve(matrix).Count() == n)
         //        .When((n, _) => n > 1)
+        //        .Shrink(_ => Enumerable.Empty<int[,]>())
         //        .Build();
         //}
 
-        private static bool CheckSolution(Solution solution, int[,] matrix)
+        private static Property CheckSolution(Solution solution, int[,] matrix)
         {
             var numCols = matrix.GetLength(1);
-            var numOnes = 0;
-            var numZeros = 0;
+            var numSolutionRows = solution.RowIndexes.Count();
+            var expectedNumZerosPerColumn = numSolutionRows - 1;
+            var colProperties = new List<Property>();
 
-            foreach (var rowIndex in solution.RowIndexes)
+            Func<int, int, string> label1 = (colIndex, numOnes) => string.Format(
+                "Expected column {0} to contain a single 1 but it contains {1}",
+                colIndex,
+                numOnes);
+
+            Func<int, int, string> label2 = (colIndex, numZeros) => string.Format(
+                "Expected column {0} to contain exactly {1} 0s but it contains {2}",
+                colIndex,
+                expectedNumZerosPerColumn,
+                numZeros);
+
+            for (var colIndex = 0; colIndex < numCols; colIndex++)
             {
-                for (var colIndex = 0; colIndex < numCols; colIndex++)
+                var numZeros = 0;
+                var numOnes = 0;
+
+                foreach (var rowIndex in solution.RowIndexes)
                 {
-                    if (matrix[rowIndex, colIndex] == 1) numOnes++;
                     if (matrix[rowIndex, colIndex] == 0) numZeros++;
+                    if (matrix[rowIndex, colIndex] == 1) numOnes++;
                 }
+
+                var p1 = PropExtensions.Label(numOnes == 1, label1(colIndex, numOnes));
+                var p2 = PropExtensions.Label(numZeros == expectedNumZerosPerColumn, label2(colIndex, numZeros));
+
+                colProperties.Add(PropExtensions.And(p1, p2));
             }
 
-            return (numOnes == numCols) && (numOnes + numZeros == numCols * solution.RowIndexes.Count());
+            return PropExtensions.AndAll(colProperties.ToArray());
         }
 
         private static Gen<int[,]> GenMatrixOfIntWithNoSolutions()
