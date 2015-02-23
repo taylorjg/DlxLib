@@ -40,16 +40,6 @@ namespace DlxLibPropertyTests
             Check.One(Config, property);
         }
 
-        //[FsCheck.NUnit.Property(Verbose = false)]
-        //public Property ExactCoverProblemsWithMultipleSolutionsProperty(int nParam)
-        //{
-        //    return Spec
-        //        .For(Any.Value(nParam), GenMatrixOfIntWithMultipleSolutions(nParam), (n, matrix) => new Dlx().Solve(matrix).Count() == n)
-        //        .When((n, _) => n > 1)
-        //        .Shrink(_ => Enumerable.Empty<int[,]>())
-        //        .Build();
-        //}
-
         private static Property CheckSolution(Solution solution, int[,] matrix)
         {
             var numCols = matrix.GetLength(1);
@@ -117,10 +107,13 @@ namespace DlxLibPropertyTests
                 select OverrideSomeRows(zeroRows, partialSolutionRows, overrideIdxs).To2DArray();
         }
 
-        //private static Gen<int[,]> GenMatrixOfIntWithMultipleSolutions(int n)
-        //{
-        //    return Any.OfType<int[,]>();
-        //}
+        private static Gen<List<List<int>>> GenPartialSolutionRows(int numCols, int numPieces)
+        {
+            return
+                from pieceLengths in GenPieceLengths(numCols, numPieces)
+                from pieceIndexLists in GenPieceIndexLists(numCols, pieceLengths)
+                select pieceIndexLists.Select(selectedIdxs => MakePartialSolutionRow(numCols, selectedIdxs)).ToList();
+        }
 
         private static List<List<int>> OverrideSomeRows(List<List<int>> rows, IReadOnlyList<List<int>> overrideRows, IEnumerable<int> overrideIdxs)
         {
@@ -140,33 +133,21 @@ namespace DlxLibPropertyTests
                 select x.Concat(new[] { numCols - sum }).ToList();
         }
 
-        private static Gen<List<List<int>>> GenPartialSolutionRows(int numCols, int numPieces)
-        {
-            return
-                from pieceLengths in GenPieceLengths(numCols, numPieces)
-                from pieceIndexLists in GenPieceIndexLists(numCols, pieceLengths)
-                select pieceIndexLists.Select(selectedIdxs => MakePartialSolutionRow(numCols, selectedIdxs)).ToList();
-        }
-
         private static Gen<List<List<int>>> GenPieceIndexLists(int numCols, IEnumerable<int> pieceLengths)
         {
-            var remainingIdxs = Enumerable.Range(0, numCols).ToList();
-            // TODO: Could we do this with a call to pieceLengths.Aggregate() instead ?
-            return GenPieceIndexListsRecursiveHelper(pieceLengths.ToList(), remainingIdxs);
-        }
+            var initialPieceIndexLists = Enumerable.Empty<List<int>>();
+            var initialIdxs = Enumerable.Range(0, numCols);
+            var seed = Any.Value(Tuple.Create(initialPieceIndexLists, initialIdxs));
 
-        private static Gen<List<List<int>>> GenPieceIndexListsRecursiveHelper(IList<int> remainingPieceLengths, IList<int> remainingIdxs)
-        {
-            if (!remainingPieceLengths.Any()) return Any.Value(new List<List<int>>());
-
-            var pieceLength = remainingPieceLengths.First();
-
-            return
-                from selectedIdxs in GenExtensions.PickValues(pieceLength, remainingIdxs.ToArray())
-                let newRemainingIdxs = RemoveSelectedIdxs(remainingIdxs, selectedIdxs).ToList()
-                let head = new[] { selectedIdxs }.ToList()
-                from tail in GenPieceIndexListsRecursiveHelper(remainingPieceLengths.Skip(1).ToList(), newRemainingIdxs)
-                select head.Concat(tail).ToList();
+            return pieceLengths
+                .Aggregate(seed, (acc, pieceLength) => (
+                    from tuple in acc
+                    let listSoFar = tuple.Item1
+                    let remainingIdxs = tuple.Item2
+                    from selectedIdxs in GenExtensions.PickValues(pieceLength, remainingIdxs.ToArray())
+                    let newRemainingIdxs = RemoveSelectedIdxs(remainingIdxs, selectedIdxs)
+                    select Tuple.Create(listSoFar.Concat(new[] {selectedIdxs}), newRemainingIdxs)))
+                .Select(tuple => tuple.Item1.ToList());
         }
 
         private static List<int> MakePartialSolutionRow(int numCols, IEnumerable<int> selectedIdxs)
