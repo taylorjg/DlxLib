@@ -80,14 +80,27 @@ namespace DlxLibPropertyTests
         private static Gen<int[,]> GenMatrixOfIntWithSingleSolution()
         {
             return
-                from numCols in Any.IntBetween(2, 100)
+                from numCols in Any.IntBetween(2, 20)
                 from numPieces in Any.IntBetween(1, Math.Min(5, numCols))
+                from numRows in Any.IntBetween(numPieces, 20)
                 from partialSolutionRows in GenPartialSolutionRows(numCols, numPieces)
-                // TODO: need to generate a mix of 90% rows of all 0s, 10% partial solution rows
-                select partialSolutionRows.To2DArray();
+                let genZeroRow = Any.Value(Enumerable.Repeat(0, numCols).ToList())
+                from zeroRows in genZeroRow.MakeListOfLength(numRows)
+                from overrideIdxs in GenExtensions.PickValues(numPieces, Enumerable.Range(0, numRows))
+                select OverrideSomeRows(zeroRows, partialSolutionRows, overrideIdxs).To2DArray();
         }
 
-        // TODO: add an FsCheckUtils method to shuffle a list of items...
+        //private static Gen<int[,]> GenMatrixOfIntWithMultipleSolutions(int n)
+        //{
+        //    return Any.OfType<int[,]>();
+        //}
+
+        private static List<List<int>> OverrideSomeRows(List<List<int>> rows, IReadOnlyList<List<int>> overrideRows, IEnumerable<int> overrideIdxs)
+        {
+            var fromIdx = 0;
+            foreach (var toIdx in overrideIdxs) rows[toIdx] = overrideRows[fromIdx++];
+            return rows;
+        }
 
         private static Gen<List<int>> GenPieceLengths(int numCols, int numPieces)
         {
@@ -135,11 +148,6 @@ namespace DlxLibPropertyTests
             foreach (var selectedIdx in selectedIdxs) partialSolutionRow[selectedIdx] = 1;
             return partialSolutionRow;
         }
-
-        //private static Gen<int[,]> GenMatrixOfIntWithMultipleSolutions(int n)
-        //{
-        //    return Any.OfType<int[,]>();
-        //}
 
         private static IEnumerable<int> RemoveSelectedIdxs(IEnumerable<int> remainingIdxs, IEnumerable<int> selectedIdxs)
         {
