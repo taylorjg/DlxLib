@@ -115,7 +115,7 @@ namespace DlxLibPropertyTests
         {
             return
                 from pieceLengths in GenPieceLengths(numCols, numPieces)
-                from pieceIndexLists in GenPieceIndexLists2(numCols, pieceLengths)
+                from pieceIndexLists in GenPieceIndexLists(numCols, pieceLengths)
                 select pieceIndexLists.Select(selectedIdxs => MakePartialSolutionRow(numCols, selectedIdxs)).ToList();
         }
 
@@ -154,38 +154,6 @@ namespace DlxLibPropertyTests
                     let newRemainingIdxs = RemoveSelectedIdxs(remainingIdxs, selectedIdxs)
                     select Tuple.Create(listSoFar.Concat(new[] {selectedIdxs}), newRemainingIdxs)),
                 acc => acc.Select(tuple => tuple.Item1.ToList()));
-        }
-
-        private static Gen<List<List<int>>> GenPieceIndexLists2(int numCols, IEnumerable<int> pieceLengths)
-        {
-            var initialPieceIndexLists = Enumerable.Empty<List<int>>();
-            var initialIdxs = Enumerable.Range(0, numCols);
-            var initialTuple = Tuple.Create(initialPieceIndexLists, initialIdxs);
-            var seed = GenBuilder.gen.Return(initialTuple);
-
-            return pieceLengths.Aggregate(
-                seed,
-                (acc, pieceLength) =>
-                    GenBuilder.gen.Bind(acc,
-                        FSharpFunc<Tuple<IEnumerable<List<int>>, IEnumerable<int>>,Gen<Tuple<IEnumerable<List<int>>, IEnumerable<int>>>>.FromConverter(
-                                    tuple =>
-                                    {
-                                        var listSoFar = tuple.Item1;
-                                        var remainingIdxs = tuple.Item2;
-                                        return GenBuilder.gen.Bind(GenExtensions.PickValues(pieceLength, remainingIdxs),
-                                            FSharpFunc<List<int>, Gen<Tuple<IEnumerable<List<int>>, IEnumerable<int>>>>.FromConverter(
-                                                    selectedIdxs =>
-                                                    {
-                                                        var newRemainingIdxs = RemoveSelectedIdxs(remainingIdxs, selectedIdxs);
-                                                        var newTuple = Tuple.Create(listSoFar.Concat(new[] {selectedIdxs}), newRemainingIdxs);
-                                                        return GenBuilder.gen.Return(newTuple);
-                                                    }));
-                                    })),
-                acc =>
-                    GenBuilder.gen.Bind(
-                        acc,
-                        FSharpFunc<Tuple<IEnumerable<List<int>>, IEnumerable<int>>, Gen<List<List<int>>>>.FromConverter(
-                            tuple => GenBuilder.gen.Return(tuple.Item1.ToList()))));
         }
 
         private static List<int> MakePartialSolutionRow(int numCols, IEnumerable<int> selectedIdxs)
