@@ -137,14 +137,15 @@ namespace DlxLibPropertyTests
         {
             var initialPieceIndexLists = Enumerable.Empty<List<int>>();
             var initialIdxs = Enumerable.Range(0, numCols);
-            var seed = Any.Value(Tuple.Create(initialPieceIndexLists, initialIdxs));
+            var initialTuple = Tuple.Create(initialPieceIndexLists, initialIdxs);
+            var seed = Any.Value(initialTuple);
 
             return pieceLengths
                 .Aggregate(seed, (acc, pieceLength) => (
                     from tuple in acc
                     let listSoFar = tuple.Item1
                     let remainingIdxs = tuple.Item2
-                    from selectedIdxs in GenExtensions.PickValues(pieceLength, remainingIdxs.ToArray())
+                    from selectedIdxs in GenExtensions.PickValues(pieceLength, remainingIdxs)
                     let newRemainingIdxs = RemoveSelectedIdxs(remainingIdxs, selectedIdxs)
                     select Tuple.Create(listSoFar.Concat(new[] {selectedIdxs}), newRemainingIdxs)))
                 .Select(tuple => tuple.Item1.ToList());
