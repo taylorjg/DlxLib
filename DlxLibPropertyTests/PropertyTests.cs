@@ -29,11 +29,15 @@ namespace DlxLibPropertyTests
         [Test]
         public void ExactCoverProblemsWithSingleSolutionTest()
         {
+            Func<int, string> makeLabel = numSolutions => string.Format(
+                "Expected exactly one solution but got {0}",
+                numSolutions);
+
             var arb = Arb.fromGen(GenMatrixOfIntWithSingleSolution());
             var property = Prop.forAll(arb, FSharpFunc<int[,], Property>.FromConverter(matrix =>
             {
                 var solutions = new Dlx().Solve(matrix).ToList();
-                var p1 = PropExtensions.Label(solutions.Count() == 1, "Expected exactly one solution");
+                var p1 = PropExtensions.Label(solutions.Count() == 1, makeLabel(solutions.Count()));
                 var p2 = CheckSolution(solutions.First(), matrix);
                 return PropExtensions.And(p1, p2);
             }));
@@ -47,12 +51,12 @@ namespace DlxLibPropertyTests
             var expectedNumZerosPerColumn = numSolutionRows - 1;
             var colProperties = new List<Property>();
 
-            Func<int, int, string> label1 = (colIndex, numOnes) => string.Format(
+            Func<int, int, string> makeLabel1 = (colIndex, numOnes) => string.Format(
                 "Expected column {0} to contain a single 1 but it contains {1}",
                 colIndex,
                 numOnes);
 
-            Func<int, int, string> label2 = (colIndex, numZeros) => string.Format(
+            Func<int, int, string> makeLabel2 = (colIndex, numZeros) => string.Format(
                 "Expected column {0} to contain exactly {1} 0s but it contains {2}",
                 colIndex,
                 expectedNumZerosPerColumn,
@@ -69,8 +73,8 @@ namespace DlxLibPropertyTests
                     if (matrix[rowIndex, colIndex] == 1) numOnes++;
                 }
 
-                var p1 = PropExtensions.Label(numOnes == 1, label1(colIndex, numOnes));
-                var p2 = PropExtensions.Label(numZeros == expectedNumZerosPerColumn, label2(colIndex, numZeros));
+                var p1 = PropExtensions.Label(numOnes == 1, makeLabel1(colIndex, numOnes));
+                var p2 = PropExtensions.Label(numZeros == expectedNumZerosPerColumn, makeLabel2(colIndex, numZeros));
 
                 colProperties.Add(PropExtensions.And(p1, p2));
             }
