@@ -140,15 +140,16 @@ namespace DlxLibPropertyTests
             var initialTuple = Tuple.Create(initialPieceIndexLists, initialIdxs);
             var seed = Any.Value(initialTuple);
 
-            return pieceLengths
-                .Aggregate(seed, (acc, pieceLength) => (
+            return pieceLengths.Aggregate(
+                seed,
+                (acc, pieceLength) => (
                     from tuple in acc
                     let listSoFar = tuple.Item1
                     let remainingIdxs = tuple.Item2
                     from selectedIdxs in GenExtensions.PickValues(pieceLength, remainingIdxs)
                     let newRemainingIdxs = RemoveSelectedIdxs(remainingIdxs, selectedIdxs)
-                    select Tuple.Create(listSoFar.Concat(new[] {selectedIdxs}), newRemainingIdxs)))
-                .Select(tuple => tuple.Item1.ToList());
+                    select Tuple.Create(listSoFar.Concat(new[] {selectedIdxs}), newRemainingIdxs)),
+                acc => acc.Select(tuple => tuple.Item1.ToList()));
         }
 
         private static List<int> MakePartialSolutionRow(int numCols, IEnumerable<int> selectedIdxs)
