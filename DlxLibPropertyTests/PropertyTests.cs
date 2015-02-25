@@ -17,7 +17,7 @@ namespace DlxLibPropertyTests
     {
         private static readonly Config Config = Config.VerboseThrowOnFailure;
 
-        [FsCheck.NUnit.Property(Verbose = false)]
+        [FsCheck.NUnit.Property(Verbose = true)]
         public Property ExactCoverProblemsWithNoSolutionsProperty()
         {
             return Spec
@@ -85,8 +85,8 @@ namespace DlxLibPropertyTests
         private static Gen<int[,]> GenMatrixOfIntWithNoSolutions()
         {
             return
-                from numCols in Any.IntBetween(2, 100)
-                from numRows in Any.IntBetween(2, 200)
+                from numCols in Any.IntBetween(2, 20)
+                from numRows in Any.IntBetween(2, 20)
                 from indexOfAlwaysZeroColumn in Any.IntBetween(0, numCols - 1)
                 let genZeroOrOne = Any.ValueIn(0, 1)
                 let genRow = genZeroOrOne.MakeListOfLength(numCols).Select(r =>
@@ -102,70 +102,39 @@ namespace DlxLibPropertyTests
         {
             return
                 from numCols in Any.IntBetween(2, 20)
-                from numPieces in Any.IntBetween(1, Math.Min(5, numCols))
-                from numRows in Any.IntBetween(numPieces, 20)
-                from partialSolutionRows in GenPartialSolutionRows(numCols, numPieces)
-                let genZeroRow = Any.Value(Enumerable.Repeat(0, numCols).ToList())
-                from zeroRows in genZeroRow.MakeListOfLength(numRows)
-                from overrideIdxs in GenExtensions.PickValues(numPieces, Enumerable.Range(0, numRows))
-                select OverrideSomeRows(zeroRows, partialSolutionRows, overrideIdxs).To2DArray();
+                from numPartialSolutionRows in Any.IntBetween(1, Math.Min(5, numCols))
+                from numRows in Any.IntBetween(numPartialSolutionRows, 20)
+                from matrix in Any.Value(0).MakeListOfLength(numCols).MakeListOfLength(numRows)
+                // TODO: We could get GenPartialSolutionRows to poke the 1s into the matrix directly
+                // - currently, we generate partial solutions rows separately and then poke them into the matrix
+                from randomRowIdxs in GenExtensions.PickValues(numPartialSolutionRows, Enumerable.Range(0, numRows))
+                from partialSolutionRows in GenPartialSolutionRows(numCols, numPartialSolutionRows)
+                select PokePartialSolutionRowsIntoMatrix(matrix, partialSolutionRows, randomRowIdxs).To2DArray();
         }
 
-        private static Gen<List<List<int>>> GenPartialSolutionRows(int numCols, int numPieces)
+        private static Gen<List<List<int>>> GenPartialSolutionRows(int numCols, int numPartialSolutionRows)
         {
             return
-                from pieceLengths in GenPieceLengths(numCols, numPieces)
-                from pieceIndexLists in GenPieceIndexLists(numCols, pieceLengths)
-                select pieceIndexLists.Select(selectedIdxs => MakePartialSolutionRow(numCols, selectedIdxs)).ToList();
+                from partialSolutionRows in Any.Value(0).MakeListOfLength(numCols).MakeListOfLength(numPartialSolutionRows)
+                from randomRowIdxs in Any.IntBetween(0, numPartialSolutionRows - 1).MakeListOfLength(numCols)
+                select RandomlySprinkleOnesIntoPartialSolutionRows(partialSolutionRows, randomRowIdxs);
         }
 
-        private static List<List<int>> OverrideSomeRows(List<List<int>> rows, IReadOnlyList<List<int>> overrideRows, IEnumerable<int> overrideIdxs)
+        private static List<List<int>> RandomlySprinkleOnesIntoPartialSolutionRows(List<List<int>> partialSolutionRows, IEnumerable<int> randomRowIdxs)
+        {
+            var col = 0;
+            foreach (var randomRowIdx in randomRowIdxs) partialSolutionRows[randomRowIdx][col++] = 1;
+            return partialSolutionRows;
+        }
+
+        private static List<List<int>> PokePartialSolutionRowsIntoMatrix(
+            List<List<int>> matrix,
+            IReadOnlyList<List<int>> partialSolutionRows,
+            IEnumerable<int> randomRowIdxs)
         {
             var fromIdx = 0;
-            foreach (var toIdx in overrideIdxs) rows[toIdx] = overrideRows[fromIdx++];
-            return rows;
-        }
-
-        private static Gen<List<int>> GenPieceLengths(int numCols, int numPieces)
-        {
-            if (numPieces == 1) return Any.Value(new[] { numCols }.ToList());
-
-            return
-                from x in Any.IntBetween(1, numCols / 2).MakeListOfLength(numPieces - 1)
-                let sum = x.Sum()
-                where sum < numCols
-                select x.Concat(new[] { numCols - sum }).ToList();
-        }
-
-        private static Gen<List<List<int>>> GenPieceIndexLists(int numCols, IEnumerable<int> pieceLengths)
-        {
-            var initialPieceIndexLists = Enumerable.Empty<List<int>>();
-            var initialIdxs = Enumerable.Range(0, numCols);
-            var initialTuple = Tuple.Create(initialPieceIndexLists, initialIdxs);
-            var seed = Any.Value(initialTuple);
-
-            return pieceLengths.Aggregate(
-                seed,
-                (acc, pieceLength) => (
-                    from tuple in acc
-                    let listSoFar = tuple.Item1
-                    let remainingIdxs = tuple.Item2
-                    from selectedIdxs in GenExtensions.PickValues(pieceLength, remainingIdxs)
-                    let newRemainingIdxs = RemoveSelectedIdxs(remainingIdxs, selectedIdxs)
-                    select Tuple.Create(listSoFar.Concat(new[] {selectedIdxs}), newRemainingIdxs)),
-                acc => acc.Select(tuple => tuple.Item1.ToList()));
-        }
-
-        private static List<int> MakePartialSolutionRow(int numCols, IEnumerable<int> selectedIdxs)
-        {
-            var partialSolutionRow = Enumerable.Repeat(0, numCols).ToList();
-            foreach (var selectedIdx in selectedIdxs) partialSolutionRow[selectedIdx] = 1;
-            return partialSolutionRow;
-        }
-
-        private static IEnumerable<int> RemoveSelectedIdxs(IEnumerable<int> remainingIdxs, IEnumerable<int> selectedIdxs)
-        {
-            return remainingIdxs.Except(selectedIdxs);
+            foreach (var toIdx in randomRowIdxs) matrix[toIdx] = partialSolutionRows[fromIdx++];
+            return matrix;
         }
     }
 }
