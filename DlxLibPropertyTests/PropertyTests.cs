@@ -51,6 +51,27 @@ namespace DlxLibPropertyTests
             Check.One(Config, property);
         }
 
+        [Test]
+        public void ExactCoverProblemsWithMultipleSolutionsTest()
+        {
+            const int numSolutions = 2;
+
+            Func<int, string> makeLabel = actualNumSolutions => string.Format(
+                "Expected exactly {0} solutions but got {1}",
+                numSolutions, actualNumSolutions);
+
+            var arb = Arb.fromGen(GenMatrixOfIntWithMultipleSolutions(numSolutions));
+            var property = Prop.forAll(arb, FSharpFunc<int[,], Property>.FromConverter(matrix =>
+            {
+                var solutions = new Dlx().Solve(matrix).ToList();
+                var actualNumSolutions = solutions.Count();
+                var p1 = PropExtensions.Label(actualNumSolutions == numSolutions, makeLabel(actualNumSolutions));
+                var p2 = CheckSolutions(solutions, matrix);
+                return PropExtensions.And(p1, p2);
+            }));
+            Check.One(Config, property);
+        }
+
         private static Property CheckSolutions(IEnumerable<Solution> solutions, int[,] matrix)
         {
             return PropExtensions.AndAll(solutions.Select(solution => CheckSolution(solution, matrix)).ToArray());
@@ -120,6 +141,48 @@ namespace DlxLibPropertyTests
                 from partialSolutionRows in GenPartialSolutionRows(numCols, numPartialSolutionRows)
                 from randomRowIdxs in GenExtensions.PickValues(numPartialSolutionRows, Enumerable.Range(0, numRows))
                 select PokePartialSolutionRowsIntoMatrix(matrix, partialSolutionRows, randomRowIdxs).To2DArray();
+        }
+
+        private static Gen<int[,]> GenMatrixOfIntWithMultipleSolutions(int numSolutions)
+        {
+            return
+                from numCols in Any.IntBetween(10, 20)
+                from numRows in Any.IntBetween(10, 20)
+                from matrix in Any.Value(0).MakeListOfLength(numCols).MakeListOfLength(numRows)
+                from partialSolutions in GenPartialSolution(numCols).MakeListOfLength(numSolutions)
+                let combinedPartialSolutionRows = CombinePartialSolutions(partialSolutions)
+                where NoneOfThePartialSolutionRowsOverlap(combinedPartialSolutionRows)
+                from randomRowIdxs in GenExtensions.PickValues(combinedPartialSolutionRows.Count, Enumerable.Range(0, numRows))
+                select PokePartialSolutionRowsIntoMatrix(matrix, combinedPartialSolutionRows, randomRowIdxs).To2DArray();
+        }
+
+        private class PartialSolutionRowComparer : IEqualityComparer<List<int>>
+        {
+            public bool Equals(List<int> xs, List<int> ys)
+            {
+                return xs.SequenceEqual(ys);
+            }
+
+            public int GetHashCode(List<int> xs)
+            {
+                return xs.Sum();
+            }
+        }
+
+        private static bool NoneOfThePartialSolutionRowsOverlap(IReadOnlyCollection<List<int>> combinedPartialSolutionRows)
+        {
+            var comparer = new PartialSolutionRowComparer();
+            return combinedPartialSolutionRows.Distinct(comparer).Count() == combinedPartialSolutionRows.Count;
+        }
+
+        private static List<List<int>> CombinePartialSolutions(IEnumerable<List<List<int>>> partialSolutions)
+        {
+            return partialSolutions.SelectMany(partialSolution => partialSolution).ToList();
+        }
+
+        private static Gen<List<List<int>>> GenPartialSolution(int numCols)
+        {
+            return GenPartialSolutionRows(numCols, 2);
         }
 
         private static Gen<List<List<int>>> GenPartialSolutionRows(int numCols, int numPartialSolutionRows)
