@@ -17,13 +17,20 @@ namespace DlxLibPropertyTests
     {
         private static readonly Config Config = Config.VerboseThrowOnFailure;
 
-        [FsCheck.NUnit.Property(Verbose = true)]
-        public Property ExactCoverProblemsWithNoSolutionsProperty()
+        [Test]
+        public void ExactCoverProblemsWithNoSolutionsTest()
         {
-            return Spec
-                .For(GenMatrixOfIntWithNoSolutions(), matrix => !new Dlx().Solve(matrix).Any())
-                .Shrink(_ => Enumerable.Empty<int[,]>())
-                .Build();
+            Func<int, string> makeLabel = numSolutions => string.Format(
+                "Expected no solutions but got {0}",
+                numSolutions);
+
+            var arb = Arb.fromGen(GenMatrixOfIntWithNoSolutions());
+            var property = Prop.forAll(arb, FSharpFunc<int[,], Property>.FromConverter(matrix =>
+            {
+                var solutions = new Dlx().Solve(matrix).ToList();
+                return PropExtensions.Label(!solutions.Any(), makeLabel(solutions.Count()));
+            }));
+            Check.One(Config, property);
         }
 
         [Test]
@@ -38,10 +45,15 @@ namespace DlxLibPropertyTests
             {
                 var solutions = new Dlx().Solve(matrix).ToList();
                 var p1 = PropExtensions.Label(solutions.Count() == 1, makeLabel(solutions.Count()));
-                var p2 = CheckSolution(solutions.First(), matrix);
+                var p2 = CheckSolutions(solutions, matrix);
                 return PropExtensions.And(p1, p2);
             }));
             Check.One(Config, property);
+        }
+
+        private static Property CheckSolutions(IEnumerable<Solution> solutions, int[,] matrix)
+        {
+            return PropExtensions.AndAll(solutions.Select(solution => CheckSolution(solution, matrix)).ToArray());
         }
 
         private static Property CheckSolution(Solution solution, int[,] matrix)
@@ -105,10 +117,8 @@ namespace DlxLibPropertyTests
                 from numPartialSolutionRows in Any.IntBetween(1, Math.Min(5, numCols))
                 from numRows in Any.IntBetween(numPartialSolutionRows, 20)
                 from matrix in Any.Value(0).MakeListOfLength(numCols).MakeListOfLength(numRows)
-                // TODO: We could get GenPartialSolutionRows to poke the 1s into the matrix directly
-                // - currently, we generate partial solutions rows separately and then poke them into the matrix
-                from randomRowIdxs in GenExtensions.PickValues(numPartialSolutionRows, Enumerable.Range(0, numRows))
                 from partialSolutionRows in GenPartialSolutionRows(numCols, numPartialSolutionRows)
+                from randomRowIdxs in GenExtensions.PickValues(numPartialSolutionRows, Enumerable.Range(0, numRows))
                 select PokePartialSolutionRowsIntoMatrix(matrix, partialSolutionRows, randomRowIdxs).To2DArray();
         }
 
