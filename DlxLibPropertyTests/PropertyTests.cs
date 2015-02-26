@@ -54,7 +54,7 @@ namespace DlxLibPropertyTests
         [Test]
         public void ExactCoverProblemsWithMultipleSolutionsTest()
         {
-            const int numSolutions = 2;
+            const int numSolutions = 3;
 
             Func<int, string> makeLabel = actualNumSolutions => string.Format(
                 "Expected exactly {0} solutions but got {1}",
@@ -135,12 +135,12 @@ namespace DlxLibPropertyTests
         {
             return
                 from numCols in Any.IntBetween(2, 20)
-                from numPartialSolutionRows in Any.IntBetween(1, Math.Min(5, numCols))
-                from numRows in Any.IntBetween(numPartialSolutionRows, 20)
+                from numSolutionRows in Any.IntBetween(1, Math.Min(5, numCols))
+                from numRows in Any.IntBetween(numSolutionRows, 20)
                 from matrix in Any.Value(0).MakeListOfLength(numCols).MakeListOfLength(numRows)
-                from partialSolutionRows in GenPartialSolutionRows(numCols, numPartialSolutionRows)
-                from randomRowIdxs in GenExtensions.PickValues(numPartialSolutionRows, Enumerable.Range(0, numRows))
-                select PokePartialSolutionRowsIntoMatrix(matrix, partialSolutionRows, randomRowIdxs).To2DArray();
+                from solutionRows in GenSolutionRows(numCols, numSolutionRows)
+                from randomRowIdxs in GenExtensions.PickValues(numSolutionRows, Enumerable.Range(0, numRows))
+                select PokeSolutionRowsIntoMatrix(matrix, solutionRows, randomRowIdxs).To2DArray();
         }
 
         private static Gen<int[,]> GenMatrixOfIntWithMultipleSolutions(int numSolutions)
@@ -149,65 +149,120 @@ namespace DlxLibPropertyTests
                 from numCols in Any.IntBetween(10, 20)
                 from numRows in Any.IntBetween(10, 20)
                 from matrix in Any.Value(0).MakeListOfLength(numCols).MakeListOfLength(numRows)
-                from partialSolutions in GenPartialSolution(numCols).MakeListOfLength(numSolutions)
-                let combinedPartialSolutionRows = CombinePartialSolutions(partialSolutions)
-                where NoneOfThePartialSolutionRowsOverlap(combinedPartialSolutionRows)
-                from randomRowIdxs in GenExtensions.PickValues(combinedPartialSolutionRows.Count, Enumerable.Range(0, numRows))
-                select PokePartialSolutionRowsIntoMatrix(matrix, combinedPartialSolutionRows, randomRowIdxs).To2DArray();
+                from solutions in GenSolution(numCols).MakeListOfLength(numSolutions)
+                let _ = DumpSolutions(solutions)
+                where NoneOfTheSolutionsOverlap(solutions)
+                let combinedSolutions = CombineSolutions(solutions)
+                from randomRowIdxs in GenExtensions.PickValues(combinedSolutions.Count, Enumerable.Range(0, numRows))
+                select PokeSolutionRowsIntoMatrix(matrix, combinedSolutions, randomRowIdxs).To2DArray();
         }
 
-        private class PartialSolutionRowComparer : IEqualityComparer<List<int>>
+        private static Gen<List<List<int>>> GenSolution(int numCols)
         {
-            public bool Equals(List<int> xs, List<int> ys)
-            {
-                return xs.SequenceEqual(ys);
-            }
+            //return
+            //    from numPartialSolutionRows in Any.IntBetween(1, Math.Min(5, numCols))
+            //    from partialSolutionRows in GenPartialSolutionRows(numCols, numPartialSolutionRows)
+            //    select partialSolutionRows;
 
-            public int GetHashCode(List<int> xs)
-            {
-                return xs.Sum();
-            }
+            return
+                from partialSolutionRows in GenSolutionRows(numCols, 3)
+                select partialSolutionRows;
         }
 
-        private static bool NoneOfThePartialSolutionRowsOverlap(IReadOnlyCollection<List<int>> combinedPartialSolutionRows)
+        private static Gen<List<List<int>>> GenSolutionRows(int numCols, int numSolutionRows)
         {
-            var comparer = new PartialSolutionRowComparer();
-            return combinedPartialSolutionRows.Distinct(comparer).Count() == combinedPartialSolutionRows.Count;
+            return
+                from solutionRows in Any.Value(0).MakeListOfLength(numCols).MakeListOfLength(numSolutionRows)
+                from randomRowIdxPerColumn in Any.IntBetween(0, numSolutionRows - 1).MakeListOfLength(numCols)
+                select RandomlySprinkleOnesIntoSolutionRows(solutionRows, randomRowIdxPerColumn);
         }
 
-        private static List<List<int>> CombinePartialSolutions(IEnumerable<List<List<int>>> partialSolutions)
+        private static List<List<int>> CombineSolutions(IEnumerable<List<List<int>>> partialSolutions)
         {
             return partialSolutions.SelectMany(partialSolution => partialSolution).ToList();
         }
 
-        private static Gen<List<List<int>>> GenPartialSolution(int numCols)
+        private static List<List<int>> RandomlySprinkleOnesIntoSolutionRows(List<List<int>> solutionRows, IEnumerable<int> randomRowIdxPerColumn)
         {
-            return GenPartialSolutionRows(numCols, 2);
+            var colIndex = 0;
+            foreach (var randomRowIdx in randomRowIdxPerColumn) solutionRows[randomRowIdx][colIndex++] = 1;
+            return solutionRows;
         }
 
-        private static Gen<List<List<int>>> GenPartialSolutionRows(int numCols, int numPartialSolutionRows)
-        {
-            return
-                from partialSolutionRows in Any.Value(0).MakeListOfLength(numCols).MakeListOfLength(numPartialSolutionRows)
-                from randomRowIdxs in Any.IntBetween(0, numPartialSolutionRows - 1).MakeListOfLength(numCols)
-                select RandomlySprinkleOnesIntoPartialSolutionRows(partialSolutionRows, randomRowIdxs);
-        }
-
-        private static List<List<int>> RandomlySprinkleOnesIntoPartialSolutionRows(List<List<int>> partialSolutionRows, IEnumerable<int> randomRowIdxs)
-        {
-            var col = 0;
-            foreach (var randomRowIdx in randomRowIdxs) partialSolutionRows[randomRowIdx][col++] = 1;
-            return partialSolutionRows;
-        }
-
-        private static List<List<int>> PokePartialSolutionRowsIntoMatrix(
+        private static List<List<int>> PokeSolutionRowsIntoMatrix(
             List<List<int>> matrix,
-            IReadOnlyList<List<int>> partialSolutionRows,
+            IReadOnlyList<List<int>> solutionRows,
             IEnumerable<int> randomRowIdxs)
         {
             var fromIdx = 0;
-            foreach (var toIdx in randomRowIdxs) matrix[toIdx] = partialSolutionRows[fromIdx++];
+            foreach (var toIdx in randomRowIdxs) matrix[toIdx] = solutionRows[fromIdx++];
             return matrix;
+        }
+
+        private static bool NoneOfTheSolutionsOverlap(IReadOnlyList<List<List<int>>> solutions)
+        {
+            for (var i = 0; i < solutions.Count - 1; i++)
+            {
+                for (var j = i + 1; j < solutions.Count; j++)
+                {
+                    if (SolutionsOverlap(solutions[i], solutions[j]) || SolutionsOverlap(solutions[j], solutions[i]))
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        }
+
+        private static bool SolutionsOverlap(IEnumerable<List<int>> solutionA, List<List<int>> solutionB)
+        {
+            foreach (var rowA in solutionA)
+            {
+                foreach (var rowIndex in Enumerable.Range(0, solutionB.Count))
+                {
+                    var copyOfSolution = new List<List<int>>(solutionB);
+                    copyOfSolution[rowIndex] = rowA;
+                    if (CheckSolution(copyOfSolution))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        private static bool CheckSolution(IReadOnlyList<List<int>> solution)
+        {
+            var numCols = solution[0].Count;
+
+            for (var colIndex = 0; colIndex < numCols; colIndex++)
+            {
+                var numOnesInColumn = solution.Count(row => row[colIndex] == 1);
+                if (numOnesInColumn != 1) return false;
+            }
+
+            return true;
+        }
+
+        private static object DumpSolutions(IEnumerable<List<List<int>>> solutions)
+        {
+            var solutionIndex = 0;
+            foreach (var solution in solutions) DumpSolution(solution, solutionIndex++);
+            return null;
+        }
+
+        private static void DumpSolution(IEnumerable<List<int>> solution, int solutionIndex = -1)
+        {
+            if (solutionIndex >= 0) Console.WriteLine("Solution {0}", solutionIndex);
+            var rowIndex = 0;
+            foreach (var row in solution) DumpRow(row, rowIndex++);
+        }
+
+        private static void DumpRow(IEnumerable<int> row, int rowIndex)
+        {
+            Console.WriteLine("[{0}: [{1}]", rowIndex, string.Join(",", row.Select(x => Convert.ToString(x))));
         }
     }
 }
