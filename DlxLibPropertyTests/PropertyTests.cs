@@ -172,23 +172,12 @@ namespace DlxLibPropertyTests
 
         private static Gen<List<List<List<int>>>> GenPartitionedSolutions(int numCols, IEnumerable<Tuple<int, int>> partitions)
         {
-            // TODO: I think it should be possible to use Any.SequenceOf() instead of Enumerable.Aggregate()
-
-            var seed = Any.Value(Enumerable.Empty<List<List<int>>>());
-
-            return partitions.Aggregate(
-                seed,
-                (acc, partition) =>
-                {
-                    var startIdx1 = partition.Item1;
-                    var endIdx1 = partition.Item2;
-
-                    return (
-                        from solutions in acc
-                        from v3 in GenPartitionedSolution(numCols, startIdx1, endIdx1)
-                        select solutions.Concat(new[] {v3}));
-                },
-                acc => acc.Select(solutions => solutions.ToList()));
+            return Any.SequenceOf(partitions.Select(partition =>
+            {
+                var startIdx = partition.Item1;
+                var endIdx = partition.Item2;
+                return GenPartitionedSolution(numCols, startIdx, endIdx);
+            }));
         }
 
         private static Gen<List<List<int>>> GenSolution(int numCols)
