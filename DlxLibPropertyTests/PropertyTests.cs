@@ -154,28 +154,42 @@ namespace DlxLibPropertyTests
         private static Gen<int[,]> GenMatrixOfIntWithMultipleSolutions(int numSolutions)
         {
             return
-                // TODO: use varying random part lengths instead of having them all the same (randomly chosen) width
-                from randomPartLength in Any.IntBetween(1, 5)
-                let numCols = randomPartLength*numSolutions
-                let partitions = MakePartitions(numSolutions, randomPartLength)
+                from numCols in Any.IntBetween(numSolutions, numSolutions * 10)
+                from partitions in GenPartitions(numCols, numSolutions)
                 from solutions in GenPartitionedSolutions(numCols, partitions)
                 let combinedSolutions = CombineSolutions(solutions)
-                from numRows in Any.IntBetween(combinedSolutions.Count, combinedSolutions.Count * 2)
+                from numRows in Any.IntBetween(combinedSolutions.Count, combinedSolutions.Count * 5)
                 from matrix in Any.Value(0).MakeListOfLength(numCols).MakeListOfLength(numRows)
                 from randomRowIdxs in GenExtensions.PickValues(combinedSolutions.Count, Enumerable.Range(0, numRows))
                 select PokeSolutionRowsIntoMatrix(matrix, combinedSolutions, randomRowIdxs).To2DArray();
         }
 
-        private static IEnumerable<Tuple<int, int>> MakePartitions(int numSolutions, int randomPartLength)
+        private static Gen<IEnumerable<Tuple<int, int>>> GenPartitions(int numCols, int numSolutions)
         {
-            return Enumerable
-                .Range(0, numSolutions)
-                .Select(partitionIdx => MakePartition(partitionIdx, randomPartLength));
+            return
+                from partitionLengths in GenPartitionLengths(numCols, numSolutions)
+                select MakePartitions(partitionLengths);
         }
 
-        private static Tuple<int, int> MakePartition(int partitionIdx, int randomPartLength)
+        private static Gen<IEnumerable<int>> GenPartitionLengths(int numCols, int numSolutions)
         {
-            return Tuple.Create(randomPartLength*partitionIdx, randomPartLength*(partitionIdx + 1));
+            return
+                from partitionLength in Any.IntBetween(1, numCols / 2).MakeListOfLength(numSolutions - 1)
+                let sum = partitionLength.Sum()
+                where sum < numCols
+                select partitionLength.Concat(new[] { numCols - sum });
+        }
+
+        private static IEnumerable<Tuple<int, int>> MakePartitions(IEnumerable<int> partitionLengths)
+        {
+            var currentStartIdx = 0;
+
+            return partitionLengths.Select(partitionLength =>
+            {
+                var tuple = Tuple.Create(currentStartIdx, currentStartIdx + partitionLength);
+                currentStartIdx += partitionLength;
+                return tuple;
+            });
         }
 
         private static Gen<List<List<List<int>>>> GenPartitionedSolutions(int numCols, IEnumerable<Tuple<int, int>> partitions)
