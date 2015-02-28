@@ -24,12 +24,14 @@ namespace DlxLibPropertyTests
                 "Expected no solutions but got {0}",
                 numSolutions);
 
-            var arb = Arb.fromGen(GenMatrixOfIntWithNoSolutions());
-            var property = Prop.forAll(arb, FSharpFunc<int[,], Property>.FromConverter(matrix =>
+            var arbMatrix = Arb.fromGen(GenMatrixOfIntWithNoSolutions());
+
+            var property = Prop.forAll(arbMatrix, FSharpFunc<int[,], Property>.FromConverter(matrix =>
             {
                 var solutions = new Dlx().Solve(matrix).ToList();
                 return PropExtensions.Label(!solutions.Any(), makeLabel(solutions.Count()));
             }));
+
             Check.One(Config, property);
         }
 
@@ -40,36 +42,42 @@ namespace DlxLibPropertyTests
                 "Expected exactly one solution but got {0}",
                 numSolutions);
 
-            var arb = Arb.fromGen(GenMatrixOfIntWithSingleSolution());
-            var property = Prop.forAll(arb, FSharpFunc<int[,], Property>.FromConverter(matrix =>
+            var arbMatrix = Arb.fromGen(GenMatrixOfIntWithSingleSolution());
+
+            var property = Prop.forAll(arbMatrix, FSharpFunc<int[,], Property>.FromConverter(matrix =>
             {
                 var solutions = new Dlx().Solve(matrix).ToList();
                 var p1 = PropExtensions.Label(solutions.Count() == 1, makeLabel(solutions.Count()));
                 var p2 = CheckSolutions(solutions, matrix);
                 return PropExtensions.And(p1, p2);
             }));
+
             Check.One(Config, property);
         }
 
         [Test]
         public void ExactCoverProblemsWithMultipleSolutionsTest()
         {
-            // TODO: choose a random number of solutions e.g. between 2 and 5
-            const int numSolutions = 3;
+            var arbNumSolutions = Arb.fromGen(Any.IntBetween(2, 5));
 
-            Func<int, string> makeLabel = actualNumSolutions => string.Format(
-                "Expected exactly {0} solutions but got {1}",
-                numSolutions, actualNumSolutions);
-
-            var arb = Arb.fromGen(GenMatrixOfIntWithMultipleSolutions(numSolutions));
-            var property = Prop.forAll(arb, FSharpFunc<int[,], Property>.FromConverter(matrix =>
+            var property = Prop.forAll(arbNumSolutions, FSharpFunc<int, Property>.FromConverter(numSolutions =>
             {
-                var solutions = new Dlx().Solve(matrix).ToList();
-                var actualNumSolutions = solutions.Count();
-                var p1 = PropExtensions.Label(actualNumSolutions == numSolutions, makeLabel(actualNumSolutions));
-                var p2 = CheckSolutions(solutions, matrix);
-                return PropExtensions.And(p1, p2);
+                Func<int, string> makeLabel = actualNumSolutions => string.Format(
+                    "Expected exactly {0} solutions but got {1}",
+                    numSolutions, actualNumSolutions);
+
+                var arbMatrix = Arb.fromGen(GenMatrixOfIntWithMultipleSolutions(numSolutions));
+
+                return Prop.forAll(arbMatrix, FSharpFunc<int[,], Property>.FromConverter(matrix =>
+                {
+                    var solutions = new Dlx().Solve(matrix).ToList();
+                    var actualNumSolutions = solutions.Count();
+                    var p1 = PropExtensions.Label(actualNumSolutions == numSolutions, makeLabel(actualNumSolutions));
+                    var p2 = CheckSolutions(solutions, matrix);
+                    return PropExtensions.And(p1, p2);
+                }));
             }));
+
             Check.One(Config, property);
         }
 
