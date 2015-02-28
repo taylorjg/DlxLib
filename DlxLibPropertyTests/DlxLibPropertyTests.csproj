@@ -35,12 +35,6 @@
     <Reference Include="FsCheck">
       <HintPath>..\packages\FsCheck.1.0.4\lib\net45\FsCheck.dll</HintPath>
     </Reference>
-    <Reference Include="FsCheck.NUnit">
-      <HintPath>..\packages\FsCheck.Nunit.1.0.4\lib\net45\FsCheck.NUnit.dll</HintPath>
-    </Reference>
-    <Reference Include="FsCheck.NUnit.Addin">
-      <HintPath>..\packages\FsCheck.Nunit.1.0.4\lib\net45\FsCheck.NUnit.Addin.dll</HintPath>
-    </Reference>
     <Reference Include="FsCheckUtils">
       <HintPath>..\packages\FsCheckUtils.1.0.1.0\lib\net45\FsCheckUtils.dll</HintPath>
     </Reference>
@@ -66,7 +60,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="FsCheckAddin.cs" />
     <Compile Include="JaggedArrayExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PropertyTests.cs" />
