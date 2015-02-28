@@ -54,6 +54,7 @@ namespace DlxLibPropertyTests
         [Test]
         public void ExactCoverProblemsWithMultipleSolutionsTest()
         {
+            // TODO: choose a random number of solutions e.g. between 2 and 5
             const int numSolutions = 3;
 
             Func<int, string> makeLabel = actualNumSolutions => string.Format(
@@ -145,6 +146,7 @@ namespace DlxLibPropertyTests
         private static Gen<int[,]> GenMatrixOfIntWithMultipleSolutions(int numSolutions)
         {
             return
+                // TODO: use varying random part lengths instead of having them all the same (randomly chosen) width
                 from randomPartLength in Any.IntBetween(1, 5)
                 let numCols = randomPartLength*numSolutions
                 let partitions = MakePartitions(numSolutions, randomPartLength)
@@ -170,6 +172,8 @@ namespace DlxLibPropertyTests
 
         private static Gen<List<List<List<int>>>> GenPartitionedSolutions(int numCols, IEnumerable<Tuple<int, int>> partitions)
         {
+            // TODO: I think it should be possible to use Any.SequenceOf() instead of Enumerable.Aggregate()
+
             var seed = Any.Value(Enumerable.Empty<List<List<int>>>());
 
             return partitions.Aggregate(
@@ -207,6 +211,7 @@ namespace DlxLibPropertyTests
                 from otherSolutionRows in GenRow(numCols, startIdx, endIdx, false).MakeListOfLength(numSolutionRows - 1)
                 let solutionRows = new[] {firstSolutionRow}.Concat(otherSolutionRows).ToList()
                 from randomRowIdxPerColumn in Any.IntBetween(0, numSolutionRows - 1).MakeListOfLength(endIdx - startIdx)
+                    .Where(idxs => Enumerable.Range(0, numSolutionRows).All(idxs.Contains))
                 select RandomlySprinkleOnesIntoSolutionRows(solutionRows, startIdx, randomRowIdxPerColumn);
         }
 
@@ -225,7 +230,10 @@ namespace DlxLibPropertyTests
                 select row;
         }
 
-        private static List<List<int>> RandomlySprinkleOnesIntoSolutionRows(List<List<int>> solutionRows, int startIdx, IEnumerable<int> randomRowIdxPerColumn)
+        private static List<List<int>> RandomlySprinkleOnesIntoSolutionRows(
+            List<List<int>> solutionRows,
+            int startIdx,
+            IEnumerable<int> randomRowIdxPerColumn)
         {
             var colIndex = startIdx;
             foreach (var randomRowIdx in randomRowIdxPerColumn) solutionRows[randomRowIdx][colIndex++] = 1;
