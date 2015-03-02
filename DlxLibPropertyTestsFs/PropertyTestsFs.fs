@@ -42,31 +42,44 @@ let genRow numCols startIdx endIdx isFirstRow =
         return row
     }
 
-let randomlySprinkleOnesIntoSolutionRows solutionRows startIdx randomRowIdxPerColumn =
+let randomlySprinkleOnesIntoSolutionRows solutionRows startIdx randomRowIdxs =
+
     // var colIndex = startIdx;
     // foreach (var randomRowIdx in randomRowIdxPerColumn) solutionRows[randomRowIdx][colIndex++] = 1;
     // return solutionRows;
-    let mutable colIndex = startIdx
-    Seq.iter (fun randomRowIdx -> ()) randomRowIdxPerColumn
-    colIndex <- colIndex + 1
+
+    // let mutable colIndex = startIdx
+    // Seq.iter (fun randomRowIdx -> ()) randomRowIdxs
+    // colIndex <- colIndex + 1
+
     solutionRows
 
 let pokeSolutionRowsIntoMatrix matrix solution randomRowIdxs =
+
     // var fromIdx = 0;
     // foreach (var toIdx in randomRowIdxs) matrix[toIdx] = solutionRows[fromIdx++];
     // return matrix;
-    let mutable fromIndex = 0
-    fromIndex <- fromIndex + 1
+
+    // let mutable fromIndex = 0
+    // fromIndex <- fromIndex + 1
+
     matrix
+
+let allSolutionRowsAreRepresented numSolutionRows randomRowIdxs =
+    let allRowIdxs = seq { 0..numSolutionRows - 1 }
+    let rowIdxIsRepresented = fun rowIdx -> Seq.exists (fun randomRowIdx -> rowIdx = randomRowIdx) randomRowIdxs
+    Seq.forall rowIdxIsRepresented allRowIdxs
 
 let genPartitionedSolutionRows numCols startIdx endIdx numSolutionRows =
     gen {
         let! firstSolutionRow = genRow numCols startIdx endIdx true
         let! otherSolutionRows = genRow numCols startIdx endIdx false |> listOfLength (numSolutionRows - 1)
         let solutionRows = [Seq.singleton firstSolutionRow |> Seq.toList; otherSolutionRows] |> Seq.concat |> Seq.toList
-        let! randomRowIdxPerColumn = choose (0, numSolutionRows - 1) |> listOfLength (endIdx - startIdx)
-        // TODO: suchThat (fun idxs -> Seq.forall (fun x -> Seq.exists (fun y -> x = y) idxs) (seq { 0..numSolutionRows - 1}))
-        return randomlySprinkleOnesIntoSolutionRows solutionRows startIdx randomRowIdxPerColumn
+        let! randomRowIdxs =
+            choose (0, numSolutionRows - 1)
+            |> listOfLength (endIdx - startIdx)
+            |> suchThat (allSolutionRowsAreRepresented numSolutionRows)
+        return randomlySprinkleOnesIntoSolutionRows solutionRows startIdx randomRowIdxs
     }
 
 let genPartitionedSolution numCols startIdx endIdx =
@@ -96,5 +109,15 @@ let ``exact cover problems with no solutions``() =
         let solutions = dlx.Solve matrix |> Seq.toList
         solutions.Length = 0 |@ sprintf "Expected no solutions but got %d" solutions.Length
     let arbMatrix = fromGen genMatrixOfIntWithNoSolutions
+    let property = forAll arbMatrix body
+    Check.One (config, property)
+
+[<Test>]
+let ``exact cover problems with a single solution``() =
+    let body = fun matrix ->
+        let dlx = new Dlx()
+        let solutions = dlx.Solve matrix |> Seq.toList
+        solutions.Length = 1 |@ sprintf "Expected exactly one solution but got %d" solutions.Length
+    let arbMatrix = fromGen genMatrixOfIntWithSingleSolution
     let property = forAll arbMatrix body
     Check.One (config, property)
