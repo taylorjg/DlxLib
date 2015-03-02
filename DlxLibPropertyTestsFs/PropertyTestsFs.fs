@@ -52,18 +52,24 @@ let randomlySprinkleOnesIntoSolutionRows solutionRows startIdx randomRowIdxs =
     // Seq.iter (fun randomRowIdx -> ()) randomRowIdxs
     // colIndex <- colIndex + 1
 
+    // TODO: find a way to do this functionally...
+
     solutionRows
 
-let pokeSolutionRowsIntoMatrix matrix solution randomRowIdxs =
+let pokeSolutionRowsIntoMatrix (matrix: int list list) (solutionRows: int list list) randomRowIdxs =
 
-    // var fromIdx = 0;
-    // foreach (var toIdx in randomRowIdxs) matrix[toIdx] = solutionRows[fromIdx++];
-    // return matrix;
+    // TODO: find a way to do this functionally...
 
-    // let mutable fromIndex = 0
-    // fromIndex <- fromIndex + 1
+    let matrixAsArray = matrix |> Seq.toArray
+    let fromIndex = ref 0
 
-    matrix
+    let iterFun = fun toIdx ->
+        Array.set matrixAsArray toIdx solutionRows.[!fromIndex]
+        fromIndex := !fromIndex + 1
+
+    Seq.iter iterFun randomRowIdxs
+
+    matrixAsArray |> Seq.toList
 
 let allSolutionRowsAreRepresented numSolutionRows randomRowIdxs =
     let allRowIdxs = seq { 0..numSolutionRows - 1 }
