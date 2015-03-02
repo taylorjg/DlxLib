@@ -221,9 +221,9 @@ namespace DlxLibPropertyTests
                 from firstSolutionRow in GenRow(numCols, startIdx, endIdx, true)
                 from otherSolutionRows in GenRow(numCols, startIdx, endIdx, false).MakeListOfLength(numSolutionRows - 1)
                 let solutionRows = new[] {firstSolutionRow}.Concat(otherSolutionRows).ToList()
-                from randomRowIdxPerColumn in Any.IntBetween(0, numSolutionRows - 1).MakeListOfLength(endIdx - startIdx)
-                    .Where(idxs => Enumerable.Range(0, numSolutionRows).All(idxs.Contains))
-                select RandomlySprinkleOnesIntoSolutionRows(solutionRows, startIdx, randomRowIdxPerColumn);
+                from randomRowIdxs in Any.IntBetween(0, numSolutionRows - 1).MakeListOfLength(endIdx - startIdx)
+                where Enumerable.Range(0, numSolutionRows).All(randomRowIdxs.Contains)
+                select RandomlySprinkleOnesIntoSolutionRows(solutionRows, startIdx, randomRowIdxs);
         }
 
         private static Gen<List<int>> GenRow(int numCols, int startIdx, int endIdx, bool isFirstRow)
@@ -244,10 +244,10 @@ namespace DlxLibPropertyTests
         private static List<List<int>> RandomlySprinkleOnesIntoSolutionRows(
             List<List<int>> solutionRows,
             int startIdx,
-            IEnumerable<int> randomRowIdxPerColumn)
+            IEnumerable<int> randomRowIdxs)
         {
             var colIndex = startIdx;
-            foreach (var randomRowIdx in randomRowIdxPerColumn) solutionRows[randomRowIdx][colIndex++] = 1;
+            foreach (var randomRowIdx in randomRowIdxs) solutionRows[randomRowIdx][colIndex++] = 1;
             return solutionRows;
         }
 
