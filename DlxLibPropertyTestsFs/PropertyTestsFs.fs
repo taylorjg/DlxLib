@@ -42,11 +42,11 @@ let genRow numCols startIdx endIdx isFirstRow =
         return row
     }
 
-let randomlySprinkleOnesIntoSolutionRows (solutionRows: int list list) startIdx (randomRowIdxs: int list) =
+let randomlySprinkleOnesIntoSolutionRows solutionRows startIdx randomRowIdxs =
 
-    // TODO: find a way to do this functionally...
+    // TODO: find a way to do this functionally - currently using a reference cell and converting a list of lists to a list of arrays.
 
-    let listOfSolutionRowArrays = List.map (fun x -> x |> List.toArray) solutionRows
+    let listOfSolutionRowArrays = List.map List.toArray solutionRows
     let colIndex = ref startIdx
 
     let iterFun = fun randomRowIdx ->
@@ -56,22 +56,23 @@ let randomlySprinkleOnesIntoSolutionRows (solutionRows: int list list) startIdx 
 
     Seq.iter iterFun randomRowIdxs
 
-    List.map (fun x -> x |> Seq.toList) listOfSolutionRowArrays
+    List.map Array.toList listOfSolutionRowArrays
 
-let pokeSolutionRowsIntoMatrix (matrix: int list list) (solutionRows: int list list) randomRowIdxs =
+let pokeSolutionRowsIntoMatrix matrix (solutionRows: _ list list) randomRowIdxs =
 
-    // TODO: find a way to do this functionally...
+    // TODO: find a way to do this functionally - currently using a reference cell and converting a list of lists to an array of lists.
 
-    let matrixAsArray = matrix |> Seq.toArray
+    let matrixAsArrayOfLists = matrix |> Seq.toArray
     let fromIndex = ref 0
 
     let iterFun = fun toIdx ->
-        Array.set matrixAsArray toIdx solutionRows.[!fromIndex]
+        let solutionRow = List.nth solutionRows !fromIndex
+        Array.set matrixAsArrayOfLists toIdx solutionRow
         fromIndex := !fromIndex + 1
 
     Seq.iter iterFun randomRowIdxs
 
-    matrixAsArray |> Seq.toList
+    matrixAsArrayOfLists |> Seq.toList
 
 let allSolutionRowsAreRepresented numSolutionRows randomRowIdxs =
     let allRowIdxs = seq { 0..numSolutionRows - 1 }
