@@ -42,19 +42,21 @@ let genRow numCols startIdx endIdx isFirstRow =
         return row
     }
 
-let randomlySprinkleOnesIntoSolutionRows solutionRows startIdx randomRowIdxs =
-
-    // var colIndex = startIdx;
-    // foreach (var randomRowIdx in randomRowIdxPerColumn) solutionRows[randomRowIdx][colIndex++] = 1;
-    // return solutionRows;
-
-    // let mutable colIndex = startIdx
-    // Seq.iter (fun randomRowIdx -> ()) randomRowIdxs
-    // colIndex <- colIndex + 1
+let randomlySprinkleOnesIntoSolutionRows (solutionRows: int list list) startIdx (randomRowIdxs: int list) =
 
     // TODO: find a way to do this functionally...
 
-    solutionRows
+    let listOfSolutionRowArrays = List.map (fun x -> x |> List.toArray) solutionRows
+    let colIndex = ref startIdx
+
+    let iterFun = fun randomRowIdx ->
+        let solutionRowArray = List.nth listOfSolutionRowArrays randomRowIdx
+        Array.set solutionRowArray !colIndex 1
+        colIndex := !colIndex + 1
+
+    Seq.iter iterFun randomRowIdxs
+
+    List.map (fun x -> x |> Seq.toList) listOfSolutionRowArrays
 
 let pokeSolutionRowsIntoMatrix (matrix: int list list) (solutionRows: int list list) randomRowIdxs =
 
