@@ -44,33 +44,29 @@ let genRow numCols startIdx endIdx isFirstRow =
 
 let randomlySprinkleOnesIntoSolutionRows solutionRows startIdx randomRowIdxs =
 
-    // TODO: find a way to do this functionally - currently using a reference cell and converting a list of lists to a list of arrays.
+    // TODO: find a way to do this functionally - currently converting a list of lists to a list of arrays.
 
     let listOfSolutionRowArrays = List.map List.toArray solutionRows
-    let colIndex = ref startIdx
 
-    let iterFun = fun randomRowIdx ->
+    let loop idx randomRowIdx =
         let solutionRowArray = List.nth listOfSolutionRowArrays randomRowIdx
-        Array.set solutionRowArray !colIndex 1
-        colIndex := !colIndex + 1
+        Array.set solutionRowArray (startIdx + idx) 1
 
-    Seq.iter iterFun randomRowIdxs
+    Seq.iteri loop randomRowIdxs
 
     List.map Array.toList listOfSolutionRowArrays
 
 let pokeSolutionRowsIntoMatrix matrix (solutionRows: _ list list) randomRowIdxs =
 
-    // TODO: find a way to do this functionally - currently using a reference cell and converting a list of lists to an array of lists.
+    // TODO: find a way to do this functionally - currently converting a list of lists to an array of lists.
 
     let matrixAsArrayOfLists = matrix |> Seq.toArray
-    let fromIndex = ref 0
 
-    let iterFun = fun toIdx ->
-        let solutionRow = List.nth solutionRows !fromIndex
-        Array.set matrixAsArrayOfLists toIdx solutionRow
-        fromIndex := !fromIndex + 1
+    let loop idx randomRowIdx =
+        let solutionRow = List.nth solutionRows idx
+        Array.set matrixAsArrayOfLists randomRowIdx solutionRow
 
-    Seq.iter iterFun randomRowIdxs
+    Seq.iteri loop randomRowIdxs
 
     matrixAsArrayOfLists |> Seq.toList
 
@@ -111,6 +107,43 @@ let genMatrixOfIntWithSingleSolution =
         return pokeSolutionRowsIntoMatrix matrix solution randomRowIdxs |> to2DArray
     }
 
+let checkSolution (matrix: _ [,]) (solution: DlxLib.Solution) =
+
+    let numCols = Array2D.length2 matrix
+    let numSolutionRows = Seq.length solution.RowIndexes
+    let expectedNumZerosPerColumn = numSolutionRows - 1
+
+    let makeLabel1 colIndex numOnes =
+        sprintf "Expected column %d to contain a single 1 but it contains %d" colIndex numOnes
+
+    let makeLabel2 colIndex numZeros =
+        sprintf "Expected column %d to contain exactly %d 0s but it contains %d" colIndex expectedNumZerosPerColumn numZeros
+
+    // TODO: find a way to do this functionally - currently using a (mutable) array and a couple of mutable variables.
+    // foldl over column indices ?
+    // seed = (numZeros: int, numOnes: int, properties: seq<Property>)
+
+    let initialValue = ofTestable true |@ "initial array value in colProperties"
+    let colProperties = Array.init numCols (fun _ -> initialValue)
+
+    for colIndex in seq { 0..numCols - 1 } do
+        let mutable numZeros = 0
+        let mutable numOnes = 0
+        for rowIndex in solution.RowIndexes do
+            match matrix.[rowIndex, colIndex] with
+            | 0 -> numZeros <- numZeros + 1
+            | 1 -> numOnes <- numOnes + 1
+            | _ -> ()
+        let p1 = numOnes = 1 |@ makeLabel1 colIndex numOnes
+        let p2 = numZeros = expectedNumZerosPerColumn |@ makeLabel2 colIndex numZeros
+        p1 .&. p2 |> Array.set colProperties colIndex
+
+    PropExtensions.AndAll colProperties
+
+let checkSolutions matrix solutions =
+    let assertions = Seq.toArray <| Seq.map (checkSolution matrix) solutions
+    PropExtensions.AndAll assertions
+
 [<Test>]
 let ``exact cover problems with no solutions``() =
     let body = fun matrix ->
@@ -126,7 +159,9 @@ let ``exact cover problems with a single solution``() =
     let body = fun matrix ->
         let dlx = new Dlx()
         let solutions = dlx.Solve matrix |> Seq.toList
-        solutions.Length = 1 |@ sprintf "Expected exactly one solution but got %d" solutions.Length
+        let p1 = solutions.Length = 1 |@ sprintf "Expected exactly one solution but got %d" solutions.Length
+        let p2 = checkSolutions matrix solutions
+        p1 .&. p2
     let arbMatrix = fromGen genMatrixOfIntWithSingleSolution
     let property = forAll arbMatrix body
     Check.One (config, property)
