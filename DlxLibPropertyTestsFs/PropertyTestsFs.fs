@@ -119,26 +119,21 @@ let checkSolution (matrix: _ [,]) (solution: DlxLib.Solution) =
     let makeLabel2 colIndex numZeros =
         sprintf "Expected column %d to contain exactly %d 0s but it contains %d" colIndex expectedNumZerosPerColumn numZeros
 
-    // TODO: find a way to do this functionally - currently using a (mutable) array and a couple of mutable variables.
-    // foldl over column indices ?
-    // seed = (numZeros: int, numOnes: int, properties: seq<Property>)
-
-    let initialValue = ofTestable true |@ "initial array value in colProperties"
-    let colProperties = Array.init numCols (fun _ -> initialValue)
-
-    for colIndex in seq { 0..numCols - 1 } do
-        let mutable numZeros = 0
-        let mutable numOnes = 0
-        for rowIndex in solution.RowIndexes do
+    let loop properties colIndex =
+        let innerLoop (numZeros, numOnes) rowIndex =
             match matrix.[rowIndex, colIndex] with
-            | 0 -> numZeros <- numZeros + 1
-            | 1 -> numOnes <- numOnes + 1
-            | _ -> ()
+            | 0 -> (numZeros + 1, numOnes)
+            | 1 -> (numZeros, numOnes + 1)
+            | _ -> (numZeros, numOnes)
+        let (numZeros, numOnes) = Seq.fold innerLoop (0, 0) solution.RowIndexes
         let p1 = numOnes = 1 |@ makeLabel1 colIndex numOnes
         let p2 = numZeros = expectedNumZerosPerColumn |@ makeLabel2 colIndex numZeros
-        p1 .&. p2 |> Array.set colProperties colIndex
+        let p3 = p1 .&. p2
+        Seq.concat [properties; Seq.singleton p3]
 
-    PropExtensions.AndAll colProperties
+    let colIndexes = seq { 0..numCols - 1 }
+    let properties = Seq.fold loop Seq.empty colIndexes
+    PropExtensions.AndAll (properties |> Seq.toArray)
 
 let checkSolutions matrix solutions =
     let assertions = Seq.toArray <| Seq.map (checkSolution matrix) solutions
