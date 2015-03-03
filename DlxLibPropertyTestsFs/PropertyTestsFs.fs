@@ -15,20 +15,6 @@ let to2DArray (jagged: _ list list) =
     let numCols = (List.nth jagged 0).Length
     Array2D.init numRows numCols (fun r c -> List.nth (List.nth jagged r) c)
 
-let genMatrixOfIntWithNoSolutions = 
-    gen {
-        let! numCols = choose (2, 20)
-        let! numRows = choose (2, 20)
-        let! indexOfAlwaysZeroColumn = choose (0, numCols - 1)
-        let genZeroOrOne = elements [0; 1]
-        let genBefore = listOfLength indexOfAlwaysZeroColumn genZeroOrOne
-        let genZero = listOfLength 1 (constant 0)
-        let genAfter = listOfLength (numCols - indexOfAlwaysZeroColumn - 1) genZeroOrOne
-        let genRow =  sequence [genBefore; genZero; genAfter] |> map (fun xs -> xs |> Seq.concat |> Seq.toList)
-        let! rows = listOfLength numRows genRow
-        return rows |> to2DArray
-    }
-
 let genRow numCols startIdx endIdx isFirstRow =
     gen {
         let fillerValue = if isFirstRow then 1 else 0
@@ -94,8 +80,50 @@ let genPartitionedSolution numCols startIdx endIdx =
         return solutionRows
     }
 
+let genPartitionedSolutions numCols partitions =
+    let mapping (startIdx, endIdx) = genPartitionedSolution numCols startIdx endIdx
+    let mappedPartitions = Seq.map mapping partitions
+    sequence (mappedPartitions |> Seq.toList)
+
 let genSolution numCols =
     genPartitionedSolution numCols 0 numCols
+
+let makePartitions partitionLengths =
+    let loop (tuples, currentStartIdx) partitionLength =
+        let startIdx = currentStartIdx
+        let endIdx = currentStartIdx + partitionLength
+        let tuple = (startIdx, endIdx)
+        (Seq.concat [tuples; Seq.singleton tuple], endIdx)
+    let (tuples, _) = Seq.fold loop (Seq.empty, 0) partitionLengths
+    tuples
+
+let genPartitionLengths numCols numSolutions =
+    gen {
+        let! partitionLengths =
+            listOfLength <| numSolutions - 1 <| choose (1, numCols / 2)
+            |> suchThat (fun xs -> Seq.sum xs < numCols)
+        return Seq.concat [partitionLengths; Seq.singleton (numCols - Seq.sum partitionLengths) |> Seq.toList]
+    }
+
+let genPartitions numCols numSolutions =
+    gen {
+        let! partitionLengths = genPartitionLengths numCols numSolutions
+        return makePartitions partitionLengths
+    }
+
+let genMatrixOfIntWithNoSolutions = 
+    gen {
+        let! numCols = choose (2, 20)
+        let! numRows = choose (2, 20)
+        let! indexOfAlwaysZeroColumn = choose (0, numCols - 1)
+        let genZeroOrOne = elements [0; 1]
+        let genBefore = listOfLength indexOfAlwaysZeroColumn genZeroOrOne
+        let genZero = listOfLength 1 (constant 0)
+        let genAfter = listOfLength (numCols - indexOfAlwaysZeroColumn - 1) genZeroOrOne
+        let genRow =  sequence [genBefore; genZero; genAfter] |> map (fun xs -> xs |> Seq.concat |> Seq.toList)
+        let! rows = listOfLength numRows genRow
+        return rows |> to2DArray
+    }
 
 let genMatrixOfIntWithSingleSolution = 
     gen {
@@ -105,6 +133,18 @@ let genMatrixOfIntWithSingleSolution =
         let! matrix = constant 0 |> listOfLength numCols |> listOfLength numRows
         let! randomRowIdxs = GenExtensions.PickValues(solution.Length, seq { 0..numRows - 1})
         return pokeSolutionRowsIntoMatrix matrix solution randomRowIdxs |> to2DArray
+    }
+
+let genMatrixOfIntWithMultipleSolutions numSolutions = 
+    gen {
+        let! numCols = choose (numSolutions, numSolutions * 10)
+        let! partitions = genPartitions numCols numSolutions
+        let! solutions = genPartitionedSolutions numCols partitions
+        let combinedSolutions = List.concat solutions
+        let! numRows = choose (combinedSolutions.Length, combinedSolutions.Length * 5)
+        let! matrix = constant 0 |> listOfLength numCols |> listOfLength numRows
+        let! randomRowIdxs = GenExtensions.PickValues(combinedSolutions.Length, seq { 0..numRows - 1})
+        return pokeSolutionRowsIntoMatrix matrix combinedSolutions randomRowIdxs |> to2DArray
     }
 
 let checkSolution (matrix: _ [,]) (solution: DlxLib.Solution) =
@@ -159,4 +199,26 @@ let ``exact cover problems with a single solution``() =
         p1 .&. p2
     let arbMatrix = fromGen genMatrixOfIntWithSingleSolution
     let property = forAll arbMatrix body
+    Check.One (config, property)
+
+[<Test>]
+let ``exact cover problems with multiple solutions``() =
+
+    let arbNumSolutions = fromGen <| choose (2, 5)
+
+    let body numSolutions =
+        let makeLabel actualNumSolutions =
+            sprintf "Expected exactly %d solutions but got %d" numSolutions actualNumSolutions
+        let arbMatrix = fromGen <| genMatrixOfIntWithMultipleSolutions numSolutions
+        let innerBody matrix =
+            let dlx = new Dlx()
+            let solutions = dlx.Solve matrix |> Seq.toList
+            let actualNumSolutions = Seq.length solutions
+            let p1 = actualNumSolutions = numSolutions |@ makeLabel actualNumSolutions
+            let p2 = checkSolutions matrix solutions
+            p1 .&. p2
+        forAll arbMatrix innerBody
+
+    let property = forAll arbNumSolutions body
+
     Check.One (config, property)

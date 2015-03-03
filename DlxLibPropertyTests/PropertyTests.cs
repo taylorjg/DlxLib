@@ -174,10 +174,10 @@ namespace DlxLibPropertyTests
         private static Gen<IEnumerable<int>> GenPartitionLengths(int numCols, int numSolutions)
         {
             return
-                from partitionLength in Any.IntBetween(1, numCols / 2).MakeListOfLength(numSolutions - 1)
-                let sum = partitionLength.Sum()
+                from partitionLengths in Any.IntBetween(1, numCols / 2).MakeListOfLength(numSolutions - 1)
+                let sum = partitionLengths.Sum()
                 where sum < numCols
-                select partitionLength.Concat(new[] { numCols - sum });
+                select partitionLengths.Concat(new[] { numCols - sum });
         }
 
         private static IEnumerable<Tuple<int, int>> MakePartitions(IEnumerable<int> partitionLengths)
