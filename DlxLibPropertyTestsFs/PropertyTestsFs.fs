@@ -55,20 +55,20 @@ let pokeSolutionRowsIntoMatrix matrix (solutionRows: _ list list) randomRowIdxs 
 
     matrixAsArrayOfLists |> Seq.toList
 
-let allSolutionRowsAreRepresented numSolutionRows randomRowIdxs =
-    let allRowIdxs = seq { 0..numSolutionRows - 1 }
-    let rowIdxIsRepresented rowIdx = Seq.exists (fun randomRowIdx -> rowIdx = randomRowIdx) randomRowIdxs
-    Seq.forall rowIdxIsRepresented allRowIdxs
+let allSolutionRowsAreIncluded numSolutionRows randomRowIdxs =
+    let allSolutionRowIdxs = seq { 0..numSolutionRows - 1 }
+    let solutionRowIdxIsIncluded solutionRowIdx = Seq.exists (fun randomRowIdx -> randomRowIdx = solutionRowIdx) randomRowIdxs
+    Seq.forall solutionRowIdxIsIncluded allSolutionRowIdxs
 
 let genPartitionedSolutionRows numCols startIdx endIdx numSolutionRows =
     gen {
         let! firstSolutionRow = genRow numCols startIdx endIdx true
         let! otherSolutionRows = genRow numCols startIdx endIdx false |> listOfLength (numSolutionRows - 1)
-        let solutionRows = List.concat [ [firstSolutionRow]; otherSolutionRows]
+        let solutionRows = firstSolutionRow :: otherSolutionRows
         let! randomRowIdxs =
             choose (0, numSolutionRows - 1)
             |> listOfLength (endIdx - startIdx)
-            |> suchThat (allSolutionRowsAreRepresented numSolutionRows)
+            |> suchThat (allSolutionRowsAreIncluded numSolutionRows)
         return randomlySprinkleOnesIntoSolutionRows solutionRows startIdx randomRowIdxs
     }
 
@@ -100,7 +100,7 @@ let genPartitionLengths numCols numSolutions =
             listOfLength <| numSolutions - 1 <| choose (1, numCols / 2)
             |> suchThat (fun xs -> Seq.sum xs < numCols)
         let remainingLength = numCols - Seq.sum partitionLengths
-        return List.concat [partitionLengths; [remainingLength] ]
+        return remainingLength :: partitionLengths
     }
 
 let genPartitions numCols numSolutions =
