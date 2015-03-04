@@ -24,8 +24,7 @@ let genRow numCols startIdx endIdx isFirstRow =
         let! prefixPart = listOfLength prefixPartLength (constant fillerValue)
         let! randomPart = listOfLength randomPartLength (constant 0)
         let! suffixPart = listOfLength suffixPartLength (constant fillerValue)
-        let row = [prefixPart; randomPart; suffixPart] |> Seq.concat |> Seq.toList
-        return row
+        return List.concat [prefixPart; randomPart; suffixPart]
     }
 
 let randomlySprinkleOnesIntoSolutionRows solutionRows startIdx randomRowIdxs =
@@ -58,14 +57,14 @@ let pokeSolutionRowsIntoMatrix matrix (solutionRows: _ list list) randomRowIdxs 
 
 let allSolutionRowsAreRepresented numSolutionRows randomRowIdxs =
     let allRowIdxs = seq { 0..numSolutionRows - 1 }
-    let rowIdxIsRepresented = fun rowIdx -> Seq.exists (fun randomRowIdx -> rowIdx = randomRowIdx) randomRowIdxs
+    let rowIdxIsRepresented rowIdx = Seq.exists (fun randomRowIdx -> rowIdx = randomRowIdx) randomRowIdxs
     Seq.forall rowIdxIsRepresented allRowIdxs
 
 let genPartitionedSolutionRows numCols startIdx endIdx numSolutionRows =
     gen {
         let! firstSolutionRow = genRow numCols startIdx endIdx true
         let! otherSolutionRows = genRow numCols startIdx endIdx false |> listOfLength (numSolutionRows - 1)
-        let solutionRows = [Seq.singleton firstSolutionRow |> Seq.toList; otherSolutionRows] |> Seq.concat |> Seq.toList
+        let solutionRows = List.concat [ [firstSolutionRow]; otherSolutionRows]
         let! randomRowIdxs =
             choose (0, numSolutionRows - 1)
             |> listOfLength (endIdx - startIdx)
@@ -76,8 +75,7 @@ let genPartitionedSolutionRows numCols startIdx endIdx numSolutionRows =
 let genPartitionedSolution numCols startIdx endIdx =
     gen {
         let! numSolutionRows = choose (1, min 5 (endIdx - startIdx))
-        let! solutionRows = genPartitionedSolutionRows numCols startIdx endIdx numSolutionRows
-        return solutionRows
+        return! genPartitionedSolutionRows numCols startIdx endIdx numSolutionRows
     }
 
 let genPartitionedSolutions numCols partitions =
@@ -89,20 +87,20 @@ let genSolution numCols =
     genPartitionedSolution numCols 0 numCols
 
 let makePartitions partitionLengths =
-    let loop (tuples, currentStartIdx) partitionLength =
+    let loop (partitions, currentStartIdx) partitionLength =
         let startIdx = currentStartIdx
-        let endIdx = currentStartIdx + partitionLength
-        let tuple = (startIdx, endIdx)
-        (Seq.concat [tuples; Seq.singleton tuple], endIdx)
-    let (tuples, _) = Seq.fold loop (Seq.empty, 0) partitionLengths
-    tuples
+        let endIdx = startIdx + partitionLength
+        let partition = (startIdx, endIdx)
+        (partition :: partitions, endIdx)
+    Seq.fold loop (List.Empty, 0) partitionLengths |> fst |> List.rev
 
 let genPartitionLengths numCols numSolutions =
     gen {
         let! partitionLengths =
             listOfLength <| numSolutions - 1 <| choose (1, numCols / 2)
             |> suchThat (fun xs -> Seq.sum xs < numCols)
-        return Seq.concat [partitionLengths; Seq.singleton (numCols - Seq.sum partitionLengths) |> Seq.toList]
+        let remainingLength = numCols - Seq.sum partitionLengths
+        return List.concat [partitionLengths; [remainingLength] ]
     }
 
 let genPartitions numCols numSolutions =
@@ -120,7 +118,7 @@ let genMatrixOfIntWithNoSolutions =
         let genBefore = listOfLength indexOfAlwaysZeroColumn genZeroOrOne
         let genZero = listOfLength 1 (constant 0)
         let genAfter = listOfLength (numCols - indexOfAlwaysZeroColumn - 1) genZeroOrOne
-        let genRow =  sequence [genBefore; genZero; genAfter] |> map (fun xs -> xs |> Seq.concat |> Seq.toList)
+        let genRow =  sequence [genBefore; genZero; genAfter] |> map List.concat
         let! rows = listOfLength numRows genRow
         return rows |> to2DArray
     }
@@ -165,7 +163,7 @@ let checkSolution (matrix: _ [,]) (solution: DlxLib.Solution) =
             | 0 -> (numZeros + 1, numOnes)
             | 1 -> (numZeros, numOnes + 1)
             | _ -> (numZeros, numOnes)
-        let (numZeros, numOnes) = Seq.fold innerLoop (0, 0) solution.RowIndexes
+        let numZeros, numOnes = Seq.fold innerLoop (0, 0) solution.RowIndexes
         let p1 = numOnes = 1 |@ makeLabel1 colIndex numOnes
         let p2 = numZeros = expectedNumZerosPerColumn |@ makeLabel2 colIndex numZeros
         let p3 = p1 .&. p2
@@ -181,7 +179,7 @@ let checkSolutions matrix solutions =
 
 [<Test>]
 let ``exact cover problems with no solutions``() =
-    let body = fun matrix ->
+    let body matrix =
         let dlx = new Dlx()
         let solutions = dlx.Solve matrix |> Seq.toList
         solutions.Length = 0 |@ sprintf "Expected no solutions but got %d" solutions.Length
@@ -191,7 +189,7 @@ let ``exact cover problems with no solutions``() =
 
 [<Test>]
 let ``exact cover problems with a single solution``() =
-    let body = fun matrix ->
+    let body matrix =
         let dlx = new Dlx()
         let solutions = dlx.Solve matrix |> Seq.toList
         let p1 = solutions.Length = 1 |@ sprintf "Expected exactly one solution but got %d" solutions.Length
