@@ -27,7 +27,7 @@ let genRow numCols startIdx endIdx isFirstRow =
         return List.concat [prefixPart; randomPart; suffixPart]
     }
 
-let randomlySprinkleOnesIntoSolutionRows solutionRows startIdx randomRowIdxs =
+let randomlySprinkleOnesIntoSolutionRows solutionRows randomRowIdxs startIdx =
 
     // TODO: find a way to do this functionally - currently converting a list of lists to a list of arrays.
 
@@ -69,7 +69,7 @@ let genPartitionedSolutionRows numCols startIdx endIdx numSolutionRows =
             choose (0, numSolutionRows - 1)
             |> listOfLength (endIdx - startIdx)
             |> suchThat (allSolutionRowsAreIncluded numSolutionRows)
-        return randomlySprinkleOnesIntoSolutionRows solutionRows startIdx randomRowIdxs
+        return randomlySprinkleOnesIntoSolutionRows solutionRows randomRowIdxs startIdx
     }
 
 let genPartitionedSolution numCols startIdx endIdx =
@@ -83,8 +83,18 @@ let genPartitionedSolutions numCols partitions =
     let mappedPartitions = Seq.map mapping partitions
     sequence (mappedPartitions |> Seq.toList)
 
+let genSolutionRows numCols numSolutionRows =
+    gen {
+        let! solutionRows = constant 0 |> listOfLength numCols |> listOfLength numSolutionRows
+        let! randomRowIdxs = choose (0, numSolutionRows - 1) |> listOfLength numCols
+        return randomlySprinkleOnesIntoSolutionRows solutionRows randomRowIdxs 0
+    }
+
 let genSolution numCols =
-    genPartitionedSolution numCols 0 numCols
+    gen {
+        let! numSolutionRows = choose (1, min 5 numCols)
+        return! genSolutionRows numCols numSolutionRows
+    }
 
 let makePartitions partitionLengths =
     let loop partitions partitionLength =

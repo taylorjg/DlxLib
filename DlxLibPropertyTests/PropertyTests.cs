@@ -204,7 +204,18 @@ namespace DlxLibPropertyTests
 
         private static Gen<List<List<int>>> GenSolution(int numCols)
         {
-            return GenPartitionedSolution(numCols, 0, numCols);
+            return
+                from numSolutionRows in Any.IntBetween(1, Math.Min(5, numCols))
+                from solutionRows in GenSolutionRows(numCols, numSolutionRows)
+                select solutionRows;
+        }
+
+        private static Gen<List<List<int>>> GenSolutionRows(int numCols, int numSolutionRows)
+        {
+            return
+                from solutionRows in Any.Value(0).MakeListOfLength(numCols).MakeListOfLength(numSolutionRows)
+                from randomRowIdxs in Any.IntBetween(0, numSolutionRows - 1).MakeListOfLength(numCols)
+                select RandomlySprinkleOnesIntoSolutionRows(solutionRows, randomRowIdxs);
         }
 
         private static Gen<List<List<int>>> GenPartitionedSolution(int numCols, int startIdx, int endIdx)
@@ -223,7 +234,7 @@ namespace DlxLibPropertyTests
                 let solutionRows = new[] {firstSolutionRow}.Concat(otherSolutionRows).ToList()
                 from randomRowIdxs in Any.IntBetween(0, numSolutionRows - 1).MakeListOfLength(endIdx - startIdx)
                 where Enumerable.Range(0, numSolutionRows).All(randomRowIdxs.Contains)
-                select RandomlySprinkleOnesIntoSolutionRows(solutionRows, startIdx, randomRowIdxs);
+                select RandomlySprinkleOnesIntoSolutionRows(solutionRows, randomRowIdxs, startIdx);
         }
 
         private static Gen<List<int>> GenRow(int numCols, int startIdx, int endIdx, bool isFirstRow)
@@ -243,8 +254,8 @@ namespace DlxLibPropertyTests
 
         private static List<List<int>> RandomlySprinkleOnesIntoSolutionRows(
             List<List<int>> solutionRows,
-            int startIdx,
-            IEnumerable<int> randomRowIdxs)
+            IEnumerable<int> randomRowIdxs,
+            int startIdx = 0)
         {
             var colIndex = startIdx;
             foreach (var randomRowIdx in randomRowIdxs) solutionRows[randomRowIdx][colIndex++] = 1;
