@@ -87,12 +87,13 @@ let genSolution numCols =
     genPartitionedSolution numCols 0 numCols
 
 let makePartitions partitionLengths =
-    let loop (partitions, currentStartIdx) partitionLength =
-        let startIdx = currentStartIdx
+    let loop partitions partitionLength =
+        let startIdx = match partitions with
+                       | [] -> 0
+                       | p :: _ -> snd p
         let endIdx = startIdx + partitionLength
-        let partition = (startIdx, endIdx)
-        (partition :: partitions, endIdx)
-    Seq.fold loop (List.Empty, 0) partitionLengths |> fst |> List.rev
+        (startIdx, endIdx) :: partitions
+    Seq.fold loop List.Empty partitionLengths |> List.rev
 
 let genPartitionLengths numCols numSolutions =
     gen {
@@ -166,16 +167,15 @@ let checkSolution (matrix: _ [,]) (solution: DlxLib.Solution) =
         let numZeros, numOnes = Seq.fold innerLoop (0, 0) solution.RowIndexes
         let p1 = numOnes = 1 |@ makeLabel1 colIndex numOnes
         let p2 = numZeros = expectedNumZerosPerColumn |@ makeLabel2 colIndex numZeros
-        let p3 = p1 .&. p2
-        Seq.concat [properties; Seq.singleton p3]
+        (p1 .&. p2) :: properties
 
     let colIndexes = seq { 0..numCols - 1 }
-    let properties = Seq.fold loop Seq.empty colIndexes
+    let properties = Seq.fold loop List.empty colIndexes |> List.rev
     PropExtensions.AndAll (properties |> Seq.toArray)
 
 let checkSolutions matrix solutions =
-    let assertions = Seq.toArray <| Seq.map (checkSolution matrix) solutions
-    PropExtensions.AndAll assertions
+    let assertions = Seq.map (checkSolution matrix) solutions
+    PropExtensions.AndAll (assertions |> Seq.toArray)
 
 [<Test>]
 let ``exact cover problems with no solutions``() =
