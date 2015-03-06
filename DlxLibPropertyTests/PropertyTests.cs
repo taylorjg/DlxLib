@@ -130,13 +130,7 @@ namespace DlxLibPropertyTests
                 from numCols in Any.IntBetween(2, 20)
                 from numRows in Any.IntBetween(2, 20)
                 from indexOfAlwaysZeroColumn in Any.IntBetween(0, numCols - 1)
-                let genZeroOrOne = Any.ValueIn(0, 1)
-                let genRow = genZeroOrOne.MakeListOfLength(numCols).Select(r =>
-                {
-                    r[indexOfAlwaysZeroColumn] = 0;
-                    return r;
-                })
-                from rows in genRow.MakeListOfLength(numRows)
+                from rows in GenRowWithZeroInGivenColumn(numCols, indexOfAlwaysZeroColumn).MakeListOfLength(numRows)
                 select rows.To2DArray();
         }
 
@@ -162,6 +156,17 @@ namespace DlxLibPropertyTests
                 from matrix in Any.Value(0).MakeListOfLength(numCols).MakeListOfLength(numRows)
                 from randomRowIdxs in GenExtensions.PickValues(combinedSolutions.Count, Enumerable.Range(0, numRows))
                 select PokeSolutionRowsIntoMatrix(matrix, combinedSolutions, randomRowIdxs).To2DArray();
+        }
+
+        private static Gen<List<int>> GenRowWithZeroInGivenColumn(int numCols, int indexOfAlwaysZeroColumn)
+        {
+            return
+                from row in Any.ValueIn(0, 1).MakeListOfLength(numCols).Select(r =>
+                {
+                    r[indexOfAlwaysZeroColumn] = 0;
+                    return r;
+                })
+                select row;
         }
 
         private static Gen<IEnumerable<Tuple<int, int>>> GenPartitions(int numCols, int numSolutions)
