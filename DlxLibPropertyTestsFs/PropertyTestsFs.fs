@@ -15,17 +15,27 @@ let to2DArray (jagged: _ list list) =
     let numCols = (List.nth jagged 0).Length
     Array2D.init numRows numCols (fun r c -> List.nth (List.nth jagged r) c)
 
-let genRow numCols startIdx endIdx isFirstRow =
-    gen {
-        let fillerValue = if isFirstRow then 1 else 0
-        let prefixPartLength = startIdx
-        let randomPartLength = endIdx - startIdx
-        let suffixPartLength = numCols - endIdx
-        let! prefixPart = listOfLength prefixPartLength (constant fillerValue)
-        let! randomPart = listOfLength randomPartLength (constant 0)
-        let! suffixPart = listOfLength suffixPartLength (constant fillerValue)
-        return List.concat [prefixPart; randomPart; suffixPart]
-    }
+let initPartitionedSolutionRow numCols startIdx endIdx isFirstRow =
+    let fillerValue = if isFirstRow then 1 else 0
+    let prefixPartLength = startIdx
+    let randomPartLength = endIdx - startIdx
+    let suffixPartLength = numCols - endIdx
+    List.concat [
+        List.replicate prefixPartLength fillerValue
+        List.replicate randomPartLength 0
+        List.replicate suffixPartLength fillerValue
+    ]
+
+let initPartitionedSolutionFirstRow numCols startIdx endIdx =
+    initPartitionedSolutionRow numCols startIdx endIdx true
+
+let initPartitionedSolutionOtherRows numCols startIdx endIdx numOtherRows =
+    [ for _ in 1..numOtherRows do yield initPartitionedSolutionRow numCols startIdx endIdx false ]
+
+let initPartitionedSolutionRows numCols startIdx endIdx numSolutionRows =
+    let firstRow = initPartitionedSolutionFirstRow numCols startIdx endIdx
+    let otherRows = initPartitionedSolutionOtherRows numCols startIdx endIdx (numSolutionRows - 1)
+    firstRow :: otherRows
 
 let randomlySprinkleOnesIntoSolutionRows solutionRows randomRowIdxs startIdx =
 
@@ -55,20 +65,20 @@ let pokeSolutionRowsIntoMatrix matrix (solutionRows: _ list list) randomRowIdxs 
 
     matrixAsArrayOfLists |> Seq.toList
 
-let allSolutionRowsAreIncluded numSolutionRows randomRowIdxs =
-    let allSolutionRowIdxs = seq { 0..numSolutionRows - 1 }
-    let solutionRowIdxIsIncluded solutionRowIdx = Seq.exists (fun randomRowIdx -> randomRowIdx = solutionRowIdx) randomRowIdxs
-    Seq.forall solutionRowIdxIsIncluded allSolutionRowIdxs
-
 let genPartitionedSolutionRows numCols startIdx endIdx numSolutionRows =
+
+    let allSolutionRowsAreIncluded randomRowIdxs =
+        let allSolutionRowIdxs = seq { 0..numSolutionRows - 1 }
+        let solutionRowIdxIsIncluded solutionRowIdx =
+            Seq.exists (fun randomRowIdx -> randomRowIdx = solutionRowIdx) randomRowIdxs
+        Seq.forall solutionRowIdxIsIncluded allSolutionRowIdxs
+
     gen {
-        let! firstSolutionRow = genRow numCols startIdx endIdx true
-        let! otherSolutionRows = genRow numCols startIdx endIdx false |> listOfLength (numSolutionRows - 1)
-        let solutionRows = firstSolutionRow :: otherSolutionRows
+        let solutionRows = initPartitionedSolutionRows numCols startIdx endIdx numSolutionRows
         let! randomRowIdxs =
             choose (0, numSolutionRows - 1)
             |> listOfLength (endIdx - startIdx)
-            |> suchThat (allSolutionRowsAreIncluded numSolutionRows)
+            |> suchThat allSolutionRowsAreIncluded
         return randomlySprinkleOnesIntoSolutionRows solutionRows randomRowIdxs startIdx
     }
 
