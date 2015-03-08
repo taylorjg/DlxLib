@@ -234,27 +234,45 @@ namespace DlxLibPropertyTests
         private static Gen<List<List<int>>> GenPartitionedSolutionRows(int numCols, int startIdx, int endIdx, int numSolutionRows)
         {
             return
-                from firstSolutionRow in GenRow(numCols, startIdx, endIdx, true)
-                from otherSolutionRows in GenRow(numCols, startIdx, endIdx, false).MakeListOfLength(numSolutionRows - 1)
-                let solutionRows = new[] {firstSolutionRow}.Concat(otherSolutionRows).ToList()
+                from solutionRows in Any.Value(InitPartitionedSolutionRows(numCols, startIdx, endIdx, numSolutionRows))
                 from randomRowIdxs in Any.IntBetween(0, numSolutionRows - 1).MakeListOfLength(endIdx - startIdx)
                 where Enumerable.Range(0, numSolutionRows).All(randomRowIdxs.Contains)
                 select RandomlySprinkleOnesIntoSolutionRows(solutionRows, randomRowIdxs, startIdx);
         }
 
-        private static Gen<List<int>> GenRow(int numCols, int startIdx, int endIdx, bool isFirstRow)
+        private static List<List<int>> InitPartitionedSolutionRows(int numCols, int startIdx, int endIdx, int numSolutionRows)
+        {
+            var firstRow = InitPartitionedSolutionFirstRow(numCols, startIdx, endIdx);
+            var otherRows = InitPartitionedSolutionOtherRows(numCols, startIdx, endIdx, numSolutionRows - 1);
+            var combinedRows = new List<List<int>> {firstRow};
+            combinedRows.AddRange(otherRows);
+            return combinedRows;
+        }
+
+        private static List<int> InitPartitionedSolutionFirstRow(int numCols, int startIdx, int endIdx)
+        {
+            return InitPartitionedSolutionRow(numCols, startIdx, endIdx, true);
+        }
+
+        private static IEnumerable<List<int>> InitPartitionedSolutionOtherRows(int numCols, int startIdx, int endIdx, int numOtherRows)
+        {
+            return Enumerable.Range(0, numOtherRows)
+                .Select(_ => InitPartitionedSolutionRow(numCols, startIdx, endIdx, false));
+        }
+
+        private static List<int> InitPartitionedSolutionRow(int numCols, int startIdx, int endIdx, bool isFirstRow)
         {
             var fillerValue = (isFirstRow) ? 1 : 0;
+
             var prefixPartLength = startIdx;
             var randomPartLength = endIdx - startIdx;
             var suffixPartLength = numCols - endIdx;
 
-            return
-                from prefixPart in Any.Value(fillerValue).MakeListOfLength(prefixPartLength)
-                from randomPart in Any.Value(0).MakeListOfLength(randomPartLength)
-                from suffixPart in Any.Value(fillerValue).MakeListOfLength(suffixPartLength)
-                let row = prefixPart.Concat(randomPart).Concat(suffixPart).ToList()
-                select row;
+            var prefixPart = Enumerable.Repeat(fillerValue, prefixPartLength);
+            var randomPart = Enumerable.Repeat(0, randomPartLength);
+            var suffixPart = Enumerable.Repeat(fillerValue, suffixPartLength);
+
+            return prefixPart.Concat(randomPart).Concat(suffixPart).ToList();
         }
 
         private static List<List<int>> RandomlySprinkleOnesIntoSolutionRows(
