@@ -1,6 +1,9 @@
 language: csharp
 solution: ./DlxLib.sln
 
+before_install:
+  - export EnableNuGetPackageRestore=true
+
 install:
   - sudo apt-get install nunit-console
   - nuget restore ./DlxLib.sln
