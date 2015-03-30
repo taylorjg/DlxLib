@@ -1,2 +1,10 @@
 language: csharp
 solution: ./DlxLib.sln
+
+install:
+  - sudo apt-get install nunit-console
+  - nuget restore ./DlxLib.sln
+
+script:
+  - xbuild ./DlxLib.sln
+  - nunit-console ./DlxLibTests/bin/Debug/DlxLibTests.dll
