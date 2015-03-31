@@ -15,7 +15,7 @@ namespace DlxLibPropertyTests
     [TestFixture]
     public class PropertyTests
     {
-        private static readonly Config Config = Config.VerboseThrowOnFailure;
+        private static readonly Config Config = Config.QuickThrowOnFailure;
 
         [Test]
         public void ExactCoverProblemsWithNoSolutionsTest()
