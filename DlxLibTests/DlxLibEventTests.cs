@@ -71,7 +71,7 @@ namespace DlxLibTests
             dlx.Started += (_, __) => cancellationTokenSource.Cancel();
 
             // ReSharper disable once ReturnValueOfPureMethodIsNotUsed
-            var thread = new Thread(() => dlx.Solve(matrix).First());
+            var thread = new Thread(() => dlx.Solve(matrix).FirstOrDefault());
 
             thread.Start();
             thread.Join();
