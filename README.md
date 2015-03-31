@@ -1,3 +1,5 @@
+[![Build status](https://ci.appveyor.com/api/projects/status/di25a5u6ny229bvj/branch/master?svg=true)](https://ci.appveyor.com/project/taylorjg/dlxlib/branch/master)
+
 ## DlxLib (C#)
 
 DlxLib is a C# class library that solves [exact cover](http://en.wikipedia.org/wiki/Exact_cover) problems by implementing Donald E. Knuth's [Algorithm X](http://en.wikipedia.org/wiki/Algorithm_X) using the Dancing Links technique as described in his paper, [Dancing Links](http://arxiv.org/pdf/cs/0011047v1.pdf "Dancing Links").
