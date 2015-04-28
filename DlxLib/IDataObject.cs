@@ -47,5 +47,10 @@ namespace DlxLib
         /// problem.
         /// </remarks>
         int ColumnIndex { get; }
+
+        /// <summary>
+        /// Simple name for the kind of object (used for string representations).
+        /// </summary>
+        string Kind { get; }
     }
 }

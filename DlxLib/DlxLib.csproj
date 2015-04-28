@@ -54,6 +54,7 @@
     <Compile Include="ElementObject.cs" />
     <Compile Include="EnumerableArrayAdapter\Enumerable2DArray.cs" />
     <Compile Include="EnumerableArrayAdapter\Enumerable2DArrayRow.cs" />
+    <Compile Include="HeaderObject.cs" />
     <Compile Include="IColumn.cs" />
     <Compile Include="IDataObject.cs" />
     <Compile Include="IElement.cs" />

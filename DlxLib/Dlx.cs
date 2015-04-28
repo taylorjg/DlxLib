@@ -302,7 +302,7 @@ namespace DlxLib
             Func<TRow, IEnumerable<TCol>> iterateCols,
             Func<TCol, bool> predicate)
         {
-            var root = new ColumnObject(null /*TODO:Root*/, -1);
+            var root = new ColumnObject(null /*TODO:Root*/, -1, ColumnCover.Primary);
 
             int? numColumns = null;
             var rowIndex = 0;
@@ -318,7 +318,7 @@ namespace DlxLib
                 {
                     if (localRowIndex == 0)
                     {
-                        var listHeader = new ColumnObject(null /*TODO:Root*/, colIndex);
+                        var listHeader = new ColumnObject(null /*TODO:Root*/, colIndex, ColumnCover.Primary);
                         root.AppendColumnHeader(listHeader);
                         colIndexToListHeader[colIndex] = listHeader;
                     }

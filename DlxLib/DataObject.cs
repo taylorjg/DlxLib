@@ -73,5 +73,15 @@ namespace DlxLib
             Down.Up = this;
             Up.Down = this;
         }
+
+        public virtual string Kind
+        {
+            get { return "DataObject"; }
+        }
+
+        public override string ToString()
+        {
+            return String.Format("{0}[{1},{2}]", Kind, RowIndex, ColumnIndex);
+        }
     }
 }

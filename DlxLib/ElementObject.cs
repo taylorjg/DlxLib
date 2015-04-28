@@ -19,5 +19,9 @@ namespace DlxLib
 
         }
 
+        public override string Kind
+        {
+            get { return "Element"; }
+        }
     }
 }
