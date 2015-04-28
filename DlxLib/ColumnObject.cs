@@ -2,8 +2,10 @@ namespace DlxLib
 {
     internal class ColumnObject : DataObject
     {
-        public ColumnObject()
+        public ColumnObject(RootObject root, int columnIndex)
+            : base(null /*TODO:Root*/, null, -1, columnIndex)
         {
+            Init(this);
             PreviousColumnObject = NextColumnObject = this;
         }
 

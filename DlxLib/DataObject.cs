@@ -1,9 +1,22 @@
+using System;
+
 namespace DlxLib
 {
     internal class DataObject : IDataObject
     {
         public DataObject(RootObject root, ColumnObject listHeader, int rowIndex, int columnIndex)
         {
+            // TODO: Root must not be null
+            // TODO: Second arg to move to type IColumn when IColumn is implemented
+
+            if (null == listHeader && (!(this is RootObject)) && (!(this is ColumnObject)))
+                throw new ArgumentNullException("Must not be null except in case of Root or Column", "listHeader");
+            // TODO: Following type tests should be against IElement when IElement is hooked up (and they should test for -1 in that case!)
+            if (0 > rowIndex && (!(this is RootObject)) && (!(this is ColumnObject)) && (!(this is RowObject)))
+                throw new ArgumentOutOfRangeException("Must be >= 0", "rowIndex");
+            if (0 > columnIndex && (!(this is RootObject)) && (!(this is ColumnObject)) && (!(this is RowObject)))
+                throw new ArgumentOutOfRangeException("Must be >= 0", "columnIndex");
+
             Left = Right = Up = Down = this;
             Root = root;
             ListHeader = listHeader;
@@ -16,12 +29,13 @@ namespace DlxLib
             }
         }
 
-        // TODO: this is a bit ugly...
-        // LSP problem here ?
-        protected DataObject()
-            : this(null, null, -1, -1)
+        public void Init(ColumnObject listHeader)
         {
+            if (null != ListHeader)
+                throw new InvalidOperationException("Can't Init() a ColumnObject if ListHeader already set");
+            ListHeader = listHeader;
         }
+
 
         public RootObject Root { get; private set; }
         public DataObject Left { get; private set; }

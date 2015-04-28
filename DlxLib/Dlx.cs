@@ -80,10 +80,10 @@ namespace DlxLib
         ///         {0, 1, 0, 0, 0, 0, 1},
         ///         {0, 0, 0, 1, 1, 0, 1}
         ///     };
-        /// 
+        ///
         /// var cancellationTokenSource = new CancellationTokenSource();
         /// var dlx = new Dlx(cancellationTokenSource.Token);
-        /// 
+        ///
         /// dlx.SolutionFound += (_, e) =>
         /// {
         ///     var managedThreadId1 = Thread.CurrentThread.ManagedThreadId;
@@ -91,21 +91,21 @@ namespace DlxLib
         ///     Thread.Sleep(2000);
         ///     Console.WriteLine("[{0}] Found solution {1} - now waking", managedThreadId1, e.SolutionIndex);
         /// };
-        /// 
+        ///
         /// var thread = new Thread(() => dlx.Solve(matrix).ToList());
-        /// 
+        ///
         /// thread.Start();
-        /// 
+        ///
         /// var managedThreadId2 = Thread.CurrentThread.ManagedThreadId;
         /// Console.WriteLine("[{0}] Sleeping before calling Cancel...", managedThreadId2);
         /// Thread.Sleep(1000);
         /// Console.WriteLine("[{0}] Calling Cancel...", managedThreadId2);
         /// cancellationTokenSource.Cancel();
-        /// 
+        ///
         /// Console.WriteLine("[{0}] Before Join...", managedThreadId2);
         /// thread.Join();
         /// Console.WriteLine("[{0}] After Join", managedThreadId2);
-        /// 
+        ///
         /// // The example displays the following output:
         /// //    [5] Sleeping before calling Cancel...
         /// //    [6] Found solution 0 - now sleeping
@@ -302,7 +302,7 @@ namespace DlxLib
             Func<TRow, IEnumerable<TCol>> iterateCols,
             Func<TCol, bool> predicate)
         {
-            var root = new ColumnObject();
+            var root = new ColumnObject(null /*TODO:Root*/, -1);
 
             int? numColumns = null;
             var rowIndex = 0;
@@ -318,7 +318,7 @@ namespace DlxLib
                 {
                     if (localRowIndex == 0)
                     {
-                        var listHeader = new ColumnObject();
+                        var listHeader = new ColumnObject(null /*TODO:Root*/, colIndex);
                         root.AppendColumnHeader(listHeader);
                         colIndexToListHeader[colIndex] = listHeader;
                     }
@@ -326,12 +326,12 @@ namespace DlxLib
                     if (predicate(col))
                     {
                         var listHeader = colIndexToListHeader[colIndex];
-                        var dataObject = new DataObject(null, listHeader, localRowIndex, colIndex);
+                        var elementObject = new ElementObject(null, listHeader, localRowIndex, colIndex);
 
                         if (firstDataObjectInThisRow != null)
-                            firstDataObjectInThisRow.AppendToRow(dataObject);
+                            firstDataObjectInThisRow.AppendToRow(elementObject);
                         else
-                            firstDataObjectInThisRow = dataObject;
+                            firstDataObjectInThisRow = elementObject;
                     }
 
                     colIndex++;

@@ -13,5 +13,11 @@ namespace DlxLib
     /// </summary>
     internal class ElementObject : DataObject, IElement
     {
+        public ElementObject(RootObject root, ColumnObject listHeader, int rowIndex, int columnIndex)
+            : base(root, listHeader, rowIndex, columnIndex)
+        {
+
+        }
+
     }
 }
