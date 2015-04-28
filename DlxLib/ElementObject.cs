@@ -13,18 +13,5 @@ namespace DlxLib
     /// </summary>
     internal class ElementObject : DataObject, IElement
     {
-        #region IDataObject Members
-
-        public RootObject Root
-        {
-            get { throw new NotImplementedException(); }
-        }
-
-        public int ColumnIndex
-        {
-            get { throw new NotImplementedException(); }
-        }
-
-        #endregion
     }
 }

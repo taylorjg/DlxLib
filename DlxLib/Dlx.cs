@@ -326,7 +326,7 @@ namespace DlxLib
                     if (predicate(col))
                     {
                         var listHeader = colIndexToListHeader[colIndex];
-                        var dataObject = new DataObject(listHeader, localRowIndex);
+                        var dataObject = new DataObject(null, listHeader, localRowIndex, colIndex);
 
                         if (firstDataObjectInThisRow != null)
                             firstDataObjectInThisRow.AppendToRow(dataObject);

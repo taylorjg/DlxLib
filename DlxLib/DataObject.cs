@@ -1,12 +1,14 @@
 namespace DlxLib
 {
-    internal class DataObject
+    internal class DataObject : IDataObject
     {
-        public DataObject(ColumnObject listHeader, int rowIndex)
+        public DataObject(RootObject root, ColumnObject listHeader, int rowIndex, int columnIndex)
         {
             Left = Right = Up = Down = this;
+            Root = root;
             ListHeader = listHeader;
             RowIndex = rowIndex;
+            ColumnIndex = columnIndex;
 
             if (listHeader != null)
             {
@@ -17,16 +19,18 @@ namespace DlxLib
         // TODO: this is a bit ugly...
         // LSP problem here ?
         protected DataObject()
-            : this(null, -1)
+            : this(null, null, -1, -1)
         {
         }
 
+        public RootObject Root { get; private set; }
         public DataObject Left { get; private set; }
         public DataObject Right { get; private set; }
         public DataObject Up { get; private set; }
         public DataObject Down { get; private set; }
         public ColumnObject ListHeader { get; private set; }
         public int RowIndex { get; private set; }
+        public int ColumnIndex { get; private set; }
 
         public void AppendToRow(DataObject dataObject)
         {
