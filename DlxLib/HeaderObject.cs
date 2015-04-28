@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace DlxLib
 {
-    internal class HeaderObject : DataObject, IHeader
+    internal abstract class HeaderObject : DataObject, IHeader
     {
         public HeaderObject(RootObject root, ColumnObject listHeader, int rowIndex, int columnIndex)
             : base(root, listHeader, rowIndex, columnIndex)

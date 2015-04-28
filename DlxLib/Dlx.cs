@@ -357,7 +357,7 @@ namespace DlxLib
 
         private static bool MatrixIsEmpty(ColumnObject root)
         {
-            return root.NextColumnObject == root;
+            return root.Right == root;
         }
 
         private IEnumerable<Solution> Search(int k, SearchData searchData)
@@ -427,7 +427,7 @@ namespace DlxLib
         {
             ColumnObject chosenColumn = null;
 
-            for (var columnHeader = root.NextColumnObject; columnHeader != root; columnHeader = columnHeader.NextColumnObject)
+            for (var columnHeader = root.Right as ColumnObject; columnHeader != root; columnHeader = columnHeader.Right as ColumnObject)
             {
                 if (chosenColumn == null || columnHeader.NumberOfRows < chosenColumn.NumberOfRows)
                     chosenColumn = columnHeader;

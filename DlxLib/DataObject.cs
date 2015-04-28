@@ -2,7 +2,20 @@ using System;
 
 namespace DlxLib
 {
-    internal class DataObject : IDataObject
+    /// <summary>
+    /// Base class for all matrix object: Root, Row, Column, and Element.  Knows
+    /// its row/column index in the matrix.  Knows its Left/Right/Up/Down neighbors
+    /// (these properties are _not_ defined in an interface, and they're not virtual,
+    /// so they're faster for all users (by an indirect call).  Knows the Root of
+    /// the data matrix.  Knows its "head of column", the ListHeader.
+    /// </summary>
+    /// <remarks>
+    /// Directly knowing the Root and its own row/column index is important for
+    /// diagnostics and printing when the object is in a covered row/column. It
+    /// isn't necessary for computing the cover set.  Which is why Knuth's version
+    /// doesn't include this information in each matrix element.
+    /// </remarks>
+    internal abstract class DataObject : IDataObject
     {
         public DataObject(RootObject root, ColumnObject listHeader, int rowIndex, int columnIndex)
         {
@@ -38,10 +51,10 @@ namespace DlxLib
 
 
         public RootObject Root { get; private set; }
-        public DataObject Left { get; private set; }
-        public DataObject Right { get; private set; }
-        public DataObject Up { get; private set; }
-        public DataObject Down { get; private set; }
+        public DataObject Left { get; internal set; }
+        public DataObject Right { get; internal set; }
+        public DataObject Up { get; internal set; }
+        public DataObject Down { get; internal set; }
         public ColumnObject ListHeader { get; private set; }
         public int RowIndex { get; private set; }
         public int ColumnIndex { get; private set; }
@@ -79,6 +92,11 @@ namespace DlxLib
             get { return "DataObject"; }
         }
 
+        /// <summary>
+        /// A DataObject self-displays as its Kind (Root, Row, Column, Element)
+        /// and its 2-D location in the matrix (row, column).  But subclasses can
+        /// override for a better self-description.
+        /// </summary>
         public override string ToString()
         {
             return String.Format("{0}[{1},{2}]", Kind, RowIndex, ColumnIndex);
