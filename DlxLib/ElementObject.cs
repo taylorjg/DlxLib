@@ -19,6 +19,18 @@ namespace DlxLib
 
         }
 
+        protected override void ValidateRowIndexInRange(int rowIndex)
+        {
+            if (0 > rowIndex)
+                throw new ArgumentOutOfRangeException("Must be >= 0", "rowIndex");
+        }
+
+        protected override void ValidateColumnIndexInRange(int columnIndex)
+        {
+            if (0 > columnIndex)
+                throw new ArgumentOutOfRangeException("Must be >= 0", "columnIndex");
+        }
+
         public override string Kind
         {
             get { return "Element"; }

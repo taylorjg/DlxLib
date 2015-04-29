@@ -5,9 +5,8 @@ namespace DlxLib
     internal class ColumnObject : HeaderObject, IColumn
     {
         public ColumnObject(RootObject root, int columnIndex, ColumnCover columnCover)
-            : base(null /*TODO:Root*/, null, -1, columnIndex)
+            : base(root, columnIndex)
         {
-            Init(this);
             ColumnCover = columnCover;
             Left = Right = this;
         }
@@ -39,6 +38,12 @@ namespace DlxLib
         }
 
         #endregion
+
+        protected override void ValidateRowIndexInRange(int rowIndex)
+        {
+            if (-1 != rowIndex)
+                throw new ArgumentOutOfRangeException("rowIndex of ColumnObject must be -1", "rowIndex");
+        }
 
         public void AppendColumnHeader(ColumnObject columnObject)
         {

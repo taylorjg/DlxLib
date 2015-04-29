@@ -403,13 +403,13 @@ namespace DlxLib
                     searchData.PushCurrentSolutionRowIndex(r.RowIndex);
 
                     for (var j = r.Right; j != r; j = j.Right)
-                        CoverColumn(j.ListHeader);
+                        CoverColumn(j.ColumnHeader);
 
                     var recursivelyFoundSolutions = Search(k + 1, searchData);
                     foreach (var solution in recursivelyFoundSolutions) yield return solution;
 
                     for (var j = r.Left; j != r; j = j.Left)
-                        UncoverColumn(j.ListHeader);
+                        UncoverColumn(j.ColumnHeader);
 
                     searchData.PopCurrentSolutionRowIndex();
                 }
@@ -444,7 +444,7 @@ namespace DlxLib
             {
                 for (var j = i.Right; j != i; j = j.Right)
                 {
-                    j.ListHeader.UnlinkDataObject(j);
+                    j.ColumnHeader.UnlinkDataObject(j);
                 }
             }
         }
@@ -455,7 +455,7 @@ namespace DlxLib
             {
                 for (var j = i.Left; j != i; j = j.Left)
                 {
-                    j.ListHeader.RelinkDataObject(j);
+                    j.ColumnHeader.RelinkDataObject(j);
                 }
             }
 

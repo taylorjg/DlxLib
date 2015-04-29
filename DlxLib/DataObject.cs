@@ -19,20 +19,14 @@ namespace DlxLib
     {
         public DataObject(RootObject root, ColumnObject listHeader, int rowIndex, int columnIndex)
         {
-            // TODO: Root must not be null
             // TODO: Second arg to move to type IColumn when IColumn is implemented
 
-            if (null == listHeader && (!(this is RootObject)) && (!(this is ColumnObject)))
-                throw new ArgumentNullException("Must not be null except in case of Root or Column", "listHeader");
-            // TODO: Following type tests should be against IElement when IElement is hooked up (and they should test for -1 in that case!)
-            if (0 > rowIndex && (!(this is RootObject)) && (!(this is ColumnObject)) && (!(this is RowObject)))
-                throw new ArgumentOutOfRangeException("Must be >= 0", "rowIndex");
-            if (0 > columnIndex && (!(this is RootObject)) && (!(this is ColumnObject)) && (!(this is RowObject)))
-                throw new ArgumentOutOfRangeException("Must be >= 0", "columnIndex");
+            ValidateRowIndexInRange(rowIndex);
+            ValidateColumnIndexInRange(columnIndex);
 
             Left = Right = Up = Down = this;
-            Root = root;
-            ListHeader = listHeader;
+            _Root = root;
+            _ColumnHeader = listHeader;
             RowIndex = rowIndex;
             ColumnIndex = columnIndex;
 
@@ -42,21 +36,134 @@ namespace DlxLib
             }
         }
 
-        public void Init(ColumnObject listHeader)
+        /// <summary>
+        /// Constructor for ColumnObjects only: They don't pass in the ListHeader
+        /// because they're their _own_ ListHeader (and they can't reference
+        /// themselves in the constructor.  They also don't pass in the rowIndex
+        /// because the rowIndex is always -1.
+        /// </summary>
+        /// <remarks>
+        /// I don't know a way, in C# to limit the caller of this constructor to
+        /// ColumnObjects only (since I can't reference _this_ in the constructor,
+        /// which is the whole problem...)
+        /// </remarks>
+        public DataObject(RootObject root, int columnIndex)
+            : this(root, null, -1, columnIndex)
         {
-            if (null != ListHeader)
-                throw new InvalidOperationException("Can't Init() a ColumnObject if ListHeader already set");
-            ListHeader = listHeader;
+
         }
 
+        /// <summary>
+        /// Constructor for RootObjects only: They don't pass in the Root or the
+        /// ListHeader because they're their own Root and ListHeader, plus the
+        /// row and column indexes are both known (to be -1).
+        /// </summary>
+        public DataObject()
+            : this(null, null, -1, -1)
+        {
 
-        public RootObject Root { get; private set; }
+        }
+
+        /// <summary>
+        /// Validate that the supplied rowIndex is in the valid range (which depends
+        /// on the Kind).
+        /// </summary>
+        protected abstract void ValidateRowIndexInRange(int rowIndex);
+
+        /// <summary>
+        /// Validate that the supplied columnIndex is in the valid range (which
+        /// depends on the Kind).
+        /// </summary>
+        protected abstract void ValidateColumnIndexInRange(int columnIndex);
+
+
+        /// <summary>
+        /// Backing field for public property Root.
+        /// </summary>
+        private readonly RootObject _Root;
+        /// <summary>
+        /// Returns the Root object of the matrix that this DataObject is part of.
+        /// </summary>
+        public RootObject Root
+        {
+            get
+            {
+                if (null != _Root)
+                {
+                    return _Root;
+                }
+                // TODO: Awaiting the hook up of RootObject.
+                //if (this is RootObject)
+                //{
+                //    return this as RootObject;
+                //}
+                // This is a rather late notification that a constructor error
+                // occurred:  happens when Root is called, not in constructor.
+                throw new InvalidOperationException("Root must not be null except for Root");
+            }
+        }
+
+        /// <summary>
+        /// Returns the left-wise object from this object.  (List is circular.)  Links rows.
+        /// </summary>
         public DataObject Left { get; internal set; }
+
+        /// <summary>
+        /// Returns the right-wise object from this object.  (List is circular.) Links rows.
+        /// </summary>
         public DataObject Right { get; internal set; }
+
+        /// <summary>
+        /// Returns the up-ward object from this object.  (List is circular.) Links columns.
+        /// </summary>
         public DataObject Up { get; internal set; }
+
+        /// <summary>
+        /// Returns the down-ward object from this object.  (List is circular.) Links columns.
+        /// </summary>
         public DataObject Down { get; internal set; }
-        public ColumnObject ListHeader { get; private set; }
+
+        /// <summary>
+        /// Backing field for public property ListHeader.
+        /// </summary>
+        private readonly ColumnObject _ColumnHeader;
+
+        /// <summary>
+        /// Returns the column header for this object in the matrix.  (If this object
+        /// is a Row then the column header is the Root.)
+        /// </summary>
+        public ColumnObject ColumnHeader
+        {
+            get
+            {
+                if (null != _ColumnHeader)
+                {
+                    return _ColumnHeader;
+                }
+                if (this is IColumn)
+                {
+                    return this as ColumnObject;
+                }
+                // This is a rather late notification that a constructor error
+                // occurred:  happens when ListHeader is called, not in constructor.
+                throw new InvalidOperationException("ListHeader must not be null except for Root or Column");
+            }
+        }
+
+        /// <summary>
+        /// Returns the row index (0-based) for this object in the matrix.
+        /// (Returns -1 for Root and Column objects.)  The row index is fixed
+        /// when the matrix is created (when the object is added to the matrix)
+        /// so doesn't change even if this object's row or column is covered.
+        /// </summary>
         public int RowIndex { get; private set; }
+
+        /// <summary>
+        /// Returns the column index (0-based) for this object in the matrix.
+        /// (Returns -1 for Root and Row objects.)  The column index is fixed
+        /// when the matrix is created (when the object is added to the matrix)
+        /// so doesn't change even if this objects' row or column is covered.
+        /// </summary>
         public int ColumnIndex { get; private set; }
 
         public void AppendToRow(DataObject dataObject)
@@ -87,6 +194,10 @@ namespace DlxLib
             Up.Down = this;
         }
 
+        /// <summary>
+        /// Returns the kind (subclass name) of this object, suitable for a
+        /// ToString() self-description.
+        /// </summary>
         public virtual string Kind
         {
             get { return "DataObject"; }

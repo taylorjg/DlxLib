@@ -16,6 +16,18 @@ namespace DlxLib
 
         }
 
+        public HeaderObject(RootObject root, int columnIndex)
+            :base(root, columnIndex)
+        {
+
+        }
+
+        public HeaderObject()
+            :base()
+        {
+
+        }
+
         #region IHeader Members
 
         public IEnumerable<DataObject> Elements
@@ -24,6 +36,18 @@ namespace DlxLib
         }
 
         #endregion
+
+        protected override void ValidateRowIndexInRange(int rowIndex)
+        {
+            if (-1 > rowIndex)
+                throw new ArgumentOutOfRangeException("on Header must be > -1", "rowIndex");
+        }
+
+        protected override void ValidateColumnIndexInRange(int columnIndex)
+        {
+            if (-1 > columnIndex)
+                throw new ArgumentOutOfRangeException("on Header must be > -1", "columnIndex");
+        }
 
         public override string Kind
         {
