@@ -10,7 +10,20 @@ namespace DlxLib
     /// <summary>
     /// PLACEHOLDER
     /// </summary>
-    internal class RowObject
+    internal class RowObject : HeaderObject, IRow
     {
+        #region IRow Members
+
+        public int NumberOfColumns
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public void Append(DataObject dataObject)
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion
     }
 }
