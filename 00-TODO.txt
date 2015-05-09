@@ -1,0 +1,40 @@
+1. Old to new transition
+
+   Interfaces were:
+
+       IDataObject
+           Root
+       IHeader : IDataObject
+           Name, NumberOfColumns, NumberOfRows, Elements
+       IColumn : IHeader
+           ColumnCover {Primary, Secondary}, Append(DataObject)
+       IRow : IHeader
+           Append(DataObject)
+       IRoot : IHeader
+           <marker>
+
+   Interfaces are:
+
+       IDataObject
+           Root, RowIndex, ColumnIndex, Kind {Column, Row, Root, Element}
+       IHeader : IDataObject
+           Elements
+       IColumn : IHeader
+           ColumnCover {Primary, Secondary}, NumberOfRows, Append(DataObject)
+       IRow : IHeader
+           NumberOfColumns, Append(DataObject)
+       IRoot : IHeader, IRow, IColumn
+           GetColumn(columnIndex), GetRow(rowIndex)
+       IElement : IDataObject
+           <marker>
+
+
+
+2. Change IDataObject.Kind to an enum?
+3. Incorporate RowObject into matrix (currently just Root/Column are in matrix)
+5. What's with the commented out test at DataObject.Root?
+6. What's with the commented out test at DataObject.ColumnHeader?
+7. Get rid of DataObject.{AppendToRow, UnlinkFromColumn, RelinkIntoColumn}
+8. Do I need DataObject.{IsOfColumn, IsOfRow}?
+
+Note: Interfaces solely for external access, internal access uses actual classes

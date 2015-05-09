@@ -68,6 +68,7 @@
     <Compile Include="SearchStepEventArgs.cs" />
     <Compile Include="Solution.cs" />
     <Compile Include="SolutionFoundEventArgs.cs" />
+    <Compile Include="Validations.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
