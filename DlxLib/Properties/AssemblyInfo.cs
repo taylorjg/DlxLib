@@ -35,5 +35,5 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyFileVersion("1.2.0.0")]
 
 
-[assembly: InternalsVisibleTo("DlxLibTests.dll")]
-[assembly: InternalsVisibleTo("DlxLibPropertyTests.dll")]
+[assembly: InternalsVisibleTo("DlxLibTests")]
+[assembly: InternalsVisibleTo("DlxLibPropertyTests")]
