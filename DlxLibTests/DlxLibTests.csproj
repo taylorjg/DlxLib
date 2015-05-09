@@ -49,6 +49,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DlxLibEventTests.cs" />
+    <Compile Include="DlxLibMatrixTests.cs" />
+    <Compile Include="DlxLibMatrixHelpers.cs">
+       <DependentUpon>DlxLibMatrixTests.cs</DependentUpon>
+    </Compile>
     <Compile Include="DlxLibSolveTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

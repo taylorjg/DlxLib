@@ -24,6 +24,11 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "DlxLibPropertyTestsFs", "Dl
 EndProject
 Project("{F088123C-0E9E-452A-89E6-6BA2F21D5CAC}") = "DlxLibModels", "DlxLibModels\DlxLibModels.modelproj", "{11965CE7-309F-46C0-8408-2C31CA14901C}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{6ED50C4C-94BA-4157-9540-3C1E2322EE80}"
+	ProjectSection(SolutionItems) = preProject
+		00-TODO.txt = 00-TODO.txt
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -105,12 +110,10 @@ Global
 		{11965CE7-309F-46C0-8408-2C31CA14901C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{11965CE7-309F-46C0-8408-2C31CA14901C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{11965CE7-309F-46C0-8408-2C31CA14901C}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{11965CE7-309F-46C0-8408-2C31CA14901C}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
 		{11965CE7-309F-46C0-8408-2C31CA14901C}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{11965CE7-309F-46C0-8408-2C31CA14901C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{11965CE7-309F-46C0-8408-2C31CA14901C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{11965CE7-309F-46C0-8408-2C31CA14901C}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{11965CE7-309F-46C0-8408-2C31CA14901C}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{11965CE7-309F-46C0-8408-2C31CA14901C}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
