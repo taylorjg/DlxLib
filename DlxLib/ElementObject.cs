@@ -16,18 +16,23 @@ namespace DlxLib
         public ElementObject(RootObject root, ColumnObject listHeader, int rowIndex, int columnIndex)
             : base(root, listHeader, rowIndex, columnIndex)
         {
-
+            root.MustNotBeNull("ElementObject constructor param root");
+            listHeader.MustNotBeNull("ElementObject constructor param listHeader");
         }
 
-        protected override void ValidateRowIndexInRange(int rowIndex)
+        protected override void ValidateRowIndexInRange(RootObject root, int rowIndex)
         {
-            if (0 > rowIndex)
+            var row = root.GetRow(rowIndex);
+            var maxInRow = row.HighestColumnInRow;
+            if (maxInRow >= rowIndex)
                 throw new ArgumentOutOfRangeException("Must be >= 0", "rowIndex");
         }
 
-        protected override void ValidateColumnIndexInRange(int columnIndex)
+        protected override void ValidateColumnIndexInRange(RootObject root, int columnIndex)
         {
-            if (0 > columnIndex)
+            var col = root.GetColumn(columnIndex);
+            var maxInCol = col.HighestRowInColumn;
+            if (maxInCol > columnIndex)
                 throw new ArgumentOutOfRangeException("Must be >= 0", "columnIndex");
         }
 

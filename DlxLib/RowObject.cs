@@ -19,11 +19,35 @@ namespace DlxLib
             get { throw new NotImplementedException(); }
         }
 
+        public override IEnumerable<DataObject> Elements
+        {
+            get
+            {
+                for (var element = Right; this != element; element = element.Right)
+                    yield return element;
+            }
+        }
+
+        /// <summary>
+        /// Returns largest columnIndex of row elements (-1 if row has no elements)
+        /// </summary>
+        public int HighestColumnInRow
+        {
+            get
+            {
+                return Left.ColumnIndex;
+            }
+        }
+
         public void Append(DataObject dataObject)
         {
-            throw new NotImplementedException();
+            Left.Right = dataObject;
+            dataObject.Right = this;
+            dataObject.Left = Left;
+            Left = dataObject;
         }
 
         #endregion
     }
 }
+

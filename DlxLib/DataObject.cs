@@ -19,10 +19,8 @@ namespace DlxLib
     {
         public DataObject(RootObject root, ColumnObject listHeader, int rowIndex, int columnIndex)
         {
-            // TODO: Second arg to move to type IColumn when IColumn is implemented
-
-            ValidateRowIndexInRange(rowIndex);
-            ValidateColumnIndexInRange(columnIndex);
+            ValidateRowIndexInRange(root, rowIndex);
+            ValidateColumnIndexInRange(root, columnIndex);
 
             Left = Right = Up = Down = this;
             _Root = root;
@@ -68,13 +66,13 @@ namespace DlxLib
         /// Validate that the supplied rowIndex is in the valid range (which depends
         /// on the Kind).
         /// </summary>
-        protected abstract void ValidateRowIndexInRange(int rowIndex);
+        protected abstract void ValidateRowIndexInRange(RootObject root, int rowIndex);
 
         /// <summary>
         /// Validate that the supplied columnIndex is in the valid range (which
         /// depends on the Kind).
         /// </summary>
-        protected abstract void ValidateColumnIndexInRange(int columnIndex);
+        protected abstract void ValidateColumnIndexInRange(RootObject root, int columnIndex);
 
 
         /// <summary>
@@ -166,20 +164,15 @@ namespace DlxLib
         /// </summary>
         public int ColumnIndex { get; private set; }
 
+        /// <summary>
+        /// Obsolete! To be removed!
+        /// </summary>
         public void AppendToRow(DataObject dataObject)
         {
             Left.Right = dataObject;
             dataObject.Right = this;
             dataObject.Left = Left;
             Left = dataObject;
-        }
-
-        public void AppendToColumn(DataObject dataObject)
-        {
-            Up.Down = dataObject;
-            dataObject.Down = this;
-            dataObject.Up = Up;
-            Up = dataObject;
         }
 
         public void UnlinkFromColumn()

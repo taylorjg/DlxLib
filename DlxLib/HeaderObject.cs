@@ -30,20 +30,17 @@ namespace DlxLib
 
         #region IHeader Members
 
-        public IEnumerable<DataObject> Elements
-        {
-            get { throw new NotImplementedException(); }
-        }
+        public abstract IEnumerable<DataObject> Elements { get; }
 
         #endregion
 
-        protected override void ValidateRowIndexInRange(int rowIndex)
+        protected override void ValidateRowIndexInRange(RootObject root, int rowIndex)
         {
             if (-1 > rowIndex)
                 throw new ArgumentOutOfRangeException("on Header must be > -1", "rowIndex");
         }
 
-        protected override void ValidateColumnIndexInRange(int columnIndex)
+        protected override void ValidateColumnIndexInRange(RootObject root, int columnIndex)
         {
             if (-1 > columnIndex)
                 throw new ArgumentOutOfRangeException("on Header must be > -1", "columnIndex");

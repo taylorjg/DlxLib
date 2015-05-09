@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace DlxLib
 {
@@ -19,14 +20,18 @@ namespace DlxLib
 
         public void Append(DataObject dataObject)
         {
-            AppendToColumn(dataObject);
+            Up.Down = dataObject;
+            dataObject.Down = this;
+            dataObject.Up = Up;
+            Up = dataObject;
+            NumberOfRows++;
         }
 
         #endregion
 
         #region IHeader Members
 
-        public new System.Collections.Generic.IEnumerable<DataObject> Elements
+        public override IEnumerable<DataObject> Elements
         {
             get
             {
@@ -39,10 +44,21 @@ namespace DlxLib
 
         #endregion
 
-        protected override void ValidateRowIndexInRange(int rowIndex)
+        protected override void ValidateRowIndexInRange(RootObject root, int rowIndex)
         {
             if (-1 != rowIndex)
                 throw new ArgumentOutOfRangeException("rowIndex of ColumnObject must be -1", "rowIndex");
+        }
+
+        /// <summary>
+        /// Returns largest rowIndex of column elements (-1 if column has no elements)
+        /// </summary>
+        public int HighestRowInColumn
+        {
+            get
+            {
+                return Up.RowIndex;
+            }
         }
 
         public void AppendColumnHeader(ColumnObject columnObject)
