@@ -31,10 +31,10 @@ namespace DlxLibTests
             Assert.That(sutRoot.NumberOfColumns, Is.EqualTo(0));
             Assert.That(sutRoot.ToString(), Is.EqualTo("Root[0x0]"));
 
-            Assert.DoesNotThrow(() => sutRoot.ValidateRowIndexAvailable(sutRoot, -1));
-            Assert.Throws<ArgumentOutOfRangeException>(() => sutRoot.ValidateRowIndexAvailable(sutRoot, 0));
-            Assert.DoesNotThrow(() => sutRoot.ValidateColumnIndexAvailable(sutRoot, -1));
-            Assert.Throws<ArgumentOutOfRangeException>(() => sutRoot.ValidateColumnIndexAvailable(sutRoot, 0));
+            Assert.DoesNotThrow(() => sutRoot.ValidateRowIndexAvailableInColumn(sutRoot, -1, -1));
+            Assert.Throws<ArgumentOutOfRangeException>(() => sutRoot.ValidateRowIndexAvailableInColumn(sutRoot, 0, 0));
+            Assert.DoesNotThrow(() => sutRoot.ValidateColumnIndexAvailableInRow(sutRoot, -1, -1));
+            Assert.Throws<ArgumentOutOfRangeException>(() => sutRoot.ValidateColumnIndexAvailableInRow(sutRoot, 0, 0));
         }
 
         [Test]
@@ -52,10 +52,10 @@ namespace DlxLibTests
             Assert.That(sutRow.NumberOfColumns, Is.EqualTo(0));
             Assert.That(sutRow.ToString(), Is.EqualTo("Row[0]"));
 
-            Assert.DoesNotThrow(() => sutRow.ValidateRowIndexAvailable(root, 1));
-            Assert.Throws<ArgumentOutOfRangeException>(() => sutRow.ValidateRowIndexAvailable(root, 0));
-            Assert.DoesNotThrow(() => sutRow.ValidateColumnIndexAvailable(root, -1));
-            Assert.Throws<ArgumentOutOfRangeException>(() => sutRow.ValidateColumnIndexAvailable(root, 0));
+            Assert.DoesNotThrow(() => sutRow.ValidateRowIndexAvailableInColumn(root, 1, 0));
+            Assert.Throws<ArgumentOutOfRangeException>(() => sutRow.ValidateRowIndexAvailableInColumn(root, 0, 0));
+            Assert.DoesNotThrow(() => sutRow.ValidateColumnIndexAvailableInRow(root, 0, -1));
+            Assert.Throws<ArgumentOutOfRangeException>(() => sutRow.ValidateColumnIndexAvailableInRow(root, 0, 0));
         }
 
         [Test]
@@ -78,20 +78,22 @@ namespace DlxLibTests
         [Test]
         public void ElementProperties()
         {
+            const int rowIndex = 3;
             const int colIndex = 5;
 
             var sut = RootObject.CreateEmptyMatrix(7, 7);
             var sutRoot = sut.Item1;
+            var sutRow3 = sutRoot.GetRow(rowIndex);
             var sutColumn5 = sutRoot.GetColumn(colIndex);
 
-            var sutElement = new ElementObject(sutRoot, sutColumn5, 0, colIndex);
+            var sutElement = new ElementObject(sutRoot, sutRow3, sutColumn5);
             Assert.That(sutElement, Is.Not.Null);
             Assert.That(sutElement.Root, Is.EqualTo(sutRoot));
             Assert.That(sutElement.ColumnHeader, Is.EqualTo(sutColumn5));
-            Assert.That(sutElement.RowIndex, Is.EqualTo(0));
+            Assert.That(sutElement.RowIndex, Is.EqualTo(3));
             Assert.That(sutElement.ColumnIndex, Is.EqualTo(5));
             Assert.That(sutElement.Kind, Is.EqualTo("Element"));
-            Assert.That(sutElement.ToString(), Is.EqualTo("Element[0,5]"));
+            Assert.That(sutElement.ToString(), Is.EqualTo("Element[3,5]"));
 
         }
 
@@ -234,6 +236,9 @@ namespace DlxLibTests
 
             var sut = RootObject.CreateEmptyMatrix(7, 7);
             var sutRoot = sut.Item1;
+            var sutRow0 = sutRoot.GetRow(0);
+            var sutRow2 = sutRoot.GetRow(2);
+            var sutRow4 = sutRoot.GetRow(4);
             var sutColumn5 = sutRoot.GetColumn(colIndex);
 
             Assert.That(sutColumn5, Is.Not.Null);
@@ -241,15 +246,15 @@ namespace DlxLibTests
 
             ValidateColumn(sutColumn5, colIndex, ColumnCover.Primary);
 
-            var elt1 = new ElementObject(sutRoot, sutColumn5, 0, colIndex);
+            var elt1 = new ElementObject(sutRoot, sutRow0, sutColumn5);
             sutColumn5.Append(elt1);
             ValidateColumn(sutColumn5, colIndex, ColumnCover.Primary, elt1);
 
-            var elt2 = new ElementObject(sutRoot, sutColumn5, 2, colIndex);
+            var elt2 = new ElementObject(sutRoot, sutRow2, sutColumn5);
             sutColumn5.Append(elt2);
             ValidateColumn(sutColumn5, colIndex, ColumnCover.Primary, elt1, elt2);
 
-            var elt3 = new ElementObject(sutRoot, sutColumn5, 4, colIndex);
+            var elt3 = new ElementObject(sutRoot, sutRow4, sutColumn5);
             sutColumn5.Append(elt3);
             ValidateColumn(sutColumn5, colIndex, ColumnCover.Primary, elt1, elt2, elt3);
         }
@@ -262,20 +267,22 @@ namespace DlxLibTests
             var sut = RootObject.CreateEmptyMatrix(7, 7);
             var sutRoot = sut.Item1;
             var sutRow5 = sutRoot.GetRow(rowIndex);
-            var sutColumns = sut.Item3;
+            var sutColumn0 = sutRoot.GetColumn(0);
+            var sutColumn2 = sutRoot.GetColumn(2);
+            var sutColumn4 = sutRoot.GetColumn(4);
 
             Assert.That(sutRow5, Is.Not.Null);
             Assert.That(sutRow5.RowIndex, Is.EqualTo(rowIndex));
 
             ValidateRow(sutRow5, rowIndex);
 
-            var elt1 = new ElementObject(sutRoot, sutColumns[0], rowIndex, 0);
+            var elt1 = new ElementObject(sutRoot, sutRow5, sutColumn0);
             sutRow5.Append(elt1);
             ValidateRow(sutRow5, rowIndex, elt1);
-            var elt2 = new ElementObject(sutRoot, sutColumns[2], rowIndex, 2);
+            var elt2 = new ElementObject(sutRoot, sutRow5, sutColumn2);
             sutRow5.Append(elt2);
             ValidateRow(sutRow5, rowIndex, elt1, elt2);
-            var elt3 = new ElementObject(sutRoot, sutColumns[4], rowIndex, 4);
+            var elt3 = new ElementObject(sutRoot, sutRow5, sutColumn4);
             sutRow5.Append(elt3);
             ValidateRow(sutRow5, rowIndex, elt1, elt2, elt3);
         }

@@ -6,13 +6,18 @@ namespace DlxLib
     internal class ColumnObject : HeaderObject, IColumn
     {
         public ColumnObject(RootObject root, int columnIndex, ColumnCover columnCover)
-            : base(root, columnIndex)
+            : base(root, -1, columnIndex)
         {
             ColumnCover = columnCover;
         }
 
         public ColumnCover ColumnCover { get; private set; }
         public int NumberOfRows { get; private set; }
+
+        public override IRow RowHeader
+        {
+            get { return Root; }
+        }
 
         #region IColumn Members
 
@@ -91,13 +96,13 @@ namespace DlxLib
             NumberOfRows++;
         }
 
-        protected internal override void ValidateRowIndexAvailable(RootObject root, int rowIndex)
+        protected internal override void ValidateRowIndexAvailableInColumn(RootObject root, int rowIndex, int columnIndex)
         {
             if (-1 != rowIndex)
                 throw new ArgumentOutOfRangeException("rowIndex", "Must be -1");
         }
 
-        protected internal override void ValidateColumnIndexAvailable(RootObject root, int columnIndex)
+        protected internal override void ValidateColumnIndexAvailableInRow(RootObject root, int rowIndex, int columnIndex)
         {
             var maxColumn = root.HighestColumn;
             if (maxColumn >= columnIndex)

@@ -332,7 +332,7 @@ namespace DlxLib
                     if (predicate(col))
                     {
                         var listHeader = colIndexToListHeader[colIndex];
-                        var elementObject = new ElementObject(actualRoot, listHeader, localRowIndex, colIndex);
+                        var elementObject = (ElementObject)null; // DSB new ElementObject(actualRoot, listHeader, localRowIndex, colIndex);
 
                         if (firstDataObjectInThisRow != null)
                             firstDataObjectInThisRow.AppendToRow(elementObject);

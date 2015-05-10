@@ -17,6 +17,11 @@ namespace DlxLib
         {
         }
 
+        public override IRow RowHeader
+        {
+            get { return this; }
+        }
+
     #region IRow Members
 
         public int NumberOfColumns
@@ -63,14 +68,14 @@ namespace DlxLib
 
         #endregion
 
-        protected internal override void ValidateRowIndexAvailable(RootObject root, int rowIndex)
+        protected internal override void ValidateRowIndexAvailableInColumn(RootObject root, int rowIndex, int columnIndex)
         {
             var maxRow = root.HighestRow;
             if (maxRow >= rowIndex)
                 throw new ArgumentOutOfRangeException("rowIndex", "Row index too low");
         }
 
-        protected internal override void ValidateColumnIndexAvailable(RootObject root, int columnIndex)
+        protected internal override void ValidateColumnIndexAvailableInRow(RootObject root, int rowIndex, int columnIndex)
         {
             if (-1 != columnIndex)
                 throw new ArgumentOutOfRangeException("columnIndex", "Must be -1");

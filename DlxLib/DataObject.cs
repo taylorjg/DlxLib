@@ -17,63 +17,18 @@ namespace DlxLib
     /// </remarks>
     internal abstract class DataObject : IDataObject
     {
-        public DataObject(RootObject root, int rowIndex, int columnIndex)
+        protected DataObject(RootObject root, int rowIndex, int columnIndex)
         {
-            ValidateRowIndexAvailable(root, rowIndex);
-            ValidateColumnIndexAvailable(root, columnIndex);
+            ValidateRowIndexAvailableInColumn(root, rowIndex, columnIndex);
+            ValidateColumnIndexAvailableInRow(root, rowIndex, columnIndex);
 
             Left = Right = Up = Down = this;
             _Root = root;
             RowIndex = rowIndex;
             ColumnIndex = columnIndex;
-
-            //if (listHeader != null)
-            //{
-            //    listHeader.Append(this);
-            //}
         }
 
-        /// <summary>
-        /// Constructor for ColumnObjects only: They don't pass in the ListHeader
-        /// because they're their _own_ ListHeader (and they can't reference
-        /// themselves in the constructor.  They also don't pass in the rowIndex
-        /// because the rowIndex is always -1.
-        /// </summary>
-        /// <remarks>
-        /// I don't know a way, in C# to limit the caller of this constructor to
-        /// ColumnObjects only (since I can't reference _this_ in the constructor,
-        /// which is the whole problem...)
-        /// </remarks>
-        public DataObject(RootObject root, int columnIndex)
-            : this(root, -1, columnIndex)
-        {
-
-        }
-
-        /// <summary>
-        /// Constructor for RootObjects only: They don't pass in the Root or the
-        /// ListHeader because they're their own Root and ListHeader, plus the
-        /// row and column indexes are both known (to be -1).
-        /// </summary>
-        public DataObject()
-            : this(null, -1, -1)
-        {
-
-        }
-
-        /// <summary>
-        /// Validate that the supplied rowIndex is in the valid range (which depends
-        /// on the Kind).
-        /// </summary>
-        protected internal abstract void ValidateRowIndexAvailable(RootObject root, int rowIndex);
-
-        /// <summary>
-        /// Validate that the supplied columnIndex is in the valid range (which
-        /// depends on the Kind).
-        /// </summary>
-        protected internal abstract void ValidateColumnIndexAvailable(RootObject root, int columnIndex);
-
-
+        #region IDataObject members
         /// <summary>
         /// Backing field for public property Root.
         /// </summary>
@@ -90,6 +45,43 @@ namespace DlxLib
                 return _Root;
             }
         }
+
+        /// <summary>
+        /// Returns the row index (0-based) for this object in the matrix.
+        /// (Returns -1 for Root and Column objects.)  The row index is fixed
+        /// when the matrix is created (when the object is added to the matrix)
+        /// so doesn't change even if this object's row or column is covered.
+        /// </summary>
+        public virtual int RowIndex { get; private set; }
+
+        /// <summary>
+        /// Returns the column index (0-based) for this object in the matrix.
+        /// (Returns -1 for Root and Row objects.)  The column index is fixed
+        /// when the matrix is created (when the object is added to the matrix)
+        /// so doesn't change even if this objects' row or column is covered.
+        /// </summary>
+        public virtual int ColumnIndex { get; private set; }
+
+        /// <summary>
+        /// Returns the kind (subclass name) of this object, suitable for a
+        /// ToString() self-description.
+        /// </summary>
+        public abstract string Kind { get; }
+
+        #endregion
+
+        /// <summary>
+        /// Validate that the supplied rowIndex is available in the row for a new
+        /// matrix data object (which depends on the Kind).
+        /// </summary>
+        protected internal abstract void ValidateRowIndexAvailableInColumn(RootObject root, int rowIndex, int columnIndex);
+
+        /// <summary>
+        /// Validate that the supplied columnIndex is available in the column for
+        /// a new matrix data object (which depends on the Kind).
+        /// </summary>
+        protected internal abstract void ValidateColumnIndexAvailableInRow(RootObject root, int rowIndex, int columnIndex);
+
 
         /// <summary>
         /// Returns the left-wise object from this object.  (List is circular.)  Links rows.
@@ -115,55 +107,42 @@ namespace DlxLib
         /// Returns the column header for this object in the matrix.  (If this object
         /// is a Row then the column header is the Root.)
         /// </summary>
+        /// <remarks>
+        /// Note that this object will not be in the Elements of its column header
+        /// if its row is covered.
+        /// </remarks>
         public abstract IColumn ColumnHeader { get; }
 
         /// <summary>
-        /// Returns the row index (0-based) for this object in the matrix.
-        /// (Returns -1 for Root and Column objects.)  The row index is fixed
-        /// when the matrix is created (when the object is added to the matrix)
-        /// so doesn't change even if this object's row or column is covered.
+        /// Returns the row header for this object in the matrix.  (If this object
+        /// is a Column then the column header is the Root.)
         /// </summary>
-        public virtual int RowIndex { get; private set; }
+        /// Note that this object will not be in the Elements of its row header
+        /// if a) its column is covered or b) it is a column header of a Secondary
+        /// column.
+        public abstract IRow RowHeader { get; }
 
-        /// <summary>
-        /// Returns the column index (0-based) for this object in the matrix.
-        /// (Returns -1 for Root and Row objects.)  The column index is fixed
-        /// when the matrix is created (when the object is added to the matrix)
-        /// so doesn't change even if this objects' row or column is covered.
-        /// </summary>
-        public virtual int ColumnIndex { get; private set; }
-
-        /// <summary>
-        /// Obsolete! To be removed!
-        /// </summary>
+        [Obsolete]
         public void AppendToRow(DataObject dataObject)
         {
-            Left.Right = dataObject;
-            dataObject.Right = this;
-            dataObject.Left = Left;
-            Left = dataObject;
+            IRow row = Root.GetRow(RowIndex);
+            row.Append(dataObject);
         }
 
+        [Obsolete]
         public void UnlinkFromColumn()
         {
             Down.Up = Up;
             Up.Down = Down;
         }
 
+        [Obsolete]
         public void RelinkIntoColumn()
         {
             Down.Up = this;
             Up.Down = this;
         }
 
-        /// <summary>
-        /// Returns the kind (subclass name) of this object, suitable for a
-        /// ToString() self-description.
-        /// </summary>
-        public virtual string Kind
-        {
-            get { return "DataObject"; }
-        }
 
         /// <summary>
         /// A DataObject self-displays as its Kind (Root, Row, Column, Element)

@@ -13,32 +13,31 @@ namespace DlxLib
     /// </summary>
     internal class ElementObject : DataObject, IElement
     {
-        public ElementObject(RootObject root, ColumnObject listHeader, int rowIndex, int columnIndex)
-            : base(root, rowIndex, columnIndex)
+        public ElementObject(RootObject root, RowObject rowHeader, ColumnObject columnHeader)
+            : base(root, rowHeader.RowIndex, columnHeader.ColumnIndex)
         {
             root.MustNotBeNull("ElementObject constructor param root");
-            listHeader.MustNotBeNull("ElementObject constructor param listHeader");
-            _ColumnHeader = listHeader;
+            rowHeader.MustNotBeNull("ElementObject constructor param rowHeader");
+            columnHeader.MustNotBeNull("ElementObject constructor param columnHeader");
+
+            _RowHeader = rowHeader;
+            _ColumnHeader = columnHeader;
         }
 
-        /// <summary>
-        /// Backing field for public property ListHeader.
-        /// </summary>
-        private readonly IColumn _ColumnHeader;
 
-        protected internal override void ValidateRowIndexAvailable(RootObject root, int rowIndex)
+        protected internal override void ValidateRowIndexAvailableInColumn(RootObject root, int rowIndex, int columnIndex)
         {
-            var row = root.GetRow(rowIndex);
-            var maxInRow = row.HighestColumnInRow;
-            if (maxInRow >= rowIndex)
+            var column = root.GetColumn(columnIndex);
+            var maxRowInColumn = column.HighestRowInColumn;
+            if (maxRowInColumn >= rowIndex)
                 throw new ArgumentOutOfRangeException("rowIndex", "Row index too low");
         }
 
-        protected internal override void ValidateColumnIndexAvailable(RootObject root, int columnIndex)
+        protected internal override void ValidateColumnIndexAvailableInRow(RootObject root, int rowIndex, int columnIndex)
         {
-            var col = root.GetColumn(columnIndex);
-            var maxInCol = col.HighestRowInColumn;
-            if (maxInCol > columnIndex)
+            var row = root.GetRow(rowIndex);
+            var maxColumnInRow = row.HighestColumnInRow;
+            if (maxColumnInRow >= columnIndex)
                 throw new ArgumentOutOfRangeException("columnIndex", "Column index too low");
         }
 
@@ -47,9 +46,33 @@ namespace DlxLib
             get { return "Element"; }
         }
 
+        /// <summary>
+        /// Backing field for public property ColumnHeader.
+        /// </summary>
+        private readonly IColumn _ColumnHeader;
+
+        /// <summary>
+        /// Return the column header for this element.
+        /// </summary>
         public override IColumn ColumnHeader
         {
             get { return _ColumnHeader; }
+        }
+
+        /// <summary>
+        /// Backing field for public property RowHeader.
+        /// </summary>
+        private readonly IRow _RowHeader;
+
+        /// <summary>
+        /// Return the row header for this element.
+        /// </summary>
+        public override IRow RowHeader
+        {
+            get
+            {
+                return _RowHeader;
+            }
         }
     }
 }

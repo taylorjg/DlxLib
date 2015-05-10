@@ -13,7 +13,8 @@
        IRoot : IHeader
            <marker>
 
-   Interfaces are:
+   Interfaces are for use from OUTSIDE of data structure, pretty much, to the
+   extent that users deal with rows and columns and elements:
 
        IDataObject
            Root, RowIndex, ColumnIndex, Kind {Column, Row, Root, Element}
@@ -28,6 +29,10 @@
        IElement : IDataObject
            <marker>
 
+   Classes that implement the matrix:
+
+       abstract DataObject : IDataObject
+
 
 
 2. Change IDataObject.Kind to an enum?
@@ -36,6 +41,6 @@
 6. What's with the commented out test at DataObject.ColumnHeader?
 7. Get rid of DataObject.{AppendToRow, UnlinkFromColumn, RelinkIntoColumn}
 8. Do I need DataObject.{IsOfColumn, IsOfRow}?
-9. AddElement(r,c) to Root? and maybe to Column/Row as well.
+9. AddElement(r,c) to Root? IRoot? and maybe to Column/Row as well.
 
 Note: Interfaces solely for external access, internal access uses actual classes

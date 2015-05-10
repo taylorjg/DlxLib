@@ -10,20 +10,8 @@ namespace DlxLib
 {
     internal abstract class HeaderObject : DataObject, IHeader
     {
-        public HeaderObject(RootObject root, int rowIndex, int columnIndex)
+        protected HeaderObject(RootObject root, int rowIndex, int columnIndex)
             : base(root, rowIndex, columnIndex)
-        {
-
-        }
-
-        public HeaderObject(RootObject root, int columnIndex)
-            :base(root, columnIndex)
-        {
-
-        }
-
-        public HeaderObject()
-            :base()
         {
 
         }

@@ -13,9 +13,14 @@ namespace DlxLib
     internal class RootObject : HeaderObject, IRoot
     {
         public RootObject()
-            : base()
+            : base(null, -1, -1)
         {
 
+        }
+
+        public override IRow RowHeader
+        {
+            get { return this; }
         }
 
         internal static Tuple<RootObject, RowObject[], ColumnObject[]> CreateEmptyMatrix(int nRows, int nColumns)
@@ -169,13 +174,13 @@ namespace DlxLib
 
         #endregion
 
-        protected internal override void ValidateRowIndexAvailable(RootObject root, int rowIndex)
+        protected internal override void ValidateRowIndexAvailableInColumn(RootObject root, int rowIndex, int columnIndex)
         {
             if (-1 != rowIndex)
                 throw new ArgumentOutOfRangeException("rowIndex", "Must be -1");
         }
 
-        protected internal override void ValidateColumnIndexAvailable(RootObject root, int columnIndex)
+        protected internal override void ValidateColumnIndexAvailableInRow(RootObject root, int rowIndex, int columnIndex)
         {
             if (-1 != columnIndex)
                 throw new ArgumentOutOfRangeException("columnIndex", "Must be -1");
