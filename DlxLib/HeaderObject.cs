@@ -10,8 +10,8 @@ namespace DlxLib
 {
     internal abstract class HeaderObject : DataObject, IHeader
     {
-        public HeaderObject(RootObject root, IColumn listHeader, int rowIndex, int columnIndex)
-            : base(root, listHeader, rowIndex, columnIndex)
+        public HeaderObject(RootObject root, int rowIndex, int columnIndex)
+            : base(root, rowIndex, columnIndex)
         {
 
         }

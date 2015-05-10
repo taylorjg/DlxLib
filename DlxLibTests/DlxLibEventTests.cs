@@ -8,6 +8,7 @@ using NUnit.Framework;
 namespace DlxLibTests
 {
     [TestFixture]
+    [Ignore("NeedsNewMatrix")]
     public class DlxLibEventTests
     {
         [TestCase(0, false)]

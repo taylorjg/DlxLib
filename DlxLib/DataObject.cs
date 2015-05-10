@@ -17,14 +17,13 @@ namespace DlxLib
     /// </remarks>
     internal abstract class DataObject : IDataObject
     {
-        public DataObject(RootObject root, IColumn listHeader, int rowIndex, int columnIndex)
+        public DataObject(RootObject root, int rowIndex, int columnIndex)
         {
             ValidateRowIndexAvailable(root, rowIndex);
             ValidateColumnIndexAvailable(root, columnIndex);
 
             Left = Right = Up = Down = this;
             _Root = root;
-            _ColumnHeader = listHeader;
             RowIndex = rowIndex;
             ColumnIndex = columnIndex;
 
@@ -46,7 +45,7 @@ namespace DlxLib
         /// which is the whole problem...)
         /// </remarks>
         public DataObject(RootObject root, int columnIndex)
-            : this(root, null, -1, columnIndex)
+            : this(root, -1, columnIndex)
         {
 
         }
@@ -57,7 +56,7 @@ namespace DlxLib
         /// row and column indexes are both known (to be -1).
         /// </summary>
         public DataObject()
-            : this(null, null, -1, -1)
+            : this(null, -1, -1)
         {
 
         }
@@ -82,22 +81,13 @@ namespace DlxLib
         /// <summary>
         /// Returns the Root object of the matrix that this DataObject is part of.
         /// </summary>
-        public virtual RootObject Root
+        public RootObject Root
         {
             get
             {
-                if (null != _Root)
-                {
-                    return _Root;
-                }
-                // TODO: Awaiting the hook up of RootObject.
-                //if (this is RootObject)
-                //{
-                //    return this as RootObject;
-                //}
-                // This is a rather late notification that a constructor error
-                // occurred:  happens when Root is called, not in constructor.
-                throw new InvalidOperationException("Root must not be null except for Root");
+                if (this is IRoot)
+                    return this as RootObject;
+                return _Root;
             }
         }
 
@@ -122,31 +112,10 @@ namespace DlxLib
         public DataObject Down { get; internal set; }
 
         /// <summary>
-        /// Backing field for public property ListHeader.
-        /// </summary>
-        private readonly IColumn _ColumnHeader;
-
-        /// <summary>
         /// Returns the column header for this object in the matrix.  (If this object
         /// is a Row then the column header is the Root.)
         /// </summary>
-        public IColumn ColumnHeader
-        {
-            get
-            {
-                if (null != _ColumnHeader)
-                {
-                    return _ColumnHeader;
-                }
-                if (this is IColumn)
-                {
-                    return this as ColumnObject;
-                }
-                // This is a rather late notification that a constructor error
-                // occurred:  happens when ListHeader is called, not in constructor.
-                throw new InvalidOperationException("ListHeader must not be null except for Root or Column");
-            }
-        }
+        public abstract IColumn ColumnHeader { get; }
 
         /// <summary>
         /// Returns the row index (0-based) for this object in the matrix.

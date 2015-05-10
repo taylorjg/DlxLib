@@ -21,6 +21,7 @@ namespace DlxLibTests
             Assert.That(sut.ColumnIndex, Is.EqualTo(columnIndex), "Have {0} testing ColumnIndex", sut);
             Assert.That(sut.RowIndex, Is.EqualTo(-1), "Have {0} testing RowIndex", sut);
             Assert.That(sut.ColumnCover, Is.EqualTo(cover), "Have {0} testing ColumnCover", sut);
+            Assert.That(sut.NumberOfRows, Is.EqualTo(columnObjects.Length));
 
             if (0 == columnObjects.Length)
             {
@@ -46,6 +47,8 @@ namespace DlxLibTests
                 Assert.That(sut.Up, Is.EqualTo(columnObjects[columnObjects.Length - 1]), "Have {0} testing up to last column object {1}", sut, columnObjects[columnObjects.Length - 1]);
                 Assert.That(columnObjects[columnObjects.Length - 1].ColumnIndex, Is.EqualTo(columnIndex), "Have {0} testing column index", columnObjects[columnObjects.Length - 1]);
             }
+
+            Assert.That(sut.Elements, Is.EquivalentTo(columnObjects));
         }
 
         internal void ValidateRow(RowObject sut, int rowIndex, params DataObject[] rowObjects)
@@ -53,6 +56,7 @@ namespace DlxLibTests
             Assert.That(sut, Is.Not.Null);
             Assert.That(sut.RowIndex, Is.EqualTo(rowIndex), "Have {0} testing RowIndex", sut);
             Assert.That(sut.ColumnIndex, Is.EqualTo(-1), "Have {0} testing ColumnIndex", sut);
+            Assert.That(sut.NumberOfColumns, Is.EqualTo(rowObjects.Length));
 
             if (0 == rowObjects.Length)
             {
@@ -78,6 +82,8 @@ namespace DlxLibTests
                 Assert.That(sut.Left, Is.EqualTo(rowObjects[rowObjects.Length - 1]), "Have {0} testing left to last row object {1}", sut, rowObjects[rowObjects.Length - 1]);
                 Assert.That(rowObjects[rowObjects.Length - 1].RowIndex, Is.EqualTo(rowIndex), "Have {0} testing row index", rowObjects[rowObjects.Length - 1]);
             }
+
+            Assert.That(sut.Elements, Is.EquivalentTo(rowObjects));
         }
     }
 }

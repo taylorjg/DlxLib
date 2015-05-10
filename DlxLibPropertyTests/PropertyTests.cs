@@ -11,8 +11,9 @@ using NUnit.Framework;
 namespace DlxLibPropertyTests
 {
     using Property = Gen<Rose<Result>>;
-    
+
     [TestFixture]
+    [Ignore("NeedsNewMatrix")]
     public class PropertyTests
     {
         private static readonly Config Config = Config.QuickThrowOnFailure;

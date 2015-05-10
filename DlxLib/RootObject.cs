@@ -128,11 +128,6 @@ namespace DlxLib
 
         #region IDataObject Members
 
-        public override RootObject Root
-        {
-            get { return this; }
-        }
-
         public override int RowIndex
         {
             get { return -1; }
@@ -200,6 +195,16 @@ namespace DlxLib
             {
                 return Up.RowIndex;
             }
+        }
+
+        public override string ToString()
+        {
+            return String.Format("{0}[{1}x{2}]", Kind, NumberOfRows, NumberOfColumns);
+        }
+
+        public override IColumn ColumnHeader
+        {
+            get { return this; }
         }
     }
 }

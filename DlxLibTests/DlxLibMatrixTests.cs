@@ -23,9 +23,13 @@ namespace DlxLibTests
             var sutRoot = new RootObject();
             Assert.That(sutRoot.Root, Is.EqualTo(sutRoot));
             Assert.That(sutRoot.Kind, Is.EqualTo("Root"));
+            Assert.That(sutRoot.ColumnHeader, Is.EqualTo(sutRoot));
             Assert.Throws<NotImplementedException>(() => { var _ = sutRoot.ColumnCover; });
             Assert.That(sutRoot.RowIndex, Is.EqualTo(-1));
             Assert.That(sutRoot.ColumnIndex, Is.EqualTo(-1));
+            Assert.That(sutRoot.NumberOfRows, Is.EqualTo(0));
+            Assert.That(sutRoot.NumberOfColumns, Is.EqualTo(0));
+            Assert.That(sutRoot.ToString(), Is.EqualTo("Root[0x0]"));
 
             Assert.DoesNotThrow(() => sutRoot.ValidateRowIndexAvailable(sutRoot, -1));
             Assert.Throws<ArgumentOutOfRangeException>(() => sutRoot.ValidateRowIndexAvailable(sutRoot, 0));
@@ -41,14 +45,54 @@ namespace DlxLibTests
             (root as IColumn).Append(sutRow);
 
             Assert.That(sutRow.Root, Is.EqualTo(root));
+            Assert.That(sutRow.ColumnHeader, Is.EqualTo(root));
             Assert.That(sutRow.Kind, Is.EqualTo("Row"));
             Assert.That(sutRow.RowIndex, Is.EqualTo(0));
             Assert.That(sutRow.ColumnIndex, Is.EqualTo(-1));
+            Assert.That(sutRow.NumberOfColumns, Is.EqualTo(0));
+            Assert.That(sutRow.ToString(), Is.EqualTo("Row[0]"));
 
             Assert.DoesNotThrow(() => sutRow.ValidateRowIndexAvailable(root, 1));
             Assert.Throws<ArgumentOutOfRangeException>(() => sutRow.ValidateRowIndexAvailable(root, 0));
             Assert.DoesNotThrow(() => sutRow.ValidateColumnIndexAvailable(root, -1));
             Assert.Throws<ArgumentOutOfRangeException>(() => sutRow.ValidateColumnIndexAvailable(root, 0));
+        }
+
+        [Test]
+        public void PrimaryColumnProperties()
+        {
+            var root = new RootObject();
+            var sutColumn = new ColumnObject(root, 0, ColumnCover.Primary); // TODO: Test Secondary
+            (root as IRow).Append(sutColumn);
+
+            Assert.That(sutColumn.Root, Is.EqualTo(root));
+            Assert.That(sutColumn.Kind, Is.EqualTo("Column"));
+            Assert.That(sutColumn.ColumnHeader, Is.EqualTo(sutColumn));
+            Assert.That(sutColumn.RowIndex, Is.EqualTo(-1));
+            Assert.That(sutColumn.ColumnIndex, Is.EqualTo(0));
+            Assert.That(sutColumn.ColumnCover, Is.EqualTo(ColumnCover.Primary));
+            Assert.That(sutColumn.NumberOfRows, Is.EqualTo(0));
+            Assert.That(sutColumn.ToString(), Is.EqualTo("Column[0,Primary]"));
+        }
+
+        [Test]
+        public void ElementProperties()
+        {
+            const int colIndex = 5;
+
+            var sut = RootObject.CreateEmptyMatrix(7, 7);
+            var sutRoot = sut.Item1;
+            var sutColumn5 = sutRoot.GetColumn(colIndex);
+
+            var sutElement = new ElementObject(sutRoot, sutColumn5, 0, colIndex);
+            Assert.That(sutElement, Is.Not.Null);
+            Assert.That(sutElement.Root, Is.EqualTo(sutRoot));
+            Assert.That(sutElement.ColumnHeader, Is.EqualTo(sutColumn5));
+            Assert.That(sutElement.RowIndex, Is.EqualTo(0));
+            Assert.That(sutElement.ColumnIndex, Is.EqualTo(5));
+            Assert.That(sutElement.Kind, Is.EqualTo("Element"));
+            Assert.That(sutElement.ToString(), Is.EqualTo("Element[0,5]"));
+
         }
 
         [Test]
@@ -75,6 +119,7 @@ namespace DlxLibTests
             var sutRoot = sut.Item1;
             Assert.That(sutRoot.NumberOfRows, Is.EqualTo(0));
             Assert.That(sutRoot.NumberOfColumns, Is.EqualTo(0));
+            Assert.That(sutRoot.ToString(), Is.EqualTo("Root[0x0]"));
 
             Assert.That(sut.Item2.Length, Is.EqualTo(0)); // no rows
             Assert.That(sut.Item3.Length, Is.EqualTo(0)); // no columns
@@ -97,6 +142,7 @@ namespace DlxLibTests
             var sutRoot = sut.Item1;
             Assert.That(sutRoot.NumberOfRows, Is.EqualTo(0));
             Assert.That(sutRoot.NumberOfColumns, Is.EqualTo(3));
+            Assert.That(sutRoot.ToString(), Is.EqualTo("Root[0x3]"));
 
             Assert.That(sut.Item2.Length, Is.EqualTo(0)); // no rows
             Assert.That(sut.Item3.Length, Is.EqualTo(3)); // 3 columns
@@ -127,6 +173,7 @@ namespace DlxLibTests
             var sutRoot = sut.Item1;
             Assert.That(sutRoot.NumberOfRows, Is.EqualTo(3));
             Assert.That(sutRoot.NumberOfColumns, Is.EqualTo(0));
+            Assert.That(sutRoot.ToString(), Is.EqualTo("Root[3x0]"));
 
             Assert.That(sut.Item2.Length, Is.EqualTo(3)); // 3 rows
             Assert.That(sut.Item3.Length, Is.EqualTo(0)); // no columns
@@ -156,6 +203,7 @@ namespace DlxLibTests
             var sutRoot = sut.Item1;
             Assert.That(sutRoot.NumberOfRows, Is.EqualTo(3));
             Assert.That(sutRoot.NumberOfColumns, Is.EqualTo(3));
+            Assert.That(sutRoot.ToString(), Is.EqualTo("Root[3x3]"));
 
             Assert.That(sut.Item2.Length, Is.EqualTo(3)); // 3 rows
             Assert.That(sut.Item3.Length, Is.EqualTo(3)); // 3 columns

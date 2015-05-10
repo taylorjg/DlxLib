@@ -110,8 +110,13 @@ namespace DlxLib
 
         public override string ToString()
         {
-            return String.Format("{0}[{1},{2},{3}]", Kind, RowIndex, ColumnIndex, ColumnCover);
+            return String.Format("{0}[{1},{2}]", Kind, ColumnIndex, ColumnCover);
         }
 
+
+        public override IColumn ColumnHeader
+        {
+            get { return this; }
+        }
     }
 }

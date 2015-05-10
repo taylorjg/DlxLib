@@ -13,7 +13,7 @@ namespace DlxLib
     internal class RowObject : HeaderObject, IRow
     {
         public RowObject(RootObject root, int rowIndex)
-            : base(root, root, rowIndex, -1)
+            : base(root, rowIndex, -1)
         {
         }
 
@@ -21,7 +21,16 @@ namespace DlxLib
 
         public int NumberOfColumns
         {
-            get { throw new NotImplementedException(); }
+            // TODO: No need to keep a count of columns - unless this is called quite often
+            get
+            {
+                int n = 0;
+                for (var col = Right; this != col; col = col.Right)
+                {
+                    n++;
+                }
+                return n;
+            }
         }
 
         public override IEnumerable<DataObject> Elements
@@ -73,6 +82,16 @@ namespace DlxLib
             {
                 return "Row";
             }
+        }
+
+        public override string ToString()
+        {
+            return String.Format("{0}[{1}]", Kind, RowIndex);
+        }
+
+        public override IColumn ColumnHeader
+        {
+            get { return Root; }
         }
     }
 }

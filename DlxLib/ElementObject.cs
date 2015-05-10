@@ -14,11 +14,17 @@ namespace DlxLib
     internal class ElementObject : DataObject, IElement
     {
         public ElementObject(RootObject root, ColumnObject listHeader, int rowIndex, int columnIndex)
-            : base(root, listHeader, rowIndex, columnIndex)
+            : base(root, rowIndex, columnIndex)
         {
             root.MustNotBeNull("ElementObject constructor param root");
             listHeader.MustNotBeNull("ElementObject constructor param listHeader");
+            _ColumnHeader = listHeader;
         }
+
+        /// <summary>
+        /// Backing field for public property ListHeader.
+        /// </summary>
+        private readonly IColumn _ColumnHeader;
 
         protected internal override void ValidateRowIndexAvailable(RootObject root, int rowIndex)
         {
@@ -39,6 +45,11 @@ namespace DlxLib
         public override string Kind
         {
             get { return "Element"; }
+        }
+
+        public override IColumn ColumnHeader
+        {
+            get { return _ColumnHeader; }
         }
     }
 }
