@@ -8,6 +8,9 @@ using System.Threading.Tasks;
 
 namespace DlxLib
 {
+    /// <summary>
+    /// Base class for all header objects (Root, Row, Column).
+    /// </summary>
     internal abstract class HeaderObject : DataObject, IHeader
     {
         protected HeaderObject(RootObject root, int rowIndex, int columnIndex)
@@ -21,10 +24,5 @@ namespace DlxLib
         public abstract IEnumerable<DataObject> Elements { get; }
 
         #endregion
-
-        public override string Kind
-        {
-            get { throw new NotImplementedException("HeaderObject is abstract class: should never ask for the Kind"); }
-        }
     }
 }

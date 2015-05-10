@@ -33,6 +33,7 @@
 
        abstract DataObject : IDataObject
        ElementObject : DataObject, IElement
+       abstract HeaderObject : DataObject, IHeader
 
 
 
