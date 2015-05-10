@@ -32,15 +32,13 @@
    Classes that implement the matrix:
 
        abstract DataObject : IDataObject
+       ElementObject : DataObject, IElement
 
 
 
 2. Change IDataObject.Kind to an enum?
 3. Incorporate RowObject into matrix (currently just Root/Column are in matrix)
-5. What's with the commented out test at DataObject.Root?
-6. What's with the commented out test at DataObject.ColumnHeader?
 7. Get rid of DataObject.{AppendToRow, UnlinkFromColumn, RelinkIntoColumn}
-8. Do I need DataObject.{IsOfColumn, IsOfRow}?
 9. AddElement(r,c) to Root? IRoot? and maybe to Column/Row as well.
 
 Note: Interfaces solely for external access, internal access uses actual classes

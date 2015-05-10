@@ -24,7 +24,14 @@ namespace DlxLib
             _ColumnHeader = columnHeader;
         }
 
+        #region IDataObject members
+        public override string Kind
+        {
+            get { return "Element"; }
+        }
+        #endregion
 
+        #region DataObject members
         protected internal override void ValidateRowIndexAvailableInColumn(RootObject root, int rowIndex, int columnIndex)
         {
             var column = root.GetColumn(columnIndex);
@@ -39,11 +46,6 @@ namespace DlxLib
             var maxColumnInRow = row.HighestColumnInRow;
             if (maxColumnInRow >= columnIndex)
                 throw new ArgumentOutOfRangeException("columnIndex", "Column index too low");
-        }
-
-        public override string Kind
-        {
-            get { return "Element"; }
         }
 
         /// <summary>
@@ -69,10 +71,8 @@ namespace DlxLib
         /// </summary>
         public override IRow RowHeader
         {
-            get
-            {
-                return _RowHeader;
-            }
+            get { return _RowHeader; }
         }
+        #endregion
     }
 }
