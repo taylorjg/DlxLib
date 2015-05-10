@@ -9,7 +9,6 @@ namespace DlxLib
             : base(root, columnIndex)
         {
             ColumnCover = columnCover;
-            Left = Right = this;
         }
 
         public ColumnCover ColumnCover { get; private set; }
@@ -84,7 +83,6 @@ namespace DlxLib
         public void AddDataObject(DataObject dataObject)
         {
             Append(dataObject);
-            NumberOfRows++;
         }
 
         public void UnlinkDataObject(DataObject dataObject)

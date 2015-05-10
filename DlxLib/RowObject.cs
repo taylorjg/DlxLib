@@ -12,7 +12,12 @@ namespace DlxLib
     /// </summary>
     internal class RowObject : HeaderObject, IRow
     {
-        #region IRow Members
+        public RowObject(RootObject root, int rowIndex)
+            : base(root, root, rowIndex, -1)
+        {
+        }
+
+    #region IRow Members
 
         public int NumberOfColumns
         {

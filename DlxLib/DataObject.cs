@@ -17,7 +17,7 @@ namespace DlxLib
     /// </remarks>
     internal abstract class DataObject : IDataObject
     {
-        public DataObject(RootObject root, ColumnObject listHeader, int rowIndex, int columnIndex)
+        public DataObject(RootObject root, IColumn listHeader, int rowIndex, int columnIndex)
         {
             ValidateRowIndexInRange(root, rowIndex);
             ValidateColumnIndexInRange(root, columnIndex);
@@ -28,10 +28,10 @@ namespace DlxLib
             RowIndex = rowIndex;
             ColumnIndex = columnIndex;
 
-            if (listHeader != null)
-            {
-                listHeader.AddDataObject(this);
-            }
+            //if (listHeader != null)
+            //{
+            //    listHeader.Append(this);
+            //}
         }
 
         /// <summary>
@@ -82,7 +82,7 @@ namespace DlxLib
         /// <summary>
         /// Returns the Root object of the matrix that this DataObject is part of.
         /// </summary>
-        public RootObject Root
+        public virtual RootObject Root
         {
             get
             {
@@ -124,13 +124,13 @@ namespace DlxLib
         /// <summary>
         /// Backing field for public property ListHeader.
         /// </summary>
-        private readonly ColumnObject _ColumnHeader;
+        private readonly IColumn _ColumnHeader;
 
         /// <summary>
         /// Returns the column header for this object in the matrix.  (If this object
         /// is a Row then the column header is the Root.)
         /// </summary>
-        public ColumnObject ColumnHeader
+        public IColumn ColumnHeader
         {
             get
             {
@@ -154,7 +154,7 @@ namespace DlxLib
         /// when the matrix is created (when the object is added to the matrix)
         /// so doesn't change even if this object's row or column is covered.
         /// </summary>
-        public int RowIndex { get; private set; }
+        public virtual int RowIndex { get; private set; }
 
         /// <summary>
         /// Returns the column index (0-based) for this object in the matrix.
@@ -162,7 +162,7 @@ namespace DlxLib
         /// when the matrix is created (when the object is added to the matrix)
         /// so doesn't change even if this objects' row or column is covered.
         /// </summary>
-        public int ColumnIndex { get; private set; }
+        public virtual int ColumnIndex { get; private set; }
 
         /// <summary>
         /// Obsolete! To be removed!

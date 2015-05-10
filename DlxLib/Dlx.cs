@@ -302,7 +302,10 @@ namespace DlxLib
             Func<TRow, IEnumerable<TCol>> iterateCols,
             Func<TCol, bool> predicate)
         {
-            var root = new ColumnObject(null /*TODO:Root*/, -1, ColumnCover.Primary);
+            // TODO: Need to adapt to new matrix structure, but in the meantime ...
+            var actualRoot = new RootObject();                             //DSB
+
+            var root = new ColumnObject(actualRoot, -1, ColumnCover.Primary);
 
             int? numColumns = null;
             var rowIndex = 0;
@@ -310,6 +313,9 @@ namespace DlxLib
 
             foreach (var row in iterateRows(data))
             {
+                RowObject actualRow = new RowObject(actualRoot, rowIndex); //DSB
+                (actualRoot as IColumn).Append(actualRow);                 //DSB
+
                 DataObject firstDataObjectInThisRow = null;
                 var localRowIndex = rowIndex;
                 var colIndex = 0;
@@ -318,7 +324,7 @@ namespace DlxLib
                 {
                     if (localRowIndex == 0)
                     {
-                        var listHeader = new ColumnObject(null /*TODO:Root*/, colIndex, ColumnCover.Primary);
+                        var listHeader = new ColumnObject(actualRoot, colIndex, ColumnCover.Primary);
                         root.AppendColumnHeader(listHeader);
                         colIndexToListHeader[colIndex] = listHeader;
                     }
@@ -326,7 +332,7 @@ namespace DlxLib
                     if (predicate(col))
                     {
                         var listHeader = colIndexToListHeader[colIndex];
-                        var elementObject = new ElementObject(null, listHeader, localRowIndex, colIndex);
+                        var elementObject = new ElementObject(actualRoot, listHeader, localRowIndex, colIndex);
 
                         if (firstDataObjectInThisRow != null)
                             firstDataObjectInThisRow.AppendToRow(elementObject);
@@ -403,13 +409,13 @@ namespace DlxLib
                     searchData.PushCurrentSolutionRowIndex(r.RowIndex);
 
                     for (var j = r.Right; j != r; j = j.Right)
-                        CoverColumn(j.ColumnHeader);
+                        CoverColumn(j.ColumnHeader as ColumnObject);
 
                     var recursivelyFoundSolutions = Search(k + 1, searchData);
                     foreach (var solution in recursivelyFoundSolutions) yield return solution;
 
                     for (var j = r.Left; j != r; j = j.Left)
-                        UncoverColumn(j.ColumnHeader);
+                        UncoverColumn(j.ColumnHeader as ColumnObject);
 
                     searchData.PopCurrentSolutionRowIndex();
                 }
@@ -444,7 +450,7 @@ namespace DlxLib
             {
                 for (var j = i.Right; j != i; j = j.Right)
                 {
-                    j.ColumnHeader.UnlinkDataObject(j);
+                    (j.ColumnHeader as ColumnObject).UnlinkDataObject(j);
                 }
             }
         }
@@ -455,7 +461,7 @@ namespace DlxLib
             {
                 for (var j = i.Left; j != i; j = j.Left)
                 {
-                    j.ColumnHeader.RelinkDataObject(j);
+                    (j.ColumnHeader as ColumnObject).RelinkDataObject(j);
                 }
             }
 

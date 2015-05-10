@@ -12,16 +12,42 @@ namespace DlxLib
     /// </summary>
     internal class RootObject : HeaderObject, IRoot
     {
+        public RootObject()
+            : base()
+        {
+
+        }
+
+        internal static Tuple<RootObject, RowObject[], ColumnObject[]> CreateEmptyMatrix(int nRows, int nColumns)
+        {
+            var root = new RootObject();
+            var rows = Enumerable.Range(0, nRows).Select(i => new RowObject(root, i)).ToArray();
+            foreach (var row in rows)
+            {
+                (root as IColumn).Append(row);
+            }
+            var columns = Enumerable.Range(0, nColumns).Select(i => new ColumnObject(root, i, ColumnCover.Primary)).ToArray();
+            foreach(var column in columns)
+            {
+                (root as IRow).Append(column);
+            }
+            return Tuple.Create(root, rows, columns);
+        }
+
         #region IRow Members
 
         public int NumberOfColumns
         {
-            get { throw new NotImplementedException(); }
-        }
-
-        public void Append(DataObject dataObject)
-        {
-            throw new NotImplementedException();
+            // TODO: No need to keep a count of columns - unless this is called quite often
+            get
+            {
+                int n = 0;
+                for (var col = Right; this != col; col = col.Right)
+                {
+                    n++;
+                }
+                return n;
+            }
         }
 
         #endregion
@@ -35,7 +61,16 @@ namespace DlxLib
 
         public int NumberOfRows
         {
-            get { throw new NotImplementedException(); }
+            // TODO: No need to keep a count of rows - unless this is called quite often
+            get
+            {
+                int n = 0;
+                for (var row = Down; this != row; row = row.Down)
+                {
+                    n++;
+                }
+                return n;
+            }
         }
 
         #endregion
@@ -91,68 +126,50 @@ namespace DlxLib
 
         #endregion
 
-        #region IHeader Members
-
-        IEnumerable<DataObject> IHeader.Elements
-        {
-            get { throw new NotImplementedException(); }
-        }
-
-        #endregion
-
         #region IDataObject Members
 
-        RootObject IDataObject.Root
+        public override RootObject Root
+        {
+            get { return this; }
+        }
+
+        public override int RowIndex
         {
             get { throw new NotImplementedException(); }
         }
 
-        int IDataObject.RowIndex
+        public override int ColumnIndex
         {
             get { throw new NotImplementedException(); }
         }
 
-        int IDataObject.ColumnIndex
+        public override string Kind
         {
-            get { throw new NotImplementedException(); }
-        }
-
-        string IDataObject.Kind
-        {
-            get { throw new NotImplementedException(); }
+            get { return "Root"; }
         }
 
         #endregion
 
         #region IRow Members
 
-        int IRow.NumberOfColumns
-        {
-            get { throw new NotImplementedException(); }
-        }
-
         void IRow.Append(DataObject dataObject)
         {
-            throw new NotImplementedException();
+            Left.Right = dataObject;
+            dataObject.Right = this;
+            dataObject.Left = Left;
+            Left = dataObject;
         }
 
         #endregion
 
         #region IColumn Members
 
-        ColumnCover IColumn.ColumnCover
-        {
-            get { throw new NotImplementedException(); }
-        }
-
-        int IColumn.NumberOfRows
-        {
-            get { throw new NotImplementedException(); }
-        }
-
         void IColumn.Append(DataObject dataObject)
         {
-            throw new NotImplementedException();
+            Up.Down = dataObject;
+            dataObject.Down = this;
+            dataObject.Up = Up;
+            Up = dataObject;
         }
 
         #endregion
