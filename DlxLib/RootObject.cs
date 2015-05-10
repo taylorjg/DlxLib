@@ -135,12 +135,12 @@ namespace DlxLib
 
         public override int RowIndex
         {
-            get { throw new NotImplementedException(); }
+            get { return -1; }
         }
 
         public override int ColumnIndex
         {
-            get { throw new NotImplementedException(); }
+            get { return -1; }
         }
 
         public override string Kind
@@ -173,5 +173,33 @@ namespace DlxLib
         }
 
         #endregion
+
+        protected internal override void ValidateRowIndexAvailable(RootObject root, int rowIndex)
+        {
+            if (-1 != rowIndex)
+                throw new ArgumentOutOfRangeException("rowIndex", "Must be -1");
+        }
+
+        protected internal override void ValidateColumnIndexAvailable(RootObject root, int columnIndex)
+        {
+            if (-1 != columnIndex)
+                throw new ArgumentOutOfRangeException("columnIndex", "Must be -1");
+        }
+
+        public int HighestColumn
+        {
+            get
+            {
+                return Left.ColumnIndex;
+            }
+        }
+
+        public int HighestRow
+        {
+            get
+            {
+                return Up.RowIndex;
+            }
+        }
     }
 }

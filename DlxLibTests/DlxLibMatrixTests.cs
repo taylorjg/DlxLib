@@ -17,6 +17,39 @@ namespace DlxLibTests
     public partial class DlxLibMatrixTests
     {
         #region basic object creation and adding to rows/columns
+        [Test]
+        public void RootProperties()
+        {
+            var sutRoot = new RootObject();
+            Assert.That(sutRoot.Root, Is.EqualTo(sutRoot));
+            Assert.That(sutRoot.Kind, Is.EqualTo("Root"));
+            Assert.Throws<NotImplementedException>(() => { var _ = sutRoot.ColumnCover; });
+            Assert.That(sutRoot.RowIndex, Is.EqualTo(-1));
+            Assert.That(sutRoot.ColumnIndex, Is.EqualTo(-1));
+
+            Assert.DoesNotThrow(() => sutRoot.ValidateRowIndexAvailable(sutRoot, -1));
+            Assert.Throws<ArgumentOutOfRangeException>(() => sutRoot.ValidateRowIndexAvailable(sutRoot, 0));
+            Assert.DoesNotThrow(() => sutRoot.ValidateColumnIndexAvailable(sutRoot, -1));
+            Assert.Throws<ArgumentOutOfRangeException>(() => sutRoot.ValidateColumnIndexAvailable(sutRoot, 0));
+        }
+
+        [Test]
+        public void RowProperties()
+        {
+            var root = new RootObject();
+            var sutRow = new RowObject(root, 0);
+            (root as IColumn).Append(sutRow);
+
+            Assert.That(sutRow.Root, Is.EqualTo(root));
+            Assert.That(sutRow.Kind, Is.EqualTo("Row"));
+            Assert.That(sutRow.RowIndex, Is.EqualTo(0));
+            Assert.That(sutRow.ColumnIndex, Is.EqualTo(-1));
+
+            Assert.DoesNotThrow(() => sutRow.ValidateRowIndexAvailable(root, 1));
+            Assert.Throws<ArgumentOutOfRangeException>(() => sutRow.ValidateRowIndexAvailable(root, 0));
+            Assert.DoesNotThrow(() => sutRow.ValidateColumnIndexAvailable(root, -1));
+            Assert.Throws<ArgumentOutOfRangeException>(() => sutRow.ValidateColumnIndexAvailable(root, 0));
+        }
 
         [Test]
         public void BareColumnAndRowCreation()
@@ -48,8 +81,8 @@ namespace DlxLibTests
 
             Assert.That(sutRoot.Elements, Is.Empty);
 
-            Assert.Throws<IndexOutOfRangeException>(() => { sutRoot.GetRow(0); });
-            Assert.Throws<IndexOutOfRangeException>(() => { sutRoot.GetColumn(0); });
+            Assert.Throws<IndexOutOfRangeException>(() => { (sutRoot as IRoot).GetRow(0); });
+            Assert.Throws<IndexOutOfRangeException>(() => { (sutRoot as IRoot).GetColumn(0); });
         }
 
         [Test]

@@ -19,8 +19,8 @@ namespace DlxLib
     {
         public DataObject(RootObject root, IColumn listHeader, int rowIndex, int columnIndex)
         {
-            ValidateRowIndexInRange(root, rowIndex);
-            ValidateColumnIndexInRange(root, columnIndex);
+            ValidateRowIndexAvailable(root, rowIndex);
+            ValidateColumnIndexAvailable(root, columnIndex);
 
             Left = Right = Up = Down = this;
             _Root = root;
@@ -66,13 +66,13 @@ namespace DlxLib
         /// Validate that the supplied rowIndex is in the valid range (which depends
         /// on the Kind).
         /// </summary>
-        protected abstract void ValidateRowIndexInRange(RootObject root, int rowIndex);
+        protected internal abstract void ValidateRowIndexAvailable(RootObject root, int rowIndex);
 
         /// <summary>
         /// Validate that the supplied columnIndex is in the valid range (which
         /// depends on the Kind).
         /// </summary>
-        protected abstract void ValidateColumnIndexInRange(RootObject root, int columnIndex);
+        protected internal abstract void ValidateColumnIndexAvailable(RootObject root, int columnIndex);
 
 
         /// <summary>

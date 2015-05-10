@@ -43,12 +43,6 @@ namespace DlxLib
 
         #endregion
 
-        protected override void ValidateRowIndexInRange(RootObject root, int rowIndex)
-        {
-            if (-1 != rowIndex)
-                throw new ArgumentOutOfRangeException("rowIndex of ColumnObject must be -1", "rowIndex");
-        }
-
         /// <summary>
         /// Returns largest rowIndex of column elements (-1 if column has no elements)
         /// </summary>
@@ -97,6 +91,18 @@ namespace DlxLib
             NumberOfRows++;
         }
 
+        protected internal override void ValidateRowIndexAvailable(RootObject root, int rowIndex)
+        {
+            if (-1 != rowIndex)
+                throw new ArgumentOutOfRangeException("rowIndex", "Must be -1");
+        }
+
+        protected internal override void ValidateColumnIndexAvailable(RootObject root, int columnIndex)
+        {
+            var maxColumn = root.HighestColumn;
+            if (maxColumn >= columnIndex)
+                throw new ArgumentOutOfRangeException("columnIndex", "Column index too low");
+        }
         public override string Kind
         {
             get { return "Column"; }

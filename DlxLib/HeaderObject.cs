@@ -34,21 +34,9 @@ namespace DlxLib
 
         #endregion
 
-        protected override void ValidateRowIndexInRange(RootObject root, int rowIndex)
-        {
-            if (-1 > rowIndex)
-                throw new ArgumentOutOfRangeException("on Header must be > -1", "rowIndex");
-        }
-
-        protected override void ValidateColumnIndexInRange(RootObject root, int columnIndex)
-        {
-            if (-1 > columnIndex)
-                throw new ArgumentOutOfRangeException("on Header must be > -1", "columnIndex");
-        }
-
         public override string Kind
         {
-            get { return "Header"; }
+            get { throw new NotImplementedException("HeaderObject is abstract class: should never ask for the Kind"); }
         }
     }
 }

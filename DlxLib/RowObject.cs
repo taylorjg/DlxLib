@@ -53,6 +53,27 @@ namespace DlxLib
         }
 
         #endregion
+
+        protected internal override void ValidateRowIndexAvailable(RootObject root, int rowIndex)
+        {
+            var maxRow = root.HighestRow;
+            if (maxRow >= rowIndex)
+                throw new ArgumentOutOfRangeException("rowIndex", "Row index too low");
+        }
+
+        protected internal override void ValidateColumnIndexAvailable(RootObject root, int columnIndex)
+        {
+            if (-1 != columnIndex)
+                throw new ArgumentOutOfRangeException("columnIndex", "Must be -1");
+        }
+
+        public override string Kind
+        {
+            get
+            {
+                return "Row";
+            }
+        }
     }
 }
 
