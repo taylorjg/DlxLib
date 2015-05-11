@@ -30,7 +30,9 @@ namespace DlxLib
             get
             {
                 for (var element = Right; this != element; element = element.Right)
+                {
                     yield return element;
+                }
             }
         }
         #endregion

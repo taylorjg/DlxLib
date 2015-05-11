@@ -104,6 +104,15 @@ namespace DlxLib
         public DataObject Down { get; internal set; }
 
         /// <summary>
+        /// Returns the row header for this object in the matrix.  (If this object
+        /// is a Column then the column header is the Root.)
+        /// </summary>
+        /// Note that this object will not be in the Elements of its row header
+        /// if a) its column is covered or b) it is a column header of a Secondary
+        /// column.
+        public abstract IRow RowHeader { get; }
+
+        /// <summary>
         /// Returns the column header for this object in the matrix.  (If this object
         /// is a Row then the column header is the Root.)
         /// </summary>
@@ -112,15 +121,6 @@ namespace DlxLib
         /// if its row is covered.
         /// </remarks>
         public abstract IColumn ColumnHeader { get; }
-
-        /// <summary>
-        /// Returns the row header for this object in the matrix.  (If this object
-        /// is a Column then the column header is the Root.)
-        /// </summary>
-        /// Note that this object will not be in the Elements of its row header
-        /// if a) its column is covered or b) it is a column header of a Secondary
-        /// column.
-        public abstract IRow RowHeader { get; }
 
         [Obsolete]
         public void AppendToRow(DataObject dataObject)

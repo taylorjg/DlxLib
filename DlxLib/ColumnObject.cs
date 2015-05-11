@@ -11,30 +11,14 @@ namespace DlxLib
             ColumnCover = columnCover;
         }
 
-        public ColumnCover ColumnCover { get; private set; }
-        public int NumberOfRows { get; private set; }
-
-        public override IRow RowHeader
+        #region IDataObject members
+        public override string Kind
         {
-            get { return Root; }
+            get { return "Column"; }
         }
-
-        #region IColumn Members
-
-
-        public void Append(DataObject dataObject)
-        {
-            Up.Down = dataObject;
-            dataObject.Down = this;
-            dataObject.Up = Up;
-            Up = dataObject;
-            NumberOfRows++;
-        }
-
         #endregion
 
-        #region IHeader Members
-
+        #region IHeader members
         public override IEnumerable<DataObject> Elements
         {
             get
@@ -45,7 +29,46 @@ namespace DlxLib
                 }
             }
         }
+        #endregion
 
+        #region IColumn members
+        public ColumnCover ColumnCover { get; private set; }
+
+        public int NumberOfRows { get; private set; }
+
+        public void Append(DataObject dataObject)
+        {
+            Up.Down = dataObject;
+            dataObject.Down = this;
+            dataObject.Up = Up;
+            Up = dataObject;
+            NumberOfRows++;
+        }
+        #endregion
+
+        #region DataObject members
+        protected internal override void ValidateRowIndexAvailableInColumn(RootObject root, int rowIndex, int columnIndex)
+        {
+            if (-1 != rowIndex)
+                throw new ArgumentOutOfRangeException("rowIndex", "Must be -1");
+        }
+
+        protected internal override void ValidateColumnIndexAvailableInRow(RootObject root, int rowIndex, int columnIndex)
+        {
+            var maxColumn = root.HighestColumn;
+            if (maxColumn >= columnIndex)
+                throw new ArgumentOutOfRangeException("columnIndex", "Column index too low");
+        }
+
+        public override IRow RowHeader
+        {
+            get { return Root; }
+        }
+
+        public override IColumn ColumnHeader
+        {
+            get { return this; }
+        }
         #endregion
 
         /// <summary>
@@ -59,6 +82,12 @@ namespace DlxLib
             }
         }
 
+        public override string ToString()
+        {
+            return String.Format("{0}[{1},{2}]", Kind, ColumnIndex, ColumnCover);
+        }
+
+        [Obsolete]
         public void AppendColumnHeader(ColumnObject columnObject)
         {
             Left.Right = columnObject;
@@ -67,61 +96,38 @@ namespace DlxLib
             Left = columnObject;
         }
 
+        [Obsolete]
         public void UnlinkColumnHeader()
         {
             Right.Left = Left;
             Left.Right = Right;
         }
 
+        [Obsolete]
         public void RelinkColumnHeader()
         {
             Right.Left = this;
             Left.Right = this;
         }
 
+        [Obsolete]
         public void AddDataObject(DataObject dataObject)
         {
             Append(dataObject);
         }
 
+        [Obsolete]
         public void UnlinkDataObject(DataObject dataObject)
         {
             dataObject.UnlinkFromColumn();
             NumberOfRows--;
         }
 
+        [Obsolete]
         public void RelinkDataObject(DataObject dataObject)
         {
             dataObject.RelinkIntoColumn();
             NumberOfRows++;
-        }
-
-        protected internal override void ValidateRowIndexAvailableInColumn(RootObject root, int rowIndex, int columnIndex)
-        {
-            if (-1 != rowIndex)
-                throw new ArgumentOutOfRangeException("rowIndex", "Must be -1");
-        }
-
-        protected internal override void ValidateColumnIndexAvailableInRow(RootObject root, int rowIndex, int columnIndex)
-        {
-            var maxColumn = root.HighestColumn;
-            if (maxColumn >= columnIndex)
-                throw new ArgumentOutOfRangeException("columnIndex", "Column index too low");
-        }
-        public override string Kind
-        {
-            get { return "Column"; }
-        }
-
-        public override string ToString()
-        {
-            return String.Format("{0}[{1},{2}]", Kind, ColumnIndex, ColumnCover);
-        }
-
-
-        public override IColumn ColumnHeader
-        {
-            get { return this; }
         }
     }
 }

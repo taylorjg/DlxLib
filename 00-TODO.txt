@@ -35,6 +35,7 @@
        ElementObject : DataObject, IElement
        abstract HeaderObject : DataObject, IHeader
        RowObject : HeaderObject, IRow
+       ColumnObject : HeaderObject, IColumn
 
 
 
