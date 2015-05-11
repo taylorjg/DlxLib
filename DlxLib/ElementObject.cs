@@ -13,39 +13,30 @@ namespace DlxLib
     /// </summary>
     internal class ElementObject : DataObject, IElement
     {
-        public ElementObject(RootObject root, RowObject rowHeader, ColumnObject columnHeader)
-            : base(root, rowHeader.RowIndex, columnHeader.ColumnIndex)
+        protected internal ElementObject(RootObject root, RowObject rowHeader, ColumnObject columnHeader)
+            : base()
         {
             root.MustNotBeNull("ElementObject constructor param root");
             rowHeader.MustNotBeNull("ElementObject constructor param rowHeader");
             columnHeader.MustNotBeNull("ElementObject constructor param columnHeader");
 
+            Root = root;
             _RowHeader = rowHeader;
             _ColumnHeader = columnHeader;
         }
 
         #region IDataObject members
-        public override string Kind
-        {
-            get { return "Element"; }
-        }
-        #endregion
+        /// <summary>
+        /// Backing field for public property RowHeader.
+        /// </summary>
+        private readonly IRow _RowHeader;
 
-        #region DataObject members
-        protected internal override void ValidateRowIndexAvailableInColumn(RootObject root, int rowIndex, int columnIndex)
+        /// <summary>
+        /// Return the row header for this element.
+        /// </summary>
+        public override IRow RowHeader
         {
-            var column = root.GetColumn(columnIndex);
-            var maxRowInColumn = column.HighestRowInColumn;
-            if (maxRowInColumn >= rowIndex)
-                throw new ArgumentOutOfRangeException("rowIndex", "Row index too low");
-        }
-
-        protected internal override void ValidateColumnIndexAvailableInRow(RootObject root, int rowIndex, int columnIndex)
-        {
-            var row = root.GetRow(rowIndex);
-            var maxColumnInRow = row.HighestColumnInRow;
-            if (maxColumnInRow >= columnIndex)
-                throw new ArgumentOutOfRangeException("columnIndex", "Column index too low");
+            get { return _RowHeader; }
         }
 
         /// <summary>
@@ -62,17 +53,14 @@ namespace DlxLib
         }
 
         /// <summary>
-        /// Backing field for public property RowHeader.
+        /// Return the row index for this element.
         /// </summary>
-        private readonly IRow _RowHeader;
+        public override int RowIndex { get { return RowHeader.RowIndex; } }
 
         /// <summary>
-        /// Return the row header for this element.
+        /// Return the column index for this element;
         /// </summary>
-        public override IRow RowHeader
-        {
-            get { return _RowHeader; }
-        }
+        public override int ColumnIndex { get { return ColumnHeader.ColumnIndex; } }
         #endregion
     }
 }

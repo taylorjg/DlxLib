@@ -303,9 +303,9 @@ namespace DlxLib
             Func<TCol, bool> predicate)
         {
             // TODO: Need to adapt to new matrix structure, but in the meantime ...
-            var actualRoot = new RootObject();                             //DSB
+            var actualRoot = RootObject.Create();                             //DSB
 
-            var root = new ColumnObject(actualRoot, -1, ColumnCover.Primary);
+            var root = actualRoot.NewColumn(ColumnCover.Primary);
 
             int? numColumns = null;
             var rowIndex = 0;
@@ -313,7 +313,7 @@ namespace DlxLib
 
             foreach (var row in iterateRows(data))
             {
-                RowObject actualRow = new RowObject(actualRoot, rowIndex); //DSB
+                RowObject actualRow = actualRoot.NewRow(); //DSB
                 (actualRoot as IColumn).Append(actualRow);                 //DSB
 
                 DataObject firstDataObjectInThisRow = null;
@@ -324,7 +324,7 @@ namespace DlxLib
                 {
                     if (localRowIndex == 0)
                     {
-                        var listHeader = new ColumnObject(actualRoot, colIndex, ColumnCover.Primary);
+                        var listHeader = actualRoot.NewColumn(ColumnCover.Primary);
                         root.AppendColumnHeader(listHeader);
                         colIndexToListHeader[colIndex] = listHeader;
                     }

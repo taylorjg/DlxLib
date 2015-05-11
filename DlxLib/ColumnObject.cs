@@ -13,17 +13,32 @@ namespace DlxLib
     /// </remarks>
     internal class ColumnObject : HeaderObject, IColumn
     {
-        public ColumnObject(RootObject root, int columnIndex, ColumnCover columnCover)
-            : base(root, -1, columnIndex)
+        protected internal ColumnObject(RootObject root, ColumnCover columnCover)
+            : base(root)
         {
             ColumnCover = columnCover;
+            _ColumnIndex = root.NumberOfPrimaryColumns + root.NumberOfSecondaryColumns;
+            if (ColumnCover.Primary == columnCover)
+            {
+                (root as IRow).Append(this);
+            }
         }
 
         #region IDataObject members
-        public override string Kind
+        public override IRow RowHeader
         {
-            get { return "Column"; }
+            get { return Root; }
         }
+
+        public override IColumn ColumnHeader
+        {
+            get { return this; }
+        }
+
+        public override int RowIndex { get { return -1; } }
+
+        private readonly int _ColumnIndex;
+        public override int ColumnIndex { get { return _ColumnIndex; } }
         #endregion
 
         #region IHeader members
@@ -54,31 +69,6 @@ namespace DlxLib
         }
         #endregion
 
-        #region DataObject members
-        protected internal override void ValidateRowIndexAvailableInColumn(RootObject root, int rowIndex, int columnIndex)
-        {
-            if (-1 != rowIndex)
-                throw new ArgumentOutOfRangeException("rowIndex", "Must be -1");
-        }
-
-        protected internal override void ValidateColumnIndexAvailableInRow(RootObject root, int rowIndex, int columnIndex)
-        {
-            var maxColumn = root.HighestColumn;
-            if (maxColumn >= columnIndex)
-                throw new ArgumentOutOfRangeException("columnIndex", "Column index too low");
-        }
-
-        public override IRow RowHeader
-        {
-            get { return Root; }
-        }
-
-        public override IColumn ColumnHeader
-        {
-            get { return this; }
-        }
-        #endregion
-
         /// <summary>
         /// Returns largest rowIndex of column elements (-1 if column has no elements)
         /// </summary>
@@ -95,6 +85,7 @@ namespace DlxLib
             return String.Format("{0}[{1},{2}]", Kind, ColumnIndex, ColumnCover);
         }
 
+        #region Obsolete
         [Obsolete]
         public void AppendColumnHeader(ColumnObject columnObject)
         {
@@ -137,5 +128,6 @@ namespace DlxLib
             dataObject.RelinkIntoColumn();
             NumberOfRows++;
         }
+        #endregion
     }
 }

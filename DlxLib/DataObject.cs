@@ -17,34 +17,33 @@ namespace DlxLib
     /// </remarks>
     internal abstract class DataObject : IDataObject
     {
-        protected DataObject(RootObject root, int rowIndex, int columnIndex)
+        protected internal DataObject()
         {
-            ValidateRowIndexAvailableInColumn(root, rowIndex, columnIndex);
-            ValidateColumnIndexAvailableInRow(root, rowIndex, columnIndex);
-
             Left = Right = Up = Down = this;
-            _Root = root;
-            RowIndex = rowIndex;
-            ColumnIndex = columnIndex;
         }
 
         #region IDataObject members
+        public virtual RootObject Root { get; protected set;}
+
         /// <summary>
-        /// Backing field for public property Root.
+        /// Returns this object's row's header (a RowObject, or, in the case of a
+        /// ColumnObject, the Root).
         /// </summary>
-        private readonly RootObject _Root;
+        /// <remarks>
+        /// Note that this object will not be in the Elements of its row header
+        /// if its column is covered.
+        /// </remarks>
+        public abstract IRow RowHeader { get; }
+
         /// <summary>
-        /// Returns the Root object of the matrix that this DataObject is part of.
+        /// Returns this object's column's header (a ColumnObjecct, or in the case
+        /// of a RowObject, the Root).
         /// </summary>
-        public RootObject Root
-        {
-            get
-            {
-                if (this is IRoot)
-                    return this as RootObject;
-                return _Root;
-            }
-        }
+        /// <remarks>
+        /// Note that this object will not be in the Elements of its column header
+        /// if its row is covered.
+        /// </remarks>
+        public abstract IColumn ColumnHeader { get; }
 
         /// <summary>
         /// Returns the row index (0-based) for this object in the matrix.
@@ -52,7 +51,7 @@ namespace DlxLib
         /// when the matrix is created (when the object is added to the matrix)
         /// so doesn't change even if this object's row or column is covered.
         /// </summary>
-        public virtual int RowIndex { get; private set; }
+        public abstract int RowIndex { get; }
 
         /// <summary>
         /// Returns the column index (0-based) for this object in the matrix.
@@ -60,28 +59,8 @@ namespace DlxLib
         /// when the matrix is created (when the object is added to the matrix)
         /// so doesn't change even if this objects' row or column is covered.
         /// </summary>
-        public virtual int ColumnIndex { get; private set; }
-
-        /// <summary>
-        /// Returns the kind (subclass name) of this object, suitable for a
-        /// ToString() self-description.
-        /// </summary>
-        public abstract string Kind { get; }
-
+        public abstract int ColumnIndex { get; }
         #endregion
-
-        /// <summary>
-        /// Validate that the supplied rowIndex is available in the row for a new
-        /// matrix data object (which depends on the Kind).
-        /// </summary>
-        protected internal abstract void ValidateRowIndexAvailableInColumn(RootObject root, int rowIndex, int columnIndex);
-
-        /// <summary>
-        /// Validate that the supplied columnIndex is available in the column for
-        /// a new matrix data object (which depends on the Kind).
-        /// </summary>
-        protected internal abstract void ValidateColumnIndexAvailableInRow(RootObject root, int rowIndex, int columnIndex);
-
 
         /// <summary>
         /// Returns the left-wise object from this object.  (List is circular.)  Links rows.
@@ -102,25 +81,6 @@ namespace DlxLib
         /// Returns the down-ward object from this object.  (List is circular.) Links columns.
         /// </summary>
         public DataObject Down { get; internal set; }
-
-        /// <summary>
-        /// Returns the row header for this object in the matrix.  (If this object
-        /// is a Column then the column header is the Root.)
-        /// </summary>
-        /// Note that this object will not be in the Elements of its row header
-        /// if a) its column is covered or b) it is a column header of a Secondary
-        /// column.
-        public abstract IRow RowHeader { get; }
-
-        /// <summary>
-        /// Returns the column header for this object in the matrix.  (If this object
-        /// is a Row then the column header is the Root.)
-        /// </summary>
-        /// <remarks>
-        /// Note that this object will not be in the Elements of its column header
-        /// if its row is covered.
-        /// </remarks>
-        public abstract IColumn ColumnHeader { get; }
 
         [Obsolete]
         public void AppendToRow(DataObject dataObject)
@@ -143,6 +103,16 @@ namespace DlxLib
             Up.Down = this;
         }
 
+        /// <summary>
+        /// Returns the kind (subclass name) of this object, suitable for a
+        /// ToString() self-description.
+        /// </summary>
+        public string Kind {
+            get
+            {
+                return GetType().Name.Replace("Object", "");
+            }
+        }
 
         /// <summary>
         /// A DataObject self-displays as its Kind (Root, Row, Column, Element)

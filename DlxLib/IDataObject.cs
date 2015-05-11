@@ -27,6 +27,18 @@ namespace DlxLib
         RootObject Root { get; }
 
         /// <summary>
+        /// Returns this object's row's header (a RowObject, or, in the case of a
+        /// ColumnObject, the Root).
+        /// </summary>
+        IRow RowHeader { get; }
+
+        /// <summary>
+        /// Returns this object's column's header (a ColumnObjecct, or in the case
+        /// of a RowObject, the Root).
+        /// </summary>
+        IColumn ColumnHeader { get; }
+
+        /// <summary>
         /// Returns the row index (0-based) of this matrix object.  Column objects
         /// and Root objects return -1.
         /// </summary>
@@ -47,10 +59,5 @@ namespace DlxLib
         /// problem.
         /// </remarks>
         int ColumnIndex { get; }
-
-        /// <summary>
-        /// Simple name for the kind of object (used for string representations).
-        /// </summary>
-        string Kind { get; }
     }
 }

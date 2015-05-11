@@ -20,7 +20,7 @@ namespace DlxLibTests
         [Test]
         public void RootProperties()
         {
-            var sutRoot = new RootObject();
+            var sutRoot = RootObject.Create();
             Assert.That(sutRoot.Root, Is.EqualTo(sutRoot));
             Assert.That(sutRoot.Kind, Is.EqualTo("Root"));
             Assert.That(sutRoot.ColumnHeader, Is.EqualTo(sutRoot));
@@ -33,19 +33,13 @@ namespace DlxLibTests
             Assert.That(sutRoot.NumberOfColumns, Is.EqualTo(0));
             Assert.That(sutRoot.Elements, Is.Empty);
             Assert.That(sutRoot.ToString(), Is.EqualTo("Root[0x0]"));
-
-            Assert.DoesNotThrow(() => sutRoot.ValidateRowIndexAvailableInColumn(sutRoot, -1, -1));
-            Assert.Throws<ArgumentOutOfRangeException>(() => sutRoot.ValidateRowIndexAvailableInColumn(sutRoot, 0, 0));
-            Assert.DoesNotThrow(() => sutRoot.ValidateColumnIndexAvailableInRow(sutRoot, -1, -1));
-            Assert.Throws<ArgumentOutOfRangeException>(() => sutRoot.ValidateColumnIndexAvailableInRow(sutRoot, 0, 0));
         }
 
         [Test]
         public void RowProperties()
         {
-            var root = new RootObject();
-            var sutRow = new RowObject(root, 0);
-            (root as IColumn).Append(sutRow);
+            var root = RootObject.Create();
+            var sutRow = root.NewRow();
 
             Assert.That(sutRow.Root, Is.EqualTo(root));
             Assert.That(sutRow.RowHeader, Is.EqualTo(sutRow));
@@ -57,18 +51,13 @@ namespace DlxLibTests
             Assert.That(sutRow.ToString(), Is.EqualTo("Row[0]"));
 
             Assert.That(root.Elements, Is.EquivalentTo(new DataObject[] { sutRow }));
-
-            Assert.DoesNotThrow(() => sutRow.ValidateRowIndexAvailableInColumn(root, 1, 0));
-            Assert.Throws<ArgumentOutOfRangeException>(() => sutRow.ValidateRowIndexAvailableInColumn(root, 0, 0));
-            Assert.DoesNotThrow(() => sutRow.ValidateColumnIndexAvailableInRow(root, 0, -1));
-            Assert.Throws<ArgumentOutOfRangeException>(() => sutRow.ValidateColumnIndexAvailableInRow(root, 0, 0));
         }
 
         [Test]
         public void PrimaryColumnProperties()
         {
-            var root = new RootObject();
-            var sutColumn = new ColumnObject(root, 0, ColumnCover.Primary); // TODO: Test Secondary
+            var root = RootObject.Create();
+            var sutColumn = root.NewColumn(ColumnCover.Primary); // TODO: Test Secondary
             (root as IRow).Append(sutColumn);
 
             Assert.That(sutColumn.Root, Is.EqualTo(root));
@@ -82,11 +71,6 @@ namespace DlxLibTests
             Assert.That(sutColumn.ToString(), Is.EqualTo("Column[0,Primary]"));
 
             Assert.That(root.Elements, Is.EquivalentTo(new DataObject[] { sutColumn }));
-
-            Assert.DoesNotThrow(() => sutColumn.ValidateColumnIndexAvailableInRow(root, 0, 1));
-            Assert.Throws<ArgumentOutOfRangeException>(() => sutColumn.ValidateColumnIndexAvailableInRow(root, 0, 0));
-            Assert.DoesNotThrow(() => sutColumn.ValidateRowIndexAvailableInColumn(root, -1, 0));
-            Assert.Throws<ArgumentOutOfRangeException>(() => sutColumn.ValidateRowIndexAvailableInColumn(root, 0, 0));
         }
 
         [Test]
@@ -118,9 +102,9 @@ namespace DlxLibTests
         [Test]
         public void BareColumnAndRowCreation()
         {
-            var sutRoot = new RootObject();
-            var sutColumn = new ColumnObject(sutRoot, 0, ColumnCover.Primary);
-            var sutRow = new RowObject(sutRoot, 0);
+            var sutRoot = RootObject.Create();
+            var sutColumn = sutRoot.NewColumn(ColumnCover.Primary);
+            var sutRow = sutRoot.NewRow();
 
             ValidateColumn(sutColumn, 0, ColumnCover.Primary);
             ValidateRow(sutRow, 0);

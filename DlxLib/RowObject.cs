@@ -17,16 +17,28 @@ namespace DlxLib
     /// </remarks>
     internal class RowObject : HeaderObject, IRow
     {
-        public RowObject(RootObject root, int rowIndex)
-            : base(root, rowIndex, -1)
+        protected internal RowObject(RootObject root)
+            : base(root)
         {
+            _RowIndex = root.NumberOfRows;
+            (root as IColumn).Append(this);
         }
 
         #region IDataObject
-        public override string Kind
+        public override IRow RowHeader
         {
-            get { return "Row"; }
+            get { return this; }
         }
+
+        public override IColumn ColumnHeader
+        {
+            get { return Root; }
+        }
+
+        private readonly int _RowIndex;
+        public override int RowIndex { get { return _RowIndex; } }
+
+        public override int ColumnIndex { get { return -1; } }
         #endregion
 
         #region IHeader
@@ -68,28 +80,7 @@ namespace DlxLib
         #endregion
 
         #region DataObject
-        protected internal override void ValidateRowIndexAvailableInColumn(RootObject root, int rowIndex, int columnIndex)
-        {
-            var maxRow = root.HighestRow;
-            if (maxRow >= rowIndex)
-                throw new ArgumentOutOfRangeException("rowIndex", "Row index too low");
-        }
 
-        protected internal override void ValidateColumnIndexAvailableInRow(RootObject root, int rowIndex, int columnIndex)
-        {
-            if (-1 != columnIndex)
-                throw new ArgumentOutOfRangeException("columnIndex", "Must be -1");
-        }
-
-        public override IRow RowHeader
-        {
-            get { return this; }
-        }
-
-        public override IColumn ColumnHeader
-        {
-            get { return Root; }
-        }
         #endregion
 
         /// <summary>

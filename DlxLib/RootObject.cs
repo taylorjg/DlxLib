@@ -19,13 +19,56 @@ namespace DlxLib
     /// </remarks>
     internal class RootObject : HeaderObject, IRoot
     {
-        public RootObject()
-            : base(null, -1, -1)
+        private RootObject()
+            : base()
         {
 
         }
 
+        public static RootObject Create()
+        {
+            RootObject root = new RootObject();
+            return root;
+        }
+
+        public RowObject NewRow()
+        {
+            RowObject row = new RowObject(this);
+            return row;
+        }
+
+        public ColumnObject NewColumn(ColumnCover columnCover)
+        {
+            ColumnObject column = new ColumnObject(this, columnCover);
+            return column;
+        }
+
+        public ElementObject NewElement(RowObject row, ColumnObject column)
+        {
+            ElementObject element = new ElementObject(this, row, column);
+            return element;
+        }
+
+        public ElementObject NewElement(int rowIndex, int columnIndex)
+        {
+            RowObject row = GetRow(rowIndex);
+            ColumnObject column = GetColumn(columnIndex);
+            ElementObject element = NewElement(row, column);
+            return element;
+        }
+
         #region IDataObject Members
+        public RootObject Root { get { return this; } }
+
+        public override IRow RowHeader
+        {
+            get { return this; }
+        }
+
+        public override IColumn ColumnHeader
+        {
+            get { return this; }
+        }
 
         public override int RowIndex
         {
@@ -36,12 +79,6 @@ namespace DlxLib
         {
             get { return -1; }
         }
-
-        public override string Kind
-        {
-            get { return "Root"; }
-        }
-
         #endregion
 
         #region IHeader
@@ -83,6 +120,11 @@ namespace DlxLib
 
         void IRow.Append(DataObject dataObject)
         {
+            if (!(dataObject is IColumn)) throw new ArgumentException("RootObject.IRow.Append argument must be IColumn", "dataObject");
+            if (ColumnCover.Secondary == ((IColumn)dataObject).ColumnCover)
+            {
+                NumberOfSecondaryColumns++;
+            }
             Left.Right = dataObject;
             dataObject.Right = this;
             dataObject.Left = Left;
@@ -112,6 +154,7 @@ namespace DlxLib
 
         void IColumn.Append(DataObject dataObject)
         {
+            if (!(dataObject is IRow)) throw new ArgumentException("RootObject.IColumn.Append argument must be IRow", "dataObject");
             Up.Down = dataObject;
             dataObject.Down = this;
             dataObject.Up = Up;
@@ -154,40 +197,19 @@ namespace DlxLib
         }
         #endregion
 
-        #region DataObject
-        protected internal override void ValidateRowIndexAvailableInColumn(RootObject root, int rowIndex, int columnIndex)
-        {
-            if (-1 != rowIndex)
-                throw new ArgumentOutOfRangeException("rowIndex", "Must be -1");
-        }
+        public int NumberOfPrimaryColumns { get { return NumberOfColumns; } }
 
-        protected internal override void ValidateColumnIndexAvailableInRow(RootObject root, int rowIndex, int columnIndex)
-        {
-            if (-1 != columnIndex)
-                throw new ArgumentOutOfRangeException("columnIndex", "Must be -1");
-        }
-
-        public override IRow RowHeader
-        {
-            get { return this; }
-        }
-
-        public override IColumn ColumnHeader
-        {
-            get { return this; }
-        }
-        #endregion
-
+        public int NumberOfSecondaryColumns { get; private set; }
 
         internal static Tuple<RootObject, RowObject[], ColumnObject[]> CreateEmptyMatrix(int nRows, int nColumns)
         {
             var root = new RootObject();
-            var rows = Enumerable.Range(0, nRows).Select(i => new RowObject(root, i)).ToArray();
+            var rows = Enumerable.Range(0, nRows).Select(i => root.NewRow()).ToArray();
             foreach (var row in rows)
             {
                 (root as IColumn).Append(row);
             }
-            var columns = Enumerable.Range(0, nColumns).Select(i => new ColumnObject(root, i, ColumnCover.Primary)).ToArray();
+            var columns = Enumerable.Range(0, nColumns).Select(i => root.NewColumn(ColumnCover.Primary)).ToArray();
             foreach(var column in columns)
             {
                 (root as IRow).Append(column);
