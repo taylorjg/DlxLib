@@ -17,13 +17,25 @@ namespace DlxLib
         {
         }
 
-        public override IRow RowHeader
+        #region IDataObject
+        public override string Kind
         {
-            get { return this; }
+            get { return "Row"; }
         }
+        #endregion
 
-    #region IRow Members
+        #region IHeader
+        public override IEnumerable<DataObject> Elements
+        {
+            get
+            {
+                for (var element = Right; this != element; element = element.Right)
+                    yield return element;
+            }
+        }
+        #endregion
 
+        #region IRow
         public int NumberOfColumns
         {
             // TODO: No need to keep a count of columns - unless this is called quite often
@@ -38,36 +50,17 @@ namespace DlxLib
             }
         }
 
-        public override IEnumerable<DataObject> Elements
-        {
-            get
-            {
-                for (var element = Right; this != element; element = element.Right)
-                    yield return element;
-            }
-        }
-
-        /// <summary>
-        /// Returns largest columnIndex of row elements (-1 if row has no elements)
-        /// </summary>
-        public int HighestColumnInRow
-        {
-            get
-            {
-                return Left.ColumnIndex;
-            }
-        }
-
         public void Append(DataObject dataObject)
         {
+            // TODO: Could validate (again) that dataObject.RowIndex > max in row
             Left.Right = dataObject;
             dataObject.Right = this;
             dataObject.Left = Left;
             Left = dataObject;
         }
-
         #endregion
 
+        #region DataObject
         protected internal override void ValidateRowIndexAvailableInColumn(RootObject root, int rowIndex, int columnIndex)
         {
             var maxRow = root.HighestRow;
@@ -81,12 +74,23 @@ namespace DlxLib
                 throw new ArgumentOutOfRangeException("columnIndex", "Must be -1");
         }
 
-        public override string Kind
+        public override IRow RowHeader
         {
-            get
-            {
-                return "Row";
-            }
+            get { return this; }
+        }
+
+        public override IColumn ColumnHeader
+        {
+            get { return Root; }
+        }
+        #endregion
+
+        /// <summary>
+        /// Returns largest columnIndex of row elements (-1 if row has no elements)
+        /// </summary>
+        public int HighestColumnInRow
+        {
+            get { return Left.ColumnIndex; }
         }
 
         public override string ToString()
@@ -94,10 +98,6 @@ namespace DlxLib
             return String.Format("{0}[{1}]", Kind, RowIndex);
         }
 
-        public override IColumn ColumnHeader
-        {
-            get { return Root; }
-        }
     }
 }
 
