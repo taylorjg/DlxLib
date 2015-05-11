@@ -8,8 +8,13 @@ using System.Threading;
 namespace DlxLib
 {
     /// <summary>
-    /// PLACEHOLDER
+    /// Row Header object - linked into to each Row of the matrix, identifies the Row.
     /// </summary>
+    /// <remarks>
+    /// Knuth's DLX algorithm didn't have these objects as they're unnecessary for
+    /// the DLX algorithm itself.  But they help during matrix setup and printing and
+    /// debugging.
+    /// </remarks>
     internal class RowObject : HeaderObject, IRow
     {
         public RowObject(RootObject root, int rowIndex)

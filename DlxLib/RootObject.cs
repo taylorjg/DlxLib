@@ -8,8 +8,15 @@ using System.Threading;
 namespace DlxLib
 {
     /// <summary>
-    /// PLACEHOLDER
+    /// Root object of DLX binary matrix.  Holds all the elements (arranged in rows
+    /// and columns, of course) and gives accessors to them.  Also, ways to create
+    /// the data matrix.  Also, ways to manipulate it for the DLX algorithms: cover
+    /// and uncover.
     /// </summary>
+    /// <remarks>
+    /// Knuth didn't use a separate structure for this, reusing a column object for
+    /// the root of the data matrix.
+    /// </remarks>
     internal class RootObject : HeaderObject, IRoot
     {
         public RootObject()

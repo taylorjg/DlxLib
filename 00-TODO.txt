@@ -44,5 +44,8 @@
 3. Incorporate RowObject into matrix (currently just Root/Column are in matrix)
 7. Get rid of DataObject.{AppendToRow, UnlinkFromColumn, RelinkIntoColumn}
 9. AddElement(r,c) to Root? IRoot? and maybe to Column/Row as well.
+10. Consider removing RowIndex/ColumnIndex fields from DataObject and just deferring
+    to the RowHeader/ColumnHeader, which will know its own index.  They're not used
+    during the DLX algorithm, only during matrix setup and printing.
 
 Note: Interfaces solely for external access, internal access uses actual classes

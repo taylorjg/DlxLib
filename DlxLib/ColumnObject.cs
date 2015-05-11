@@ -3,6 +3,14 @@ using System.Collections.Generic;
 
 namespace DlxLib
 {
+    /// <summary>
+    /// Column header object: Linked into each column, identifies the column.
+    /// </summary>
+    /// <remarks>
+    /// Used in the DLX algorithm itself so that there's a way to figure out which
+    /// column has the least number of rows uncovered, so as to pick that one to
+    /// cover next.
+    /// </remarks>
     internal class ColumnObject : HeaderObject, IColumn
     {
         public ColumnObject(RootObject root, int columnIndex, ColumnCover columnCover)
