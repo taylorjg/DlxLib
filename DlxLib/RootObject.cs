@@ -18,119 +18,6 @@ namespace DlxLib
 
         }
 
-        public override IRow RowHeader
-        {
-            get { return this; }
-        }
-
-        internal static Tuple<RootObject, RowObject[], ColumnObject[]> CreateEmptyMatrix(int nRows, int nColumns)
-        {
-            var root = new RootObject();
-            var rows = Enumerable.Range(0, nRows).Select(i => new RowObject(root, i)).ToArray();
-            foreach (var row in rows)
-            {
-                (root as IColumn).Append(row);
-            }
-            var columns = Enumerable.Range(0, nColumns).Select(i => new ColumnObject(root, i, ColumnCover.Primary)).ToArray();
-            foreach(var column in columns)
-            {
-                (root as IRow).Append(column);
-            }
-            return Tuple.Create(root, rows, columns);
-        }
-
-        #region IRow Members
-
-        public int NumberOfColumns
-        {
-            // TODO: No need to keep a count of columns - unless this is called quite often
-            get
-            {
-                int n = 0;
-                for (var col = Right; this != col; col = col.Right)
-                {
-                    n++;
-                }
-                return n;
-            }
-        }
-
-        #endregion
-
-        #region IColumn Members
-
-        public ColumnCover ColumnCover
-        {
-            get { throw new NotImplementedException(); }
-        }
-
-        public int NumberOfRows
-        {
-            // TODO: No need to keep a count of rows - unless this is called quite often
-            get
-            {
-                int n = 0;
-                for (var row = Down; this != row; row = row.Down)
-                {
-                    n++;
-                }
-                return n;
-            }
-        }
-
-        #endregion
-
-        public override IEnumerable<DataObject> Elements
-        {
-            get
-            {
-                for (var column = Right; this != column; column = column.Right)
-                    yield return column;
-                for (var row = Down; this != row; row = row.Down)
-                {
-                    yield return row;
-                    for (var element = row.Right; row != element; element = element.Right)
-                        yield return element;
-                }
-            }
-        }
-
-        #region IRoot Members
-
-        /// <summary>
-        /// Return the column for the given columnIndex.  Throws exception if no such column.
-        /// </summary>
-        public ColumnObject GetColumn(int columnIndex)
-        {
-            for (var column = Right; this != column; column = column.Right)
-                if (columnIndex == column.ColumnIndex)
-                    return (ColumnObject)column;
-            throw new IndexOutOfRangeException(String.Format("Column with offset {0} not in matrix", columnIndex));
-        }
-
-        /// <summary>
-        /// Return the row for the given rowIndex.  Throws exception if no such row.
-        /// </summary>
-        public RowObject GetRow(int rowIndex)
-        {
-            for (var row = Down; this != row; row = row.Down)
-                if (rowIndex == row.RowIndex)
-                    return (RowObject)row;
-            throw new IndexOutOfRangeException(String.Format("Row with offset {0} not in matrix", rowIndex));
-        }
-
-        IColumn IRoot.GetColumn(int columnIndex)
-        {
-            return GetColumn(columnIndex);
-        }
-
-        IRow IRoot.GetRow(int rowIndex)
-        {
-            return GetRow(rowIndex);
-        }
-
-        #endregion
-
         #region IDataObject Members
 
         public override int RowIndex
@@ -150,7 +37,42 @@ namespace DlxLib
 
         #endregion
 
-        #region IRow Members
+        #region IHeader
+        public override IEnumerable<DataObject> Elements
+        {
+            get
+            {
+                for (var column = Right; this != column; column = column.Right)
+                {
+                    yield return column;
+                }
+
+                for (var row = Down; this != row; row = row.Down)
+                {
+                    yield return row;
+                    for (var element = row.Right; row != element; element = element.Right)
+                    {
+                        yield return element;
+                    }
+                }
+            }
+        }
+        #endregion
+
+        #region IRow
+        public int NumberOfColumns
+        {
+            // TODO: No need to keep a count of columns - unless this is called quite often
+            get
+            {
+                int n = 0;
+                for (var col = Right; this != col; col = col.Right)
+                {
+                    n++;
+                }
+                return n;
+            }
+        }
 
         void IRow.Append(DataObject dataObject)
         {
@@ -159,10 +81,27 @@ namespace DlxLib
             dataObject.Left = Left;
             Left = dataObject;
         }
-
         #endregion
 
-        #region IColumn Members
+        #region IColumn
+        public ColumnCover ColumnCover
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public int NumberOfRows
+        {
+            // TODO: No need to keep a count of rows - unless this is called quite often
+            get
+            {
+                int n = 0;
+                for (var row = Down; this != row; row = row.Down)
+                {
+                    n++;
+                }
+                return n;
+            }
+        }
 
         void IColumn.Append(DataObject dataObject)
         {
@@ -171,9 +110,44 @@ namespace DlxLib
             dataObject.Up = Up;
             Up = dataObject;
         }
-
         #endregion
 
+        #region IRoot
+
+        /// <summary>
+        /// Return the row for the given rowIndex.  Throws exception if no such row.
+        /// </summary>
+        public RowObject GetRow(int rowIndex)
+        {
+            for (var row = Down; this != row; row = row.Down)
+                if (rowIndex == row.RowIndex)
+                    return (RowObject)row;
+            throw new IndexOutOfRangeException(String.Format("Row with offset {0} not in matrix", rowIndex));
+        }
+
+        IRow IRoot.GetRow(int rowIndex)
+        {
+            return GetRow(rowIndex);
+        }
+
+        /// <summary>
+        /// Return the column for the given columnIndex.  Throws exception if no such column.
+        /// </summary>
+        public ColumnObject GetColumn(int columnIndex)
+        {
+            for (var column = Right; this != column; column = column.Right)
+                if (columnIndex == column.ColumnIndex)
+                    return (ColumnObject)column;
+            throw new IndexOutOfRangeException(String.Format("Column with offset {0} not in matrix", columnIndex));
+        }
+
+        IColumn IRoot.GetColumn(int columnIndex)
+        {
+            return GetColumn(columnIndex);
+        }
+        #endregion
+
+        #region DataObject
         protected internal override void ValidateRowIndexAvailableInColumn(RootObject root, int rowIndex, int columnIndex)
         {
             if (-1 != rowIndex)
@@ -184,6 +158,34 @@ namespace DlxLib
         {
             if (-1 != columnIndex)
                 throw new ArgumentOutOfRangeException("columnIndex", "Must be -1");
+        }
+
+        public override IRow RowHeader
+        {
+            get { return this; }
+        }
+
+        public override IColumn ColumnHeader
+        {
+            get { return this; }
+        }
+        #endregion
+
+
+        internal static Tuple<RootObject, RowObject[], ColumnObject[]> CreateEmptyMatrix(int nRows, int nColumns)
+        {
+            var root = new RootObject();
+            var rows = Enumerable.Range(0, nRows).Select(i => new RowObject(root, i)).ToArray();
+            foreach (var row in rows)
+            {
+                (root as IColumn).Append(row);
+            }
+            var columns = Enumerable.Range(0, nColumns).Select(i => new ColumnObject(root, i, ColumnCover.Primary)).ToArray();
+            foreach(var column in columns)
+            {
+                (root as IRow).Append(column);
+            }
+            return Tuple.Create(root, rows, columns);
         }
 
         public int HighestColumn
@@ -207,9 +209,5 @@ namespace DlxLib
             return String.Format("{0}[{1}x{2}]", Kind, NumberOfRows, NumberOfColumns);
         }
 
-        public override IColumn ColumnHeader
-        {
-            get { return this; }
-        }
     }
 }

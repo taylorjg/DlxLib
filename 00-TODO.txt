@@ -36,6 +36,7 @@
        abstract HeaderObject : DataObject, IHeader
        RowObject : HeaderObject, IRow
        ColumnObject : HeaderObject, IColumn
+       RootObject : HeaderObject, IRoot
 
 
 
