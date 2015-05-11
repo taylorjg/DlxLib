@@ -125,10 +125,13 @@ namespace DlxLib
             {
                 NumberOfSecondaryColumns++;
             }
-            Left.Right = dataObject;
-            dataObject.Right = this;
-            dataObject.Left = Left;
-            Left = dataObject;
+            else
+            {
+                Left.Right = dataObject;
+                dataObject.Right = this;
+                dataObject.Left = Left;
+                Left = dataObject;
+            }
         }
         #endregion
 
@@ -203,7 +206,7 @@ namespace DlxLib
 
         internal static Tuple<RootObject, RowObject[], ColumnObject[]> CreateEmptyMatrix(int nRows, int nColumns)
         {
-            var root = new RootObject();
+            var root = RootObject.Create();
             var rows = Enumerable.Range(0, nRows).Select(i => root.NewRow()).ToArray();
             foreach (var row in rows)
             {

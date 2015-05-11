@@ -18,10 +18,7 @@ namespace DlxLib
         {
             ColumnCover = columnCover;
             _ColumnIndex = root.NumberOfPrimaryColumns + root.NumberOfSecondaryColumns;
-            if (ColumnCover.Primary == columnCover)
-            {
-                (root as IRow).Append(this);
-            }
+            (root as IRow).Append(this);
         }
 
         #region IDataObject members

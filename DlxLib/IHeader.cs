@@ -13,7 +13,8 @@ namespace DlxLib
         /// <summary>
         /// Returns all elements of the given header that are currently in the
         /// matrix (that is, covered elements are _not_ returned) - but never
-        /// returns itself.  For the Root returns all Rows, Columns, and Elements.
+        /// returns itself.  For the Root returns all Rows, Primary Columns, and
+        /// Elements.
         /// </summary>
         IEnumerable<DataObject> Elements { get; }
     }

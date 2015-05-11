@@ -84,7 +84,7 @@ namespace DlxLibTests
             var sutRow3 = sutRoot.GetRow(rowIndex);
             var sutColumn5 = sutRoot.GetColumn(colIndex);
 
-            var sutElement = new ElementObject(sutRoot, sutRow3, sutColumn5);
+            var sutElement = sutRoot.NewElement(sutRow3, sutColumn5);
             Assert.That(sutElement, Is.Not.Null);
 
             Assert.That(sutElement.Root, Is.EqualTo(sutRoot));
@@ -232,6 +232,24 @@ namespace DlxLibTests
         }
 
         [Test]
+        public void CreateDiagonal3x3MatrixByIndex()
+        {
+            var sut = RootObject.CreateEmptyMatrix(3, 3);
+            var sutRoot = sut.Item1;
+            var sutElt00 = sutRoot.NewElement(0, 0);
+            var sutElt11 = sutRoot.NewElement(1, 1);
+            var sutElt22 = sutRoot.NewElement(2, 2);
+
+            Assert.That(sutRoot.Elements, Is.EquivalentTo(sut.Item2.Cast<DataObject>().Concat(sut.Item3).Concat(new DataObject[] { sutElt00, sutElt11, sutElt22 })));
+            Assert.That(sutElt00.RowHeader, Is.EqualTo(sutRoot.GetRow(0)));
+            Assert.That(sutElt00.ColumnHeader, Is.EqualTo(sutRoot.GetColumn(0)));
+            Assert.That(sutElt11.RowHeader, Is.EqualTo(sutRoot.GetRow(1)));
+            Assert.That(sutElt11.ColumnHeader, Is.EqualTo(sutRoot.GetColumn(1)));
+            Assert.That(sutElt22.RowHeader, Is.EqualTo((sutRoot as IRoot).GetRow(2)));
+            Assert.That(sutElt22.ColumnHeader, Is.EqualTo((sutRoot as IRoot).GetColumn(2)));
+        }
+
+        [Test]
         public void BareColumnCreation()
         {
             const int colIndex = 5;
@@ -248,17 +266,36 @@ namespace DlxLibTests
 
             ValidateColumn(sutColumn5, colIndex, ColumnCover.Primary);
 
-            var elt1 = new ElementObject(sutRoot, sutRow0, sutColumn5);
-            sutColumn5.Append(elt1);
+            var elt1 = sutRoot.NewElement(sutRow0, sutColumn5);
             ValidateColumn(sutColumn5, colIndex, ColumnCover.Primary, elt1);
 
-            var elt2 = new ElementObject(sutRoot, sutRow2, sutColumn5);
-            sutColumn5.Append(elt2);
+            var elt2 = sutRoot.NewElement(sutRow2, sutColumn5);
             ValidateColumn(sutColumn5, colIndex, ColumnCover.Primary, elt1, elt2);
 
-            var elt3 = new ElementObject(sutRoot, sutRow4, sutColumn5);
-            sutColumn5.Append(elt3);
+            var elt3 = sutRoot.NewElement(sutRow4, sutColumn5);
             ValidateColumn(sutColumn5, colIndex, ColumnCover.Primary, elt1, elt2, elt3);
+        }
+
+        [Test]
+        public void OutOfOrderColumnAppend()
+        {
+            const int colIndex = 5;
+
+            var sut = RootObject.CreateEmptyMatrix(7, 7);
+            var sutRoot = sut.Item1;
+            var sutRow0 = sutRoot.GetRow(0);
+            var sutRow2 = sutRoot.GetRow(2);
+            var sutColumn5 = sutRoot.GetColumn(colIndex);
+
+            Assert.That(sutColumn5, Is.Not.Null);
+            Assert.That(sutColumn5.ColumnIndex, Is.EqualTo(colIndex));
+
+            ValidateColumn(sutColumn5, colIndex, ColumnCover.Primary);
+
+            var elt2 = sutRoot.NewElement(sutRow2, sutColumn5);
+            ValidateColumn(sutColumn5, colIndex, ColumnCover.Primary, elt2);
+
+            Assert.Throws<ArgumentException>(() => sutRoot.NewElement(sutRow0, sutColumn5));
         }
 
         [Test]
@@ -278,17 +315,126 @@ namespace DlxLibTests
 
             ValidateRow(sutRow5, rowIndex);
 
-            var elt1 = new ElementObject(sutRoot, sutRow5, sutColumn0);
-            sutRow5.Append(elt1);
+            var elt1 = sutRoot.NewElement(sutRow5, sutColumn0);
             ValidateRow(sutRow5, rowIndex, elt1);
-            var elt2 = new ElementObject(sutRoot, sutRow5, sutColumn2);
-            sutRow5.Append(elt2);
+            var elt2 = sutRoot.NewElement(sutRow5, sutColumn2);
             ValidateRow(sutRow5, rowIndex, elt1, elt2);
-            var elt3 = new ElementObject(sutRoot, sutRow5, sutColumn4);
-            sutRow5.Append(elt3);
+            var elt3 = sutRoot.NewElement(sutRow5, sutColumn4);
             ValidateRow(sutRow5, rowIndex, elt1, elt2, elt3);
         }
 
+        [Test]
+        public void OutOfOrderRowAppend()
+        {
+            const int rowIndex = 5;
+
+            var sut = RootObject.CreateEmptyMatrix(7, 7);
+            var sutRoot = sut.Item1;
+            var sutRow5 = sutRoot.GetRow(rowIndex);
+            var sutColumn0 = sutRoot.GetColumn(0);
+            var sutColumn2 = sutRoot.GetColumn(2);
+
+            Assert.That(sutRow5, Is.Not.Null);
+            Assert.That(sutRow5.RowIndex, Is.EqualTo(rowIndex));
+
+            ValidateRow(sutRow5, rowIndex);
+
+            var elt2 = sutRoot.NewElement(sutRow5, sutColumn2);
+            ValidateRow(sutRow5, rowIndex, elt2);
+            Assert.Throws<ArgumentException>(() => sutRoot.NewElement(sutRow5, sutColumn0));
+        }
+
+        [Test]
+        public void OnlyAppendTheCorrectThings()
+        {
+            var sut = RootObject.CreateEmptyMatrix(7, 7);
+            var sutRoot = sut.Item1;
+            var sutRow4 = sutRoot.GetRow(4);
+            var sutColumn4 = sutRoot.GetColumn(4);
+
+            Assert.Throws<ArgumentException>(() => { (sutRoot as IRow).Append(sutRow4); } );
+            Assert.Throws<ArgumentException>(() => { (sutRoot as IColumn).Append(sutColumn4); } );
+        }
+
+        [Test]
+        public void SecondaryColumns()
+        {
+            var sut = RootObject.CreateEmptyMatrix(7, 7);
+            var sutRoot = sut.Item1;
+            var sutColumn7 = sutRoot.NewColumn(ColumnCover.Secondary);
+            var sutColumn8 = sutRoot.NewColumn(ColumnCover.Secondary);
+
+            Assert.That(sutRoot.NumberOfColumns, Is.EqualTo(7));
+            Assert.That(sutRoot.NumberOfPrimaryColumns, Is.EqualTo(7));
+            Assert.That(sutRoot.NumberOfSecondaryColumns, Is.EqualTo(2));
+
+            Assert.That(sutColumn7.RowHeader, Is.EqualTo(sutRoot));
+            Assert.That(sutColumn7.RowIndex, Is.EqualTo(-1));
+            Assert.That(sutColumn7.ColumnIndex, Is.EqualTo(7));
+
+            Assert.That(sutColumn8.RowHeader, Is.EqualTo(sutRoot));
+            Assert.That(sutColumn8.RowIndex, Is.EqualTo(-1));
+            Assert.That(sutColumn8.ColumnIndex, Is.EqualTo(8));
+
+            // Note that secondary Columns are _not_ in Elements.
+            Assert.That(sutRoot.Elements, Is.EquivalentTo(sut.Item2.Cast<DataObject>().Concat(sut.Item3)));
+        }
+
+        [Test]
+        public void HighestRowAndColumn()
+        {
+            var sut = RootObject.CreateEmptyMatrix(7, 7);
+            var sutRoot = sut.Item1;
+
+            Assert.That(sutRoot.HighestRow, Is.EqualTo(6));
+            Assert.That(sutRoot.HighestColumn, Is.EqualTo(6));
+
+            var sutColumn7 = sutRoot.NewColumn(ColumnCover.Secondary);
+            Assert.That(sutRoot.HighestColumn, Is.EqualTo(6));
+
+            var sutColumn8 = sutRoot.NewColumn(ColumnCover.Secondary);
+            Assert.That(sutRoot.HighestColumn, Is.EqualTo(6));
+        }
+
+        class DHeaderObject : HeaderObject
+        {
+            public DHeaderObject()
+                : base()
+            {
+
+            }
+
+            public override IEnumerable<DataObject> Elements
+            {
+                get { throw new NotImplementedException(); }
+            }
+
+            public override IRow RowHeader
+            {
+                get { throw new NotImplementedException(); }
+            }
+
+            public override IColumn ColumnHeader
+            {
+                get { throw new NotImplementedException(); }
+            }
+
+            public override int RowIndex
+            {
+                get { throw new NotImplementedException(); }
+            }
+
+            public override int ColumnIndex
+            {
+                get { throw new NotImplementedException(); }
+            }
+        }
+
+        [Test]
+        public void Useof0ArgumentHeaderObjectConstructorIsRestricted()
+        {
+            Assert.Throws<ArgumentException>(() => new DHeaderObject());
+        }
         #endregion
     }
 }

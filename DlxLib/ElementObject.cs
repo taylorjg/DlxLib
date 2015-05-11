@@ -20,9 +20,16 @@ namespace DlxLib
             rowHeader.MustNotBeNull("ElementObject constructor param rowHeader");
             columnHeader.MustNotBeNull("ElementObject constructor param columnHeader");
 
+            if (columnHeader.ColumnIndex <= rowHeader.HighestColumnInRow)
+                throw new ArgumentException("can only append to row at end of row", "columnHeader");
+            if (rowHeader.RowIndex <= columnHeader.HighestRowInColumn)
+                throw new ArgumentException("can only append to column at bottom of column", "rowHeader");
+
             Root = root;
             _RowHeader = rowHeader;
             _ColumnHeader = columnHeader;
+            rowHeader.Append(this);
+            columnHeader.Append(this);
         }
 
         #region IDataObject members
