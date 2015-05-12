@@ -258,7 +258,7 @@ namespace DlxLib
         {
             if (data.Equals(default(TData))) throw new ArgumentNullException("data");
             var root = BuildInternalStructure(data, iterateRows, iterateCols, predicate);
-            return Search(0, new SearchData(root));
+            return null; // TODO DSB Search(0, new SearchData(root));
         }
 
         /// <summary>
@@ -296,69 +296,52 @@ namespace DlxLib
             return _cancellationToken.IsCancellationRequested;
         }
 
-        private static ColumnObject BuildInternalStructure<TData, TRow, TCol>(
+        private static RootObject BuildInternalStructure<TData, TRow, TCol>(
             TData data,
             Func<TData, IEnumerable<TRow>> iterateRows,
             Func<TRow, IEnumerable<TCol>> iterateCols,
             Func<TCol, bool> predicate)
         {
-            // TODO: Need to adapt to new matrix structure, but in the meantime ...
-            var actualRoot = RootObject.Create();                             //DSB
+            // The tricky thing with this interface is we don't know how, in
+            // advance, many rows and columns there are; they're discovered on the fly.
+            // (Also need to check that all rows are same length.)
 
-            var root = actualRoot.NewColumn(ColumnCover.Primary);
+            var actualRoot = RootObject.Create();
 
-            int? numColumns = null;
+            bool firstRow = true;
+
+            int numColumns = 0;
+
             var rowIndex = 0;
-            var colIndexToListHeader = new Dictionary<int, ColumnObject>();
-
             foreach (var row in iterateRows(data))
             {
-                RowObject actualRow = actualRoot.NewRow(); //DSB
-                (actualRoot as IColumn).Append(actualRow);                 //DSB
-
-                DataObject firstDataObjectInThisRow = null;
-                var localRowIndex = rowIndex;
+                RowObject actualRow = actualRoot.NewRow();
                 var colIndex = 0;
-
                 foreach (var col in iterateCols(row))
                 {
-                    if (localRowIndex == 0)
+                    if (firstRow)
                     {
-                        var listHeader = actualRoot.NewColumn(ColumnCover.Primary);
-                        root.AppendColumnHeader(listHeader);
-                        colIndexToListHeader[colIndex] = listHeader;
+                        numColumns++;
+                        ColumnObject actualColumn = actualRoot.NewColumn(ColumnCover.Primary);
                     }
 
                     if (predicate(col))
                     {
-                        var listHeader = colIndexToListHeader[colIndex];
-                        var elementObject = (ElementObject)null; // DSB new ElementObject(actualRoot, listHeader, localRowIndex, colIndex);
-
-                        if (firstDataObjectInThisRow != null)
-                            firstDataObjectInThisRow.AppendToRow(elementObject);
-                        else
-                            firstDataObjectInThisRow = elementObject;
+                        var elementObject = actualRoot.NewElement(rowIndex, colIndex);
                     }
-
                     colIndex++;
                 }
 
-                if (numColumns.HasValue)
+                if (numColumns != colIndex)
                 {
-                    if (colIndex != numColumns)
-                    {
-                        throw new ArgumentException("All rows must contain the same number of columns!", "data");
-                    }
-                }
-                else
-                {
-                    numColumns = colIndex;
+                    throw new ArgumentException(String.Format("All rows must contain the same number of columns! (problem row {0})", rowIndex), "data");
                 }
 
                 rowIndex++;
+                firstRow = false;
             }
 
-            return root;
+            return actualRoot;
         }
 
         private static bool MatrixIsEmpty(ColumnObject root)

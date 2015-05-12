@@ -48,10 +48,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DlxLibEnumerable2DArrayTests.cs" />
     <Compile Include="DlxLibEventTests.cs" />
     <Compile Include="DlxLibMatrixTests.cs" />
     <Compile Include="DlxLibMatrixHelpers.cs">
-       <DependentUpon>DlxLibMatrixTests.cs</DependentUpon>
+      <DependentUpon>DlxLibMatrixTests.cs</DependentUpon>
     </Compile>
     <Compile Include="DlxLibSolveTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

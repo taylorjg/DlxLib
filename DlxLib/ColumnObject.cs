@@ -17,7 +17,7 @@ namespace DlxLib
             : base(root)
         {
             ColumnCover = columnCover;
-            _ColumnIndex = root.NumberOfPrimaryColumns + root.NumberOfSecondaryColumns;
+            _ColumnIndex = root.NumberOfOriginalPrimaryColumns + root.NumberOfOriginalSecondaryColumns;
             (root as IRow).Append(this);
         }
 

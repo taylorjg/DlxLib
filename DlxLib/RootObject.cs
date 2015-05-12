@@ -5,6 +5,8 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 
+using DlxLib.EnumerableArrayAdapter;
+
 namespace DlxLib
 {
     /// <summary>
@@ -22,7 +24,8 @@ namespace DlxLib
         private RootObject()
             : base()
         {
-
+            _AllRows = new List<RowObject>();
+            _AllColumns = new List<ColumnObject>();
         }
 
         public static RootObject Create()
@@ -57,8 +60,19 @@ namespace DlxLib
             return element;
         }
 
+        /// <summary>
+        /// Holds all rows of this data matrix, indexed by RowIndex.
+        /// </summary>
+        protected internal readonly IList<RowObject> _AllRows;
+
+        /// <summary>
+        /// Holds all columns - primary and secondary - of this data matrix, indexed
+        /// by ColumnIndex.
+        /// </summary>
+        protected internal readonly IList<ColumnObject> _AllColumns;
+
         #region IDataObject Members
-        public RootObject Root { get { return this; } }
+        public override RootObject Root { get { return this; } }
 
         public override IRow RowHeader
         {
@@ -121,11 +135,10 @@ namespace DlxLib
         void IRow.Append(DataObject dataObject)
         {
             if (!(dataObject is IColumn)) throw new ArgumentException("RootObject.IRow.Append argument must be IColumn", "dataObject");
-            if (ColumnCover.Secondary == ((IColumn)dataObject).ColumnCover)
-            {
-                NumberOfSecondaryColumns++;
-            }
-            else
+
+            _AllColumns.Add((ColumnObject)dataObject);
+
+            if (ColumnCover.Primary == ((IColumn)dataObject).ColumnCover)
             {
                 Left.Right = dataObject;
                 dataObject.Right = this;
@@ -158,6 +171,9 @@ namespace DlxLib
         void IColumn.Append(DataObject dataObject)
         {
             if (!(dataObject is IRow)) throw new ArgumentException("RootObject.IColumn.Append argument must be IRow", "dataObject");
+
+            _AllRows.Add((RowObject)dataObject);
+
             Up.Down = dataObject;
             dataObject.Down = this;
             dataObject.Up = Up;
@@ -172,10 +188,9 @@ namespace DlxLib
         /// </summary>
         public RowObject GetRow(int rowIndex)
         {
-            for (var row = Down; this != row; row = row.Down)
-                if (rowIndex == row.RowIndex)
-                    return (RowObject)row;
-            throw new IndexOutOfRangeException(String.Format("Row with offset {0} not in matrix", rowIndex));
+            if (rowIndex < 0 || rowIndex >= _AllRows.Count)
+                throw new IndexOutOfRangeException(String.Format("Row with offset {0} not in matrix", rowIndex));
+            return _AllRows[rowIndex];
         }
 
         IRow IRoot.GetRow(int rowIndex)
@@ -188,10 +203,9 @@ namespace DlxLib
         /// </summary>
         public ColumnObject GetColumn(int columnIndex)
         {
-            for (var column = Right; this != column; column = column.Right)
-                if (columnIndex == column.ColumnIndex)
-                    return (ColumnObject)column;
-            throw new IndexOutOfRangeException(String.Format("Column with offset {0} not in matrix", columnIndex));
+            if (columnIndex < 0 || columnIndex >= _AllColumns.Count)
+                throw new IndexOutOfRangeException(String.Format("Column with offset {0} not in matrix", columnIndex));
+            return _AllColumns[columnIndex];
         }
 
         IColumn IRoot.GetColumn(int columnIndex)
@@ -200,24 +214,80 @@ namespace DlxLib
         }
         #endregion
 
-        public int NumberOfPrimaryColumns { get { return NumberOfColumns; } }
+        public int NumberOfOriginalRows { get { return _AllRows.Count; } }
 
-        public int NumberOfSecondaryColumns { get; private set; }
+        public int NumberOfOriginalColumns { get { return _AllColumns.Count; } }
 
-        internal static Tuple<RootObject, RowObject[], ColumnObject[]> CreateEmptyMatrix(int nRows, int nColumns)
+        public int NumberOfOriginalPrimaryColumns { get { return _AllColumns.Count(column => ColumnCover.Primary == column.ColumnCover); } }
+
+        public int NumberOfOriginalSecondaryColumns { get { return _AllColumns.Count(column => ColumnCover.Secondary == column.ColumnCover); } }
+
+        internal static Tuple<RootObject, RowObject[], ColumnObject[]> CreateEmptyMatrix(int nRows, int nPrimaryColumns)
+        {
+            return CreateEmptyMatrix(nRows, nPrimaryColumns, 0);
+        }
+
+        /// <summary>
+        /// Creates an empty matrix with the given number of rows and columns (primary and secondary).
+        /// </summary>
+        internal static Tuple<RootObject, RowObject[], ColumnObject[]> CreateEmptyMatrix(int nRows, int nPrimaryColumns, int nSecondaryColumns)
         {
             var root = RootObject.Create();
-            var rows = Enumerable.Range(0, nRows).Select(i => root.NewRow()).ToArray();
-            foreach (var row in rows)
+            var rows = Enumerable.Range(0, nRows).Select(_ => root.NewRow()).ToArray();
+            var primaryColumns = Enumerable.Range(0, nPrimaryColumns).Select(_ => root.NewColumn(ColumnCover.Primary));
+            var secondaryColumns = Enumerable.Range(0, nSecondaryColumns).Select(_ => root.NewColumn(ColumnCover.Secondary));
+            var allColumns = primaryColumns.Concat(secondaryColumns).ToArray();
+            return Tuple.Create(root, rows, allColumns);
+        }
+
+        /// <summary>
+        /// Add an entire matrix of elements to the data matrix.  Matrix is specified
+        /// as a 2D array of boolean.  AddMatrix can only be called on an empty data
+        /// matrix.
+        /// </summary>
+        public void AddMatrix(bool[,] values)
+        {
+            AddMatrix(values.AsNestedEnumerables());
+        }
+
+        /// <summary>
+        /// Add an entire matrix of elements to the data matrix.  Matrix is specified
+        /// as an array (actually, an enumerable of enumerable) of boolean.  AddMatrix
+        /// can only be called on an empty data matrix.
+        /// </summary>
+        public void AddMatrix(IEnumerable<IEnumerable<bool>> values)
+        {
+            int row = 0;
+            foreach (var rowValues in values)
             {
-                (root as IColumn).Append(row);
+                if (NumberOfOriginalRows <= row)
+                    throw new ArgumentException("too many rows", "values");
+                AddRow(_AllRows[row], rowValues);
+                row++;
             }
-            var columns = Enumerable.Range(0, nColumns).Select(i => root.NewColumn(ColumnCover.Primary)).ToArray();
-            foreach(var column in columns)
+        }
+
+        /// <summary>
+        /// Add an entire row of elements to the data matrix.  Row is specified
+        /// as a vector (actually, an enumerable) of boolean.  AddRow can only be
+        /// called on empty rows.
+        /// </summary>
+        public void AddRow(RowObject row, IEnumerable<bool> values)
+        {
+            if (0 != row.NumberOfColumns)
+                throw new InvalidOperationException(String.Format("Cannot AddRow to {0} - already has elements", row.ToString()));
+
+            int column = 0;
+            foreach (bool b in values)
             {
-                (root as IRow).Append(column);
+                if (NumberOfOriginalColumns <= column)
+                    throw new ArgumentException(String.Format("row {0} is too long", row.RowIndex), "values");
+                if (b)
+                {
+                    NewElement(row, _AllColumns[column]);
+                }
+                column++;
             }
-            return Tuple.Create(root, rows, columns);
         }
 
         public int HighestColumn
@@ -234,6 +304,43 @@ namespace DlxLib
             {
                 return Up.RowIndex;
             }
+        }
+
+        public struct ElementCoordinate
+        {
+            public readonly int Row;
+            public readonly int Column;
+
+            public ElementCoordinate(int row, int column)
+            {
+                Row = row;
+                Column = column;
+            }
+        }
+
+        /// <summary>
+        /// Returns the elements of the data matrix as a sequence of coordinates
+        /// (in row-major order). Never includes any elements from secondary columns.
+        /// </summary>
+        public IEnumerable<ElementCoordinate> ToCoordinates()
+        {
+            return from element in Elements.OfType<ElementObject>()
+                   orderby element.RowIndex, element.ColumnIndex
+                   select new ElementCoordinate(element.RowIndex, element.ColumnIndex);
+        }
+
+        /// <summary>
+        /// Returns the elements of the data matrix as a 2D array of bool.
+        /// Never includes any elements from secondary columns.
+        /// </summary>
+        public bool[,] ToArray()
+        {
+            var result = new bool[NumberOfRows, NumberOfColumns];
+            foreach (var element in Elements.OfType<ElementObject>())
+            {
+                result[element.RowIndex, element.ColumnIndex] = true;
+            }
+            return result;
         }
 
         public override string ToString()

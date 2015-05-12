@@ -43,9 +43,9 @@
 2. Change IDataObject.Kind to an enum?
 3. Incorporate RowObject into matrix (currently just Root/Column are in matrix)
 7. Get rid of DataObject.{AppendToRow, UnlinkFromColumn, RelinkIntoColumn}
-9. AddElement(r,c) to Root? IRoot? and maybe to Column/Row as well.
-10. Consider removing RowIndex/ColumnIndex fields from DataObject and just deferring
-    to the RowHeader/ColumnHeader, which will know its own index.  They're not used
-    during the DLX algorithm, only during matrix setup and printing.
+9. AddElement(r,c) to IRoot? and maybe to Column/Row as well.
+10. Redundancies between Root NumberOfRows/NumberOfColumns and allRows, allColumns arrays.
+11. Make sure I'm using Root NumberOfColumns vs NumberOfOriginalColumns correctly, same
+    for NumberOfRows vs NumberOfOriginalRows.
 
 Note: Interfaces solely for external access, internal access uses actual classes

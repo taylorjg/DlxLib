@@ -229,6 +229,10 @@ namespace DlxLibTests
             {
                 Assert.That(sutRoot.GetColumn(i), Is.EqualTo(sut.Item3[i]));
             }
+
+            Assert.That(sutRoot.ToCoordinates(), Is.Empty);
+            var array = sutRoot.ToArray();
+            DlxLibEnumerable2DArrayTests.IsEqual2D(array, new bool[3, 3]);
         }
 
         [Test]
@@ -247,6 +251,78 @@ namespace DlxLibTests
             Assert.That(sutElt11.ColumnHeader, Is.EqualTo(sutRoot.GetColumn(1)));
             Assert.That(sutElt22.RowHeader, Is.EqualTo((sutRoot as IRoot).GetRow(2)));
             Assert.That(sutElt22.ColumnHeader, Is.EqualTo((sutRoot as IRoot).GetColumn(2)));
+
+            Assert.That(sutRoot.ToCoordinates(), Is.EqualTo(new RootObject.ElementCoordinate[] {
+                new RootObject.ElementCoordinate(0,0),
+                new RootObject.ElementCoordinate(1,1),
+                new RootObject.ElementCoordinate(2,2),
+            }));
+            var array = sutRoot.ToArray();
+            DlxLibEnumerable2DArrayTests.IsEqual2D(array, new bool[3, 3] { { true, false, false }, { false, true, false }, { false, false, true } });
+        }
+
+        [Test]
+        public void CreateAntiDiagonal3x3MatixByArray()
+        {
+            var sut = RootObject.CreateEmptyMatrix(3, 3);
+            var sutRoot = sut.Item1;
+            var antiDiagonal3x3 = new bool[3, 3]{
+                { false, false, true },
+                { false, true, false },
+                { true, false, false }
+            };
+            sutRoot.AddMatrix(antiDiagonal3x3);
+
+            // Now, round-trip it
+            var array = sutRoot.ToArray();
+            DlxLibEnumerable2DArrayTests.IsEqual2D(array, antiDiagonal3x3);
+        }
+
+        [Test]
+        public void RootAddMatrixFailsIfRootHasAnyElements()
+        {
+            var sut = RootObject.CreateEmptyMatrix(3, 3);
+            var sutRoot = sut.Item1;
+            var sutElt11 = sutRoot.NewElement(1, 1);
+
+            var antiDiagonal3x3 = new bool[3, 3]{
+                { false, false, true },
+                { false, true, false },
+                { true, false, false }
+            };
+
+            Assert.Throws<InvalidOperationException>(() => sutRoot.AddMatrix(antiDiagonal3x3));
+        }
+
+        [Test]
+        public void RootAddMatrixFailsIfMatrixHasTooManyRows()
+        {
+            var sut = RootObject.CreateEmptyMatrix(3, 3);
+            var sutRoot = sut.Item1;
+
+            var antiDiagonal3x3 = new bool[4, 3]{
+                { false, false, true },
+                { false, true, false },
+                { true, false, false },
+                { true, false, true }
+            };
+
+            Assert.Throws<ArgumentException>(() => sutRoot.AddMatrix(antiDiagonal3x3));
+        }
+
+        [Test]
+        public void RootAddMatrixFailsIfMatrixHasTooManyColumns()
+        {
+            var sut = RootObject.CreateEmptyMatrix(3, 3);
+            var sutRoot = sut.Item1;
+
+            var antiDiagonal3x3 = new bool[3, 4]{
+                { false, false, true, false },
+                { false, true, false, true },
+                { true, false, false, true },
+            };
+
+            Assert.Throws<ArgumentException>(() => sutRoot.AddMatrix(antiDiagonal3x3));
         }
 
         [Test]
@@ -365,8 +441,8 @@ namespace DlxLibTests
             var sutColumn8 = sutRoot.NewColumn(ColumnCover.Secondary);
 
             Assert.That(sutRoot.NumberOfColumns, Is.EqualTo(7));
-            Assert.That(sutRoot.NumberOfPrimaryColumns, Is.EqualTo(7));
-            Assert.That(sutRoot.NumberOfSecondaryColumns, Is.EqualTo(2));
+            Assert.That(sutRoot.NumberOfOriginalPrimaryColumns, Is.EqualTo(7));
+            Assert.That(sutRoot.NumberOfOriginalSecondaryColumns, Is.EqualTo(2));
 
             Assert.That(sutColumn7.RowHeader, Is.EqualTo(sutRoot));
             Assert.That(sutColumn7.RowIndex, Is.EqualTo(-1));
@@ -378,6 +454,46 @@ namespace DlxLibTests
 
             // Note that secondary Columns are _not_ in Elements.
             Assert.That(sutRoot.Elements, Is.EquivalentTo(sut.Item2.Cast<DataObject>().Concat(sut.Item3)));
+        }
+
+
+        [Test]
+        public void EmptyMatrixWithSecondaryColumns()
+        {
+            var sut = RootObject.CreateEmptyMatrix(7, 7, 2);
+            var sutRoot = sut.Item1;
+            var sutColumn7 = sutRoot.GetColumn(7);
+            var sutColumn8 = sutRoot.GetColumn(8);
+
+            Assert.That(sutRoot.NumberOfColumns, Is.EqualTo(7));
+            Assert.That(sutRoot.NumberOfOriginalPrimaryColumns, Is.EqualTo(7));
+            Assert.That(sutRoot.NumberOfOriginalSecondaryColumns, Is.EqualTo(2));
+
+            Assert.That(sutColumn7.RowHeader, Is.EqualTo(sutRoot));
+            Assert.That(sutColumn7.RowIndex, Is.EqualTo(-1));
+            Assert.That(sutColumn7.ColumnIndex, Is.EqualTo(7));
+
+            Assert.That(sutColumn8.RowHeader, Is.EqualTo(sutRoot));
+            Assert.That(sutColumn8.RowIndex, Is.EqualTo(-1));
+            Assert.That(sutColumn8.ColumnIndex, Is.EqualTo(8));
+
+            // Note that secondary Columns are _not_ in Elements - but they are in Item3.
+            var elements = sut.Item2.Cast<DataObject>().Concat(sut.Item3);
+            elements = elements.Where(dto => dto.ColumnIndex != 7).Where(dto => dto.ColumnIndex != 8);
+
+            Assert.That(sutRoot.Elements, Is.EquivalentTo(elements));
+        }
+
+        [Test]
+        public void InvalidRowAndColumnIndex()
+        {
+            var sut = RootObject.CreateEmptyMatrix(7, 7);
+            var sutRoot = sut.Item1;
+
+            Assert.Throws<IndexOutOfRangeException>(() => sutRoot.GetRow(-1));
+            Assert.Throws<IndexOutOfRangeException>(() => sutRoot.GetRow(7));
+            Assert.Throws<IndexOutOfRangeException>(() => sutRoot.GetColumn(-1));
+            Assert.Throws<IndexOutOfRangeException>(() => sutRoot.GetColumn(7));
         }
 
         [Test]
