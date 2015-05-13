@@ -245,6 +245,10 @@ namespace DlxLib
         /// as a 2D array of boolean.  AddMatrix can only be called on an empty data
         /// matrix.
         /// </summary>
+        /// <remarks>
+        /// Will allow adding a matrix with fewer rows and columns than exist in this
+        /// data matrix.
+        /// </remarks>
         public void AddMatrix(bool[,] values)
         {
             AddMatrix(values.AsNestedEnumerables());
@@ -255,6 +259,10 @@ namespace DlxLib
         /// as an array (actually, an enumerable of enumerable) of boolean.  AddMatrix
         /// can only be called on an empty data matrix.
         /// </summary>
+        /// <remarks>
+        /// Will allow adding a matrix with fewer rows and columns than exist in this
+        /// data matrix.
+        /// </remarks>
         public void AddMatrix(IEnumerable<IEnumerable<bool>> values)
         {
             int row = 0;
@@ -272,6 +280,10 @@ namespace DlxLib
         /// as a vector (actually, an enumerable) of boolean.  AddRow can only be
         /// called on empty rows.
         /// </summary>
+        /// <remarks>
+        /// Will allow adding a row that has fewer columns than exist in this
+        /// data matrix.
+        /// </remarks>
         public void AddRow(RowObject row, IEnumerable<bool> values)
         {
             if (0 != row.NumberOfColumns)
@@ -342,6 +354,104 @@ namespace DlxLib
             }
             return result;
         }
+
+        #region Data matrix to string representation
+        protected internal int ColumnIdentifierFieldWidth
+        {
+            get
+            {
+                return NumberOfOriginalColumns.ToString().Length;
+            }
+        }
+
+        protected internal int RowIdentifierFieldWidth
+        {
+            get
+            {
+                return NumberOfOriginalRows.ToString().Length;
+            }
+        }
+
+        protected internal string RowElementsAsString(IEnumerable<DataObject> rowElements)
+        {
+            var rowElementsByColumn = rowElements.Select(d => d.ColumnIndex.ToString()).Select(s => s.PadRight(ColumnIdentifierFieldWidth));
+            var rowElementsAsString = String.Join(" ", rowElementsByColumn);
+            return rowElementsAsString;
+        }
+
+        protected internal string RowToString(int rowId, IEnumerable<DataObject> rowElements)
+        {
+            var res = (rowId.ToString() + ':').PadRight(RowIdentifierFieldWidth + 2) + RowElementsAsString(rowElements);
+            return res;
+        }
+
+        protected internal IEnumerable<DataObject> SecondaryElementsOfRow(int rowId)
+        {
+            return _AllColumns
+                .Where(column => ColumnCover.Secondary == column.ColumnCover)
+                .SelectMany(column => column.Elements)
+                .Where(dto => rowId == dto.RowIndex)
+                .OrderBy(dto => dto.ColumnIndex);
+        }
+
+        /// <summary>
+        /// Describes the completeness of the string representation of the data matrix.
+        /// </summary>
+        public enum Display { OnlyCurrentMatrix, EntireMatrix };
+
+        /// <summary>
+        /// Returns a (multi-line) string representation of the entire data matrix.  If
+        /// Display.OnlyCurrentMatrix then only contains rows/columns that are uncovered,
+        /// and only primary columns at that.  If Display.EntireMatrix includes covered
+        /// Rows (they have no columns listed) and secondary columns.
+        /// </summary>
+        public string ToString(Display displayKind)
+        {
+            var sb = new StringBuilder();
+            switch (displayKind)
+            {
+                case Display.OnlyCurrentMatrix:
+                    {
+                        var rowDO = Down;
+                        while (this != rowDO)
+                        {
+                            var row = rowDO as RowObject;
+                            var rowId = row.RowIndex;
+                            var rowElements = row.Elements;
+                            if (rowElements.Any())
+                            {
+                                sb.AppendLine(RowToString(rowId, rowElements));
+                            }
+                            rowDO = rowDO.Down;
+                        }
+                    }
+                    break;
+                case Display.EntireMatrix:
+                    {
+                        int rowId = -1;
+                        var rowDO = Down;
+                        while (this != rowDO)
+                        {
+                            var row = rowDO as RowObject;
+                            rowId++;
+                            while (rowId < row.RowIndex)
+                            {
+                                sb.AppendLine((rowId.ToString() + ':').PadRight(RowIdentifierFieldWidth + 2));
+                            }
+                            var rowElements = row.Elements.Concat(SecondaryElementsOfRow(rowId));
+                            sb.AppendLine(RowToString(rowId, rowElements));
+                        }
+                        while (rowId < NumberOfOriginalRows)
+                        {
+                            sb.AppendLine((rowId.ToString() + ':').PadRight(RowIdentifierFieldWidth + 2));
+                        }
+                    }
+                    break;
+            }
+            return sb.ToString();
+        }
+        #endregion
+
 
         public override string ToString()
         {

@@ -551,6 +551,36 @@ namespace DlxLibTests
         {
             Assert.Throws<ArgumentException>(() => new DHeaderObject());
         }
+
+        [Test]
+        public void ToStringForOnlyCurrentMatrixNothingCovered()
+        {
+            var sut = RootObject.CreateEmptyMatrix(7, 7);
+            var sutRoot = sut.Item1;
+
+            var resEmpty = sutRoot.ToString(RootObject.Display.OnlyCurrentMatrix);
+            Assert.That(resEmpty, Is.EqualTo(""));
+
+            var antiDiagonal3x3 = new bool[3, 3]{
+                { false, false, true },
+                { false, true, false },
+                { true, false, false }
+            };
+            sutRoot.AddMatrix(antiDiagonal3x3);
+            var resAntiDiagonal = sutRoot.ToString(RootObject.Display.OnlyCurrentMatrix);
+            Assert.That(resAntiDiagonal, Is.EqualTo(@"0: 2
+1: 1
+2: 0
+"));
+
+            sutRoot.NewElement(1, 2);
+            sutRoot.NewElement(2, 2);
+            var resAntiDiagonalPlusTwo = sutRoot.ToString(RootObject.Display.OnlyCurrentMatrix);
+            Assert.That(resAntiDiagonalPlusTwo, Is.EqualTo(@"0: 2
+1: 1 2
+2: 0 2
+"));
+        }
         #endregion
     }
 }

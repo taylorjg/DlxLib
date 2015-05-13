@@ -40,7 +40,6 @@
 
 
 
-2. Change IDataObject.Kind to an enum?
 3. Incorporate RowObject into matrix (currently just Root/Column are in matrix)
 7. Get rid of DataObject.{AppendToRow, UnlinkFromColumn, RelinkIntoColumn}
 9. AddElement(r,c) to IRoot? and maybe to Column/Row as well.
