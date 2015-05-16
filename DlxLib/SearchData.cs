@@ -8,10 +8,24 @@ using System.Threading.Tasks;
 
 namespace DlxLib
 {
+    /// <summary>
+    /// This data object holds the intermediate state of a cover search - the stack
+    /// of currently covered rows - and also the event hooks to be called during the
+    /// search process.
+    /// </summary>
+    /// <remarks>
+    /// The event hooks are here so that the search can be put in RootObject where it
+    /// belongs but cover problems - and the handling of the interface to an
+    /// application - can be handled by Dlx
+    /// </remarks>
     internal class SearchData
     {
         public SearchData()
         {
+            // By providing do-nothing lambdas as the event hooks the code looks a little
+            // nicer - no tests against null - while taking only nanoseconds longer.  (One
+            // could imagine a jitter that even removed the calls to the do-nothing events
+            // on a per-instance basis, but we probably don't have that.)
             _onStarted = () => { };
             _onFinished = () => { };
             _checkIfCancelled = () => false;
@@ -47,7 +61,14 @@ namespace DlxLib
             if (null != onSolutionFound) _onSolutionFound = onSolutionFound;
         }
 
+        /// <summary>
+        /// Current number of steps in the search.  (A step is choosing a row and covering a column.)
+        /// </summary>
         public int IterationCount { get; private set; }
+
+        /// <summary>
+        /// Current number of solutions found.
+        /// </summary>
         public int SolutionCount { get; private set; }
 
         public void IncrementIterationCount() { IterationCount++; }

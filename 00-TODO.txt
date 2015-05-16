@@ -45,5 +45,7 @@
 11. Make sure I'm using Root NumberOfColumns vs NumberOfOriginalColumns correctly, same
     for NumberOfRows vs NumberOfOriginalRows.
 12. Add AddMatrix/AddElement/CreateEmptyMatrix to IRoot.  AddElement to return void.
+13. Consider separating SearchData into the thing that holds the stack of the current cover
+    state, and the handling of the events.
 
 Note: Interfaces solely for external access, internal access uses actual classes
