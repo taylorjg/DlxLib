@@ -8,11 +8,9 @@ namespace DlxLib
     /// </summary>
     public class Solution
     {
-        internal Solution(IEnumerable<int> rowIndexes)
+        internal Solution(IList<int> rowIndexes)
         {
-            // Instantiate list from enumerable so you can collect Solutions and
-            // process them later (so the data doesn't disappear).
-            _rowIndexes = rowIndexes.ToList();
+            _rowIndexes = rowIndexes;
         }
 
         /// <summary>
@@ -20,11 +18,11 @@ namespace DlxLib
         /// The indexes are always sorted in ascending order (because SearchStep returns them
         /// that way, deliberately).
         /// </summary>
-        public IEnumerable<int> RowIndexes
+        public IList<int> RowIndexes
         {
             get { return _rowIndexes; }
         }
 
-        private readonly IEnumerable<int> _rowIndexes;
+        private readonly IList<int> _rowIndexes;
     }
 }

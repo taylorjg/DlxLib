@@ -331,7 +331,7 @@ namespace DlxLib
             Cancelled.Invoke(this, EventArgs.Empty);
         }
 
-        private void RaiseSearchStep(int iteration, Func<IEnumerable<int>> rowIndexes)
+        private void RaiseSearchStep(int iteration, Func<IList<int>> rowIndexes)
         {
             // Don't use Invoke() here (and at RaiseSolutionFound) because it would
             // create the EventArg object even if the handler was null.  Don't want
@@ -341,7 +341,7 @@ namespace DlxLib
             if (handler != null) handler(this, new SearchStepEventArgs(iteration, rowIndexes()));
         }
 
-        private void RaiseSolutionFound(int solutionIndex, Func<IEnumerable<int>> solution)
+        private void RaiseSolutionFound(int solutionIndex, Func<IList<int>> solution)
         {
             var handler = SolutionFound;
             if (handler != null) handler(this, new SolutionFoundEventArgs(new Solution(solution()), solutionIndex));

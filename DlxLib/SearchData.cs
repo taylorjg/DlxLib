@@ -37,12 +37,12 @@ namespace DlxLib
             if (null != onCancelled) _onCancelled = onCancelled;
         }
 
-        public void OnSearchStepCall(Action<int, Func<IEnumerable<int>>> onSearchStep)
+        public void OnSearchStepCall(Action<int, Func<IList<int>>> onSearchStep)
         {
             if (null != onSearchStep) _onSearchStep = onSearchStep;
         }
 
-        public void OnSolutionFoundCall(Action<int, Func<IEnumerable<int>>> onSolutionFound)
+        public void OnSolutionFoundCall(Action<int, Func<IList<int>>> onSolutionFound)
         {
             if (null != onSolutionFound) _onSolutionFound = onSolutionFound;
         }
@@ -56,11 +56,16 @@ namespace DlxLib
         public void PushCurrentSolutionRowIndex(int rowIndex) { _currentSolution.Push(rowIndex); }
         public void PopCurrentSolutionRowIndex() { _currentSolution.Pop(); }
 
-        public IEnumerable<int> CurrentStep
+        public IList<int> CurrentStep
         {
             get
             {
-                return _currentSolution.OrderBy(id => id);
+                // It isn't safe to return an IEnumerable here unless you instantiate
+                // the list anyway, because in a LINQ context where usage might be
+                // delayed, the underlying stack will already be changed.  Same for
+                // passing the IEnumerable to an event - by the time the receiver gets
+                // the enumerable the underlying data may have been changed.
+                return _currentSolution.OrderBy(id => id).ToList();
             }
         }
 
@@ -107,7 +112,7 @@ namespace DlxLib
         private Action _onFinished;
         private Func<bool> _checkIfCancelled;
         private Action _onCancelled;
-        private Action<int, Func<IEnumerable<int>>> _onSearchStep;
-        private Action<int, Func<IEnumerable<int>>> _onSolutionFound;
+        private Action<int, Func<IList<int>>> _onSearchStep;
+        private Action<int, Func<IList<int>>> _onSolutionFound;
     }
 }
