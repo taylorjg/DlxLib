@@ -10,12 +10,15 @@ namespace DlxLib
     {
         internal Solution(IEnumerable<int> rowIndexes)
         {
-            _rowIndexes = rowIndexes.OrderBy(rowIndex => rowIndex);
+            // Instantiate list from enumerable so you can collect Solutions and
+            // process them later (so the data doesn't disappear).
+            _rowIndexes = rowIndexes.ToList();
         }
 
         /// <summary>
         /// The indexes of the set of rows, in the original matrix, that constitute the solution.
-        /// The indexes are always sorted in ascending order.
+        /// The indexes are always sorted in ascending order (because SearchStep returns them
+        /// that way, deliberately).
         /// </summary>
         public IEnumerable<int> RowIndexes
         {

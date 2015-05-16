@@ -46,10 +46,7 @@ namespace DlxLib
         {
             get
             {
-                for (var element = Right; this != element; element = element.Right)
-                {
-                    yield return element;
-                }
+                return NextFromHere(d => d.Right);
             }
         }
         #endregion

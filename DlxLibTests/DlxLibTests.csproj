@@ -55,6 +55,7 @@
       <DependentUpon>DlxLibMatrixTests.cs</DependentUpon>
     </Compile>
     <Compile Include="DlxLibSolveTests.cs" />
+    <Compile Include="OtherTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

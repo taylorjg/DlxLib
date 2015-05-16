@@ -19,45 +19,6 @@ namespace DlxLib
     {
         private readonly CancellationToken _cancellationToken;
 
-        private class SearchData
-        {
-            public SearchData(ColumnObject root)
-            {
-                Root = root;
-            }
-
-            public ColumnObject Root { get; private set; }
-            public int IterationCount { get; private set; }
-            public int SolutionCount { get; private set; }
-
-            public void IncrementIterationCount()
-            {
-                IterationCount++;
-            }
-
-            public void IncrementSolutionCount()
-            {
-                SolutionCount++;
-            }
-
-            public void PushCurrentSolutionRowIndex(int rowIndex)
-            {
-                _currentSolution.Push(rowIndex);
-            }
-
-            public void PopCurrentSolutionRowIndex()
-            {
-                _currentSolution.Pop();
-            }
-
-            public Solution CurrentSolution
-            {
-                get { return new Solution(_currentSolution.ToList()); }
-            }
-
-            private readonly Stack<int> _currentSolution = new Stack<int>();
-        }
-
         /// <summary>
         /// Callers should use this constructor when they do not need to be able to request cancellation.
         /// </summary>
@@ -258,7 +219,18 @@ namespace DlxLib
         {
             if (data.Equals(default(TData))) throw new ArgumentNullException("data");
             var root = BuildInternalStructure(data, iterateRows, iterateCols, predicate);
-            return null; // TODO DSB Search(0, new SearchData(root));
+            var searchData = new SearchData();
+
+            // This is safe because we insist that events on the DLX object _not_ be
+            // added/removed while a search is in progress.  (But we're not bothering
+            // to enforce this, since it is just common sense ...)
+            if (null != Started) searchData.OnStartedCall(RaiseStarted);
+            if (null != Finished) searchData.OnFinishedCall(RaiseFinished);
+            if (null != Cancelled) searchData.OnCancelledCall(IsCancelled, RaiseCancelled);
+            if (null != SearchStep) searchData.OnSearchStepCall(RaiseSearchStep);
+            if (null != SolutionFound) searchData.OnSolutionFoundCall(RaiseSolutionFound);
+
+            return root.Search(0, searchData);
         }
 
         /// <summary>
@@ -306,28 +278,28 @@ namespace DlxLib
             // advance, many rows and columns there are; they're discovered on the fly.
             // (Also need to check that all rows are same length.)
 
-            var actualRoot = RootObject.Create();
+            var root = RootObject.Create();
 
             bool firstRow = true;
 
             int numColumns = 0;
 
             var rowIndex = 0;
-            foreach (var row in iterateRows(data))
+            foreach (var rowData in iterateRows(data))
             {
-                RowObject actualRow = actualRoot.NewRow();
+                RowObject row = root.NewRow();
                 var colIndex = 0;
-                foreach (var col in iterateCols(row))
+                foreach (var col in iterateCols(rowData))
                 {
                     if (firstRow)
                     {
                         numColumns++;
-                        ColumnObject actualColumn = actualRoot.NewColumn(ColumnCover.Primary);
+                        root.NewColumn(ColumnCover.Primary);
                     }
 
                     if (predicate(col))
                     {
-                        var elementObject = actualRoot.NewElement(rowIndex, colIndex);
+                        var elementObject = root.NewElement(rowIndex, colIndex);
                     }
                     colIndex++;
                 }
@@ -341,144 +313,38 @@ namespace DlxLib
                 firstRow = false;
             }
 
-            return actualRoot;
-        }
-
-        private static bool MatrixIsEmpty(ColumnObject root)
-        {
-            return root.Right == root;
-        }
-
-        private IEnumerable<Solution> Search(int k, SearchData searchData)
-        {
-            try
-            {
-                if (k == 0) RaiseStarted();
-
-                if (IsCancelled())
-                {
-                    RaiseCancelled();
-                    yield break;
-                }
-
-                RaiseSearchStep(searchData.IterationCount, searchData.CurrentSolution.RowIndexes);
-                searchData.IncrementIterationCount();
-
-                if (MatrixIsEmpty(searchData.Root))
-                {
-                    if (searchData.CurrentSolution.RowIndexes.Any())
-                    {
-                        searchData.IncrementSolutionCount();
-                        var solutionIndex = searchData.SolutionCount - 1;
-                        var solution = searchData.CurrentSolution;
-                        RaiseSolutionFound(solution, solutionIndex);
-                        yield return solution;
-                    }
-
-                    yield break;
-                }
-
-                var c = ChooseColumnWithLeastRows(searchData.Root);
-                CoverColumn(c);
-
-                for (var r = c.Down; r != c; r = r.Down)
-                {
-                    if (IsCancelled())
-                    {
-                        RaiseCancelled();
-                        yield break;
-                    }
-
-                    searchData.PushCurrentSolutionRowIndex(r.RowIndex);
-
-                    for (var j = r.Right; j != r; j = j.Right)
-                        CoverColumn(j.ColumnHeader as ColumnObject);
-
-                    var recursivelyFoundSolutions = Search(k + 1, searchData);
-                    foreach (var solution in recursivelyFoundSolutions) yield return solution;
-
-                    for (var j = r.Left; j != r; j = j.Left)
-                        UncoverColumn(j.ColumnHeader as ColumnObject);
-
-                    searchData.PopCurrentSolutionRowIndex();
-                }
-
-                UncoverColumn(c);
-
-            }
-            finally
-            {
-                if (k == 0) RaiseFinished();
-            }
-        }
-
-        private static ColumnObject ChooseColumnWithLeastRows(ColumnObject root)
-        {
-            ColumnObject chosenColumn = null;
-
-            for (var columnHeader = root.Right as ColumnObject; columnHeader != root; columnHeader = columnHeader.Right as ColumnObject)
-            {
-                if (chosenColumn == null || columnHeader.NumberOfRows < chosenColumn.NumberOfRows)
-                    chosenColumn = columnHeader;
-            }
-
-            return chosenColumn;
-        }
-
-        private static void CoverColumn(ColumnObject c)
-        {
-            c.UnlinkColumnHeader();
-
-            for (var i = c.Down; i != c; i = i.Down)
-            {
-                for (var j = i.Right; j != i; j = j.Right)
-                {
-                    (j.ColumnHeader as ColumnObject).UnlinkDataObject(j);
-                }
-            }
-        }
-
-        private static void UncoverColumn(ColumnObject c)
-        {
-            for (var i = c.Up; i != c; i = i.Up)
-            {
-                for (var j = i.Left; j != i; j = j.Left)
-                {
-                    (j.ColumnHeader as ColumnObject).RelinkDataObject(j);
-                }
-            }
-
-            c.RelinkColumnHeader();
+            return root;
         }
 
         private void RaiseStarted()
         {
-            var handler = Started;
-            if (handler != null) handler(this, EventArgs.Empty);
+            Started.Invoke(this, EventArgs.Empty);
         }
 
         private void RaiseFinished()
         {
-            var handler = Finished;
-            if (handler != null) handler(this, EventArgs.Empty);
+            Finished.Invoke(this, EventArgs.Empty);
         }
 
         private void RaiseCancelled()
         {
-            var handler = Cancelled;
-            if (handler != null) handler(this, EventArgs.Empty);
+            Cancelled.Invoke(this, EventArgs.Empty);
         }
 
-        private void RaiseSearchStep(int iteration, IEnumerable<int> rowIndexes)
+        private void RaiseSearchStep(int iteration, Func<IEnumerable<int>> rowIndexes)
         {
+            // Don't use Invoke() here (and at RaiseSolutionFound) because it would
+            // create the EventArg object even if the handler was null.  Don't want
+            // to defer that creation using a lambda either, because closing over the
+            // lambda would be executed each time.
             var handler = SearchStep;
-            if (handler != null) handler(this, new SearchStepEventArgs(iteration, rowIndexes));
+            if (handler != null) handler(this, new SearchStepEventArgs(iteration, rowIndexes()));
         }
 
-        private void RaiseSolutionFound(Solution solution, int solutionIndex)
+        private void RaiseSolutionFound(int solutionIndex, Func<IEnumerable<int>> solution)
         {
             var handler = SolutionFound;
-            if (handler != null) handler(this, new SolutionFoundEventArgs(solution, solutionIndex));
+            if (handler != null) handler(this, new SolutionFoundEventArgs(new Solution(solution()), solutionIndex));
         }
     }
 }

@@ -100,19 +100,9 @@ namespace DlxLib
         {
             get
             {
-                for (var column = Right; this != column; column = column.Right)
-                {
-                    yield return column;
-                }
-
-                for (var row = Down; this != row; row = row.Down)
-                {
-                    yield return row;
-                    for (var element = row.Right; row != element; element = element.Right)
-                    {
-                        yield return element;
-                    }
-                }
+                return NextFromHere(d => d.Right)
+                    .Concat(NextFromHere(d => d.Down))
+                    .Concat(NextFromHere(d => d.Down).Cast<RowObject>().SelectMany(d => d.Elements));
             }
         }
         #endregion
@@ -212,7 +202,97 @@ namespace DlxLib
         {
             return GetColumn(columnIndex);
         }
+
+
+        /// <summary>
+        /// Return the element for the given row/columnIndex.  Throws exception if no such element.
+        /// </summary>
+        public ElementObject GetElement(int rowIndex, int columnIndex)
+        {
+            if (0 > rowIndex) throw new IndexOutOfRangeException();
+            if (0 > columnIndex) throw new IndexOutOfRangeException();
+
+            var r = GetRow(rowIndex);
+            if (r.Down == r) throw new InvalidOperationException(String.Format("Row {0} not in matrix, looking for [{1},{2}]", rowIndex, rowIndex, columnIndex));
+            var e = r.Elements.Where(d => columnIndex == d.ColumnIndex).Single();
+            return (ElementObject)e;
+        }
+
+        IElement IRoot.GetElement(int rowIndex, int columnIndex)
+        {
+            return GetElement(rowIndex, columnIndex);
+        }
+
+        /// <summary>
+        /// Cover a column (a step of the DLX algorithm).
+        /// </summary>
+        public void Cover(int columnIndex)
+        {
+            var col = GetColumn(columnIndex);
+            Cover(col);
+        }
+
+        /// <summary>
+        /// Cover a column (a step of the DLX algorithm).
+        /// </summary>
+        public void Cover(ColumnObject col)
+        {
+            // Straight from Knuth's paper (pg 6)
+            col.Right.Left = col.Left;
+            col.Left.Right = col.Right;
+            for (var i = col.Down; col != i; i = i.Down)
+            {
+                for (var j = i.Right; j != i; j = j.Right)
+                {
+                    j.Down.Up = j.Up;
+                    j.Up.Down = j.Down;
+                    if (j.ColumnHeader is ColumnObject)
+                        (j.ColumnHeader as ColumnObject).NumberOfRows--;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Uncover a column (a step of the DLX algorithm).
+        /// </summary>
+        public void Uncover(int columnIndex)
+        {
+            var col = GetColumn(columnIndex);
+            Uncover(col);
+        }
+
+        /// <summary>
+        /// Uncover a column (a step of the DLX algorithm).
+        /// </summary>
+        public void Uncover(ColumnObject col)
+        {
+            // Straight from Knuth's paper (pg 6)
+            for (var i = col.Up; col != i; i = i.Up)
+            {
+                for (var j = i.Left; j != i; j = j.Left)
+                {
+                    if (j.ColumnHeader is ColumnObject)
+                        (j.ColumnHeader as ColumnObject).NumberOfRows++;
+                    j.Down.Up = j;
+                    j.Up.Down = j;
+                }
+            }
+            col.Right.Left = col;
+            col.Left.Right = col;
+        }
         #endregion
+
+        /// <summary>
+        /// Return next column to cover from remaining columns.
+        /// </summary>
+        /// <remarks>
+        /// Following Knuth, the next column to cover is the one with fewest
+        /// remaining rows.
+        /// </remarks>
+        public ColumnObject NextColumnToCover()
+        {
+            return this.NextFromHere(d => d.Right).Cast<ColumnObject>().Min(c => c.NumberOfRows, Comparer<int>.Default);
+        }
 
         public int NumberOfOriginalRows { get { return _AllRows.Count; } }
 
@@ -315,6 +395,73 @@ namespace DlxLib
             get
             {
                 return Up.RowIndex;
+            }
+        }
+
+        public bool IsEmpty()
+        {
+            return this == this.Right;
+        }
+
+        public IEnumerable<Solution> Search(int k, SearchData searchData)
+        {
+            try
+            {
+                if (k == 0) searchData.RaiseStarted();
+
+                if (searchData.IsCancelled())
+                {
+                    searchData.RaiseCancelled();
+                    yield break;
+                }
+
+                searchData.RaiseSearchStep();
+                searchData.IncrementIterationCount();
+
+                if (IsEmpty())
+                {
+                    if (searchData.CurrentStep.Any())
+                    {
+                        searchData.RaiseSolutionFound();
+                        yield return new Solution(searchData.CurrentStep);
+                        searchData.IncrementSolutionCount();
+                    }
+
+                    yield break;
+                }
+
+                var c = NextColumnToCover();
+                Cover(c);
+
+                for (var r = c.Down; r != c; r = r.Down)
+                {
+                    if (searchData.IsCancelled())
+                    {
+                        searchData.RaiseCancelled();
+                        yield break;
+                    }
+
+                    searchData.PushCurrentSolutionRowIndex(r.RowIndex);
+
+                    foreach (var j in r.ElementsFromHere(e => e.Right))
+                        Cover(j.ColumnHeader as ColumnObject);
+
+                    var recursivelyFoundSolutions = Search(k + 1, searchData);
+                    foreach (var solution in recursivelyFoundSolutions)
+                        yield return solution;
+
+                    foreach (var j in r.ElementsFromHere(e => e.Left))
+                        Uncover(j.ColumnHeader as ColumnObject);
+
+                    searchData.PopCurrentSolutionRowIndex();
+                }
+
+                Uncover(c);
+
+            }
+            finally
+            {
+                if (k == 0) searchData.RaiseFinished();
             }
         }
 

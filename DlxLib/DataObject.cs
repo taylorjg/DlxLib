@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace DlxLib
 {
@@ -82,25 +83,36 @@ namespace DlxLib
         /// </summary>
         public DataObject Down { get; internal set; }
 
-        [Obsolete]
-        public void AppendToRow(DataObject dataObject)
+        /// <summmary>
+        /// Returns a sequence f(this), f(f(this)), f(f(f(this))) stopping when the
+        /// iterated result is this.  (Thus, never returns this.)
+        /// </summmary>
+        internal IEnumerable<DataObject> NextFromHere(Func<DataObject, DataObject> nextOne)
         {
-            IRow row = Root.GetRow(RowIndex);
-            row.Append(dataObject);
+            var next = nextOne(this);
+            while (this != next)
+            {
+                yield return next;
+                next = nextOne(next);
+            }
         }
 
-        [Obsolete]
-        public void UnlinkFromColumn()
+        /// <summary>
+        /// Returns a sequence f(this), f(f(this)), f(f(f(this))) stopping when the
+        /// iterated result is this (thus, never returns this) and skipping any
+        /// IHeader.
+        /// </summary>
+        internal IEnumerable<DataObject> ElementsFromHere(Func<DataObject, DataObject> nextOne)
         {
-            Down.Up = Up;
-            Up.Down = Down;
-        }
-
-        [Obsolete]
-        public void RelinkIntoColumn()
-        {
-            Down.Up = this;
-            Up.Down = this;
+            var next = nextOne(this);
+            while (this != next)
+            {
+                if (!(next is IHeader))
+                {
+                    yield return next;
+                }
+                next = nextOne(next);
+            }
         }
 
         /// <summary>

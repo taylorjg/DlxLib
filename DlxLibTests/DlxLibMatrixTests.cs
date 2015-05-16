@@ -512,6 +512,36 @@ namespace DlxLibTests
             Assert.That(sutRoot.HighestColumn, Is.EqualTo(6));
         }
 
+        [Test]
+        public void GetElement()
+        {
+            var sut = RootObject.CreateEmptyMatrix(3, 3);
+            var sutRoot = sut.Item1;
+
+            var cross3x3 = new bool[3, 3]{
+                { false, true, false },
+                { true, true, true },
+                { false, true, true }
+            };
+            sutRoot.AddMatrix(cross3x3);
+
+            for (int r = 0; r < 3; r++)
+                for (int c = 0; c < 3; c++)
+                {
+                    if (cross3x3[r, c])
+                    {
+                        var e = sutRoot.GetElement(r, c);
+                        Assert.That(e, Is.Not.Null);
+                        Assert.That(e.RowIndex, Is.EqualTo(r));
+                        Assert.That(e.ColumnIndex, Is.EqualTo(c));
+                    }
+                    else
+                    {
+                        Assert.Throws<InvalidOperationException>(() => sutRoot.GetElement(r, c));
+                    }
+                }
+        }
+
         class DHeaderObject : HeaderObject
         {
             public DHeaderObject()
@@ -581,6 +611,58 @@ namespace DlxLibTests
 2: 0 2
 "));
         }
+
+        [Test]
+        public void NextColumnToCover()
+        {
+            var sut = RootObject.CreateEmptyMatrix(5, 5);
+            var sutRoot = sut.Item1;
+
+            var aMatrix = new bool[5, 5]{
+                { false, false, true, true, true },
+                { false, true,  true, false, false },
+                { false, false, true, true, true },
+                { true, true,  false, false, true },
+                { false, true,  true, true, false }
+            };
+            sutRoot.AddMatrix(aMatrix);
+            Assert.That(sutRoot.NextColumnToCover().ColumnIndex, Is.EqualTo(0));
+
+            sut = RootObject.CreateEmptyMatrix(5, 5);
+            sutRoot = sut.Item1;
+
+            var bMatrix = aMatrix.ForEach(b => !b);
+            sutRoot.AddMatrix(bMatrix);
+
+            Assert.That(sutRoot.NextColumnToCover().ColumnIndex, Is.EqualTo(2));
+        }
+
+        [Test]
+        public void CoverUncover()
+        {
+
+            var sut = RootObject.CreateEmptyMatrix(5, 5);
+            var sutRoot = sut.Item1;
+
+            var aMatrix = new bool[5, 5]{
+                { false, false, true, true, true },
+                { false, true,  true, false, false },
+                { false, false, true, true, true },
+                { true, true,  false, false, true },
+                { false, true,  true, true, false }
+            };
+            sutRoot.AddMatrix(aMatrix);
+            var expectedUncoveredResult = sutRoot.ToString(RootObject.Display.OnlyCurrentMatrix);
+            sutRoot.Cover(1);
+            var s = sutRoot.ToString(RootObject.Display.OnlyCurrentMatrix);
+            Assert.That(sutRoot.ToString(RootObject.Display.OnlyCurrentMatrix), Is.EqualTo(@"0: 2 3 4
+2: 2 3 4
+"));
+            sutRoot.Uncover(1);
+            s = sutRoot.ToString(RootObject.Display.OnlyCurrentMatrix);
+            Assert.That(sutRoot.ToString(RootObject.Display.OnlyCurrentMatrix), Is.EqualTo(expectedUncoveredResult));
+        }
+
         #endregion
     }
 }

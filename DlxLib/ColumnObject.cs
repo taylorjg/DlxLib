@@ -43,10 +43,7 @@ namespace DlxLib
         {
             get
             {
-                for (var element = Down; this != element; element = element.Down)
-                {
-                    yield return element;
-                }
+                return NextFromHere(d => d.Down);
             }
         }
         #endregion
@@ -54,7 +51,7 @@ namespace DlxLib
         #region IColumn members
         public ColumnCover ColumnCover { get; private set; }
 
-        public int NumberOfRows { get; private set; }
+        public int NumberOfRows { get; internal set; }
 
         public void Append(DataObject dataObject)
         {
@@ -81,50 +78,5 @@ namespace DlxLib
         {
             return String.Format("{0}[{1},{2}]", Kind, ColumnIndex, ColumnCover);
         }
-
-        #region Obsolete
-        [Obsolete]
-        public void AppendColumnHeader(ColumnObject columnObject)
-        {
-            Left.Right = columnObject;
-            columnObject.Right = this;
-            columnObject.Left = Left;
-            Left = columnObject;
-        }
-
-        [Obsolete]
-        public void UnlinkColumnHeader()
-        {
-            Right.Left = Left;
-            Left.Right = Right;
-        }
-
-        [Obsolete]
-        public void RelinkColumnHeader()
-        {
-            Right.Left = this;
-            Left.Right = this;
-        }
-
-        [Obsolete]
-        public void AddDataObject(DataObject dataObject)
-        {
-            Append(dataObject);
-        }
-
-        [Obsolete]
-        public void UnlinkDataObject(DataObject dataObject)
-        {
-            dataObject.UnlinkFromColumn();
-            NumberOfRows--;
-        }
-
-        [Obsolete]
-        public void RelinkDataObject(DataObject dataObject)
-        {
-            dataObject.RelinkIntoColumn();
-            NumberOfRows++;
-        }
-        #endregion
     }
 }

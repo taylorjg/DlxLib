@@ -16,6 +16,6 @@ namespace DlxLib
         /// returns itself.  For the Root returns all Rows, Primary Columns, and
         /// Elements.
         /// </summary>
-        IEnumerable<DataObject> Elements { get; }
+        IEnumerable<DataObject> Elements { get; } // TODO: Since this is an external interface: return IEnumerable<IDataObject>?
     }
 }
