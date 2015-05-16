@@ -26,13 +26,8 @@ namespace DlxLib
         IElement GetElement(int rowIndex, int columnIndex);
 
         /// <summary>
-        /// Cover a column (a step of the DLX algorithm).
+        /// Search the matrix for all complete cover solutions.
         /// </summary>
-        void Cover(int columnIndex);
-
-        /// <summary>
-        /// Uncover a column (a step of the DLX algorithm).
-        /// </summary>
-        void Uncover(int columnIndex);
+        IEnumerable<Solution> Search(SearchData searchData);
     }
 }

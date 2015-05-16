@@ -96,7 +96,7 @@ namespace DlxLib
         #endregion
 
         #region IHeader
-        public override IEnumerable<DataObject> Elements
+        public override IEnumerable<IDataObject> Elements
         {
             get
             {
@@ -110,7 +110,7 @@ namespace DlxLib
         #region IRow
         public int NumberOfColumns
         {
-            // TODO: No need to keep a count of columns - unless this is called quite often
+            // No need to keep a count of columns - unless this is called quite often
             get
             {
                 int n = 0;
@@ -146,7 +146,7 @@ namespace DlxLib
 
         public int NumberOfRows
         {
-            // TODO: No need to keep a count of rows - unless this is called quite often
+            // No need to keep a count of rows - unless this is called quite often
             get
             {
                 int n = 0;
@@ -224,61 +224,11 @@ namespace DlxLib
         }
 
         /// <summary>
-        /// Cover a column (a step of the DLX algorithm).
+        /// Search the matrix for all complete cover solutions.
         /// </summary>
-        public void Cover(int columnIndex)
+        public IEnumerable<Solution> Search(SearchData searchData)
         {
-            var col = GetColumn(columnIndex);
-            Cover(col);
-        }
-
-        /// <summary>
-        /// Cover a column (a step of the DLX algorithm).
-        /// </summary>
-        public void Cover(ColumnObject col)
-        {
-            // Straight from Knuth's paper (pg 6)
-            col.Right.Left = col.Left;
-            col.Left.Right = col.Right;
-            for (var i = col.Down; col != i; i = i.Down)
-            {
-                for (var j = i.Right; j != i; j = j.Right)
-                {
-                    j.Down.Up = j.Up;
-                    j.Up.Down = j.Down;
-                    if (j.ColumnHeader is ColumnObject)
-                        (j.ColumnHeader as ColumnObject).NumberOfRows--;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Uncover a column (a step of the DLX algorithm).
-        /// </summary>
-        public void Uncover(int columnIndex)
-        {
-            var col = GetColumn(columnIndex);
-            Uncover(col);
-        }
-
-        /// <summary>
-        /// Uncover a column (a step of the DLX algorithm).
-        /// </summary>
-        public void Uncover(ColumnObject col)
-        {
-            // Straight from Knuth's paper (pg 6)
-            for (var i = col.Up; col != i; i = i.Up)
-            {
-                for (var j = i.Left; j != i; j = j.Left)
-                {
-                    if (j.ColumnHeader is ColumnObject)
-                        (j.ColumnHeader as ColumnObject).NumberOfRows++;
-                    j.Down.Up = j;
-                    j.Up.Down = j;
-                }
-            }
-            col.Right.Left = col;
-            col.Left.Right = col;
+            return Search(0, searchData);
         }
         #endregion
 
@@ -294,14 +244,32 @@ namespace DlxLib
             return this.NextFromHere(d => d.Right).Cast<ColumnObject>().Min(c => c.NumberOfRows, Comparer<int>.Default);
         }
 
+        /// <summary>
+        /// Returns the number of rows in the original (fully uncovered) data matrix.
+        /// </summary>
         public int NumberOfOriginalRows { get { return _AllRows.Count; } }
 
+        /// <summary>
+        /// Returns the number of columns (primary and secondary) in the original
+        /// (fully uncovered) data matrix.
+        /// </summary>
         public int NumberOfOriginalColumns { get { return _AllColumns.Count; } }
 
+        /// <summary>
+        /// Returns the number of primary columns in the original (fully uncovered)
+        /// data matrix.
+        /// </summary>
         public int NumberOfOriginalPrimaryColumns { get { return _AllColumns.Count(column => ColumnCover.Primary == column.ColumnCover); } }
 
+        /// <summary>
+        /// Returns the number of secondary columns in the original (fully uncovered)
+        /// data matrix.
+        /// </summary>
         public int NumberOfOriginalSecondaryColumns { get { return _AllColumns.Count(column => ColumnCover.Secondary == column.ColumnCover); } }
 
+        /// <summary>
+        /// Creates an empty matrix with the given number of rows and primary columns.
+        /// </summary>
         internal static Tuple<RootObject, RowObject[], ColumnObject[]> CreateEmptyMatrix(int nRows, int nPrimaryColumns)
         {
             return CreateEmptyMatrix(nRows, nPrimaryColumns, 0);
@@ -382,6 +350,11 @@ namespace DlxLib
             }
         }
 
+        /// <summary>
+        /// Returns the highest column index of rows currently in the data matrix.
+        /// (Thus never returns the index of a secondary column, as those are never
+        /// in the data matrix.)
+        /// </summary>
         public int HighestColumn
         {
             get
@@ -390,6 +363,9 @@ namespace DlxLib
             }
         }
 
+        /// <summary>
+        /// Returns the highest row index of rows currently in the data matrix.
+        /// </summary>
         public int HighestRow
         {
             get
@@ -398,11 +374,79 @@ namespace DlxLib
             }
         }
 
+        /// <summary>
+        /// Returns true if the data matrix is empty.
+        /// </summary>
+        /// <returns></returns>
         public bool IsEmpty()
         {
             return this == this.Right;
         }
 
+        /// <summary>
+        /// Cover a column (a step of the DLX algorithm).
+        /// </summary>
+        public void Cover(int columnIndex)
+        {
+            var col = GetColumn(columnIndex);
+            Cover(col);
+        }
+
+        /// <summary>
+        /// Cover a column (a step of the DLX algorithm).
+        /// </summary>
+        public void Cover(ColumnObject col)
+        {
+            // Straight from Knuth's paper (pg 6)
+            col.Right.Left = col.Left;
+            col.Left.Right = col.Right;
+            for (var i = col.Down; col != i; i = i.Down)
+            {
+                for (var j = i.Right; j != i; j = j.Right)
+                {
+                    j.Down.Up = j.Up;
+                    j.Up.Down = j.Down;
+                    if (j.ColumnHeader is ColumnObject)
+                        (j.ColumnHeader as ColumnObject).NumberOfRows--;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Uncover a column (a step of the DLX algorithm).
+        /// </summary>
+        public void Uncover(int columnIndex)
+        {
+            var col = GetColumn(columnIndex);
+            Uncover(col);
+        }
+
+        /// <summary>
+        /// Uncover a column (a step of the DLX algorithm).
+        /// </summary>
+        public void Uncover(ColumnObject col)
+        {
+            // Straight from Knuth's paper (pg 6)
+            for (var i = col.Up; col != i; i = i.Up)
+            {
+                for (var j = i.Left; j != i; j = j.Left)
+                {
+                    if (j.ColumnHeader is ColumnObject)
+                        (j.ColumnHeader as ColumnObject).NumberOfRows++;
+                    j.Down.Up = j;
+                    j.Up.Down = j;
+                }
+            }
+            col.Right.Left = col;
+            col.Left.Right = col;
+        }
+
+        /// <summary>
+        /// Implement Knuth's DLX algorithm to search the data matrix for all solutions
+        /// to the cover (or generalized cover) problem.
+        /// </summary>
+        /// <param name="k">Current search "level". (Increments when called recursively.)</param>
+        /// <param name="searchData">Holder for intermediate search status, plus events during search.</param>
         public IEnumerable<Solution> Search(int k, SearchData searchData)
         {
             try
@@ -465,6 +509,12 @@ namespace DlxLib
             }
         }
 
+        /// <summary>
+        /// Holds a row/column coordinate (of a true ('1') value in the data matrix).
+        /// </summary>
+        /// <remarks>
+        /// 'Cause tuples are classes.
+        /// </remarks>
         public struct ElementCoordinate
         {
             public readonly int Row;
@@ -519,20 +569,20 @@ namespace DlxLib
             }
         }
 
-        protected internal string RowElementsAsString(IEnumerable<DataObject> rowElements)
+        protected internal string RowElementsAsString(IEnumerable<IDataObject> rowElements)
         {
             var rowElementsByColumn = rowElements.Select(d => d.ColumnIndex.ToString()).Select(s => s.PadRight(ColumnIdentifierFieldWidth));
             var rowElementsAsString = String.Join(" ", rowElementsByColumn);
             return rowElementsAsString;
         }
 
-        protected internal string RowToString(int rowId, IEnumerable<DataObject> rowElements)
+        protected internal string RowToString(int rowId, IEnumerable<IDataObject> rowElements)
         {
             var res = (rowId.ToString() + ':').PadRight(RowIdentifierFieldWidth + 2) + RowElementsAsString(rowElements);
             return res;
         }
 
-        protected internal IEnumerable<DataObject> SecondaryElementsOfRow(int rowId)
+        protected internal IEnumerable<IDataObject> SecondaryElementsOfRow(int rowId)
         {
             return _AllColumns
                 .Where(column => ColumnCover.Secondary == column.ColumnCover)

@@ -230,7 +230,7 @@ namespace DlxLib
             if (null != SearchStep) searchData.OnSearchStepCall(RaiseSearchStep);
             if (null != SolutionFound) searchData.OnSolutionFoundCall(RaiseSolutionFound);
 
-            return root.Search(0, searchData);
+            return root.Search(searchData);
         }
 
         /// <summary>
@@ -258,17 +258,40 @@ namespace DlxLib
         /// </summary>
         public event EventHandler<SolutionFoundEventArgs> SolutionFound;
 
+        /// <summary>
+        /// Return a predicate that returns true iff its argument is the default
+        /// value for the type.
+        /// </summary>
         private static Func<T, bool> DefaultPredicate<T>()
         {
             return t => !EqualityComparer<T>.Default.Equals(t, default(T));
         }
 
+        /// <summary>
+        /// Returns true iff the search has been cancelled (via an async
+        /// cancellation object).
+        /// </summary>
         private bool IsCancelled()
         {
             return _cancellationToken.IsCancellationRequested;
         }
 
-        private static RootObject BuildInternalStructure<TData, TRow, TCol>(
+        /// <summary>
+        /// Builds a full data matrix given functions that return rows and elements
+        /// in rows.
+        /// </summary>
+        /// <typeparam name="TData">The type of the data structure that represents the exact cover problem.</typeparam>
+        /// <typeparam name="TRow">The type of the data structure that represents rows in the matrix.</typeparam>
+        /// <typeparam name="TCol">The type of the data structure that represents columns in the matrix.</typeparam>
+        /// <param name="data">The top-level data structure that represents the exact cover problem.</param>
+        /// <param name="iterateRows">A System.Func delegate that will be invoked to iterate the rows in the matrix.</param>
+        /// <param name="iterateCols">A System.Func delegate that will be invoked to iterate the columns
+        /// in a particular row in the matrix.</param>
+        /// <param name="predicate">A predicate which is invoked for each value in the matrix to determine
+        /// whether the value represents a logical 1 or a logical 0 indicated by returning <c>true</c>
+        /// or <c>false</c> respectively.</param>
+        /// <returns>A root holding the data matrix desired.</returns>
+        private static IRoot BuildInternalStructure<TData, TRow, TCol>(
             TData data,
             Func<TData, IEnumerable<TRow>> iterateRows,
             Func<TRow, IEnumerable<TCol>> iterateCols,
@@ -316,21 +339,34 @@ namespace DlxLib
             return root;
         }
 
+        /// <summary>
+        /// Raise the Started event.
+        /// </summary>
         private void RaiseStarted()
         {
             Started.Invoke(this, EventArgs.Empty);
         }
 
+        /// <summary>
+        /// Raise the Finished event.
+        /// </summary>
         private void RaiseFinished()
         {
             Finished.Invoke(this, EventArgs.Empty);
         }
 
+        /// <summary>
+        /// Raise the Cancelled event (you'll get Finished after this).
+        /// </summary>
         private void RaiseCancelled()
         {
             Cancelled.Invoke(this, EventArgs.Empty);
         }
 
+        /// <summary>
+        /// Raise the SearchStep event, passing the current step number and the
+        /// current partial solution.
+        /// </summary>
         private void RaiseSearchStep(int iteration, Func<IList<int>> rowIndexes)
         {
             // Don't use Invoke() here (and at RaiseSolutionFound) because it would
@@ -341,6 +377,10 @@ namespace DlxLib
             if (handler != null) handler(this, new SearchStepEventArgs(iteration, rowIndexes()));
         }
 
+        /// <summary>
+        /// Raise the SolutionFOund event, passing the solution index (0-based) and
+        /// the just found solution.
+        /// </summary>
         private void RaiseSolutionFound(int solutionIndex, Func<IList<int>> solution)
         {
             var handler = SolutionFound;

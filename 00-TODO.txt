@@ -40,13 +40,10 @@
 
 
 
-3. Incorporate RowObject into matrix (currently just Root/Column are in matrix)
-7. Get rid of DataObject.{AppendToRow, UnlinkFromColumn, RelinkIntoColumn}
 9. AddElement(r,c) to IRoot? and maybe to Column/Row as well.
 10. Redundancies between Root NumberOfRows/NumberOfColumns and allRows, allColumns arrays.
 11. Make sure I'm using Root NumberOfColumns vs NumberOfOriginalColumns correctly, same
     for NumberOfRows vs NumberOfOriginalRows.
 12. Add AddMatrix/AddElement/CreateEmptyMatrix to IRoot.  AddElement to return void.
-13. IHeader.Elements to return IEnumerable<IDataObject>?
 
 Note: Interfaces solely for external access, internal access uses actual classes

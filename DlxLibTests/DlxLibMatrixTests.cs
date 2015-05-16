@@ -57,7 +57,7 @@ namespace DlxLibTests
         public void PrimaryColumnProperties()
         {
             var root = RootObject.Create();
-            var sutColumn = root.NewColumn(ColumnCover.Primary); // TODO: Test Secondary
+            var sutColumn = root.NewColumn(ColumnCover.Primary);
             (root as IRow).Append(sutColumn);
 
             Assert.That(sutColumn.Root, Is.EqualTo(root));
@@ -550,7 +550,7 @@ namespace DlxLibTests
 
             }
 
-            public override IEnumerable<DataObject> Elements
+            public override IEnumerable<IDataObject> Elements
             {
                 get { throw new NotImplementedException(); }
             }

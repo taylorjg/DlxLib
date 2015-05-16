@@ -42,7 +42,7 @@ namespace DlxLib
         #endregion
 
         #region IHeader
-        public override IEnumerable<DataObject> Elements
+        public override IEnumerable<IDataObject> Elements
         {
             get
             {
@@ -54,7 +54,7 @@ namespace DlxLib
         #region IRow
         public int NumberOfColumns
         {
-            // TODO: No need to keep a count of columns - unless this is called quite often
+            // No need to keep a count of columns - unless this is called quite often
             get
             {
                 int n = 0;

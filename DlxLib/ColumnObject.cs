@@ -39,7 +39,7 @@ namespace DlxLib
         #endregion
 
         #region IHeader members
-        public override IEnumerable<DataObject> Elements
+        public override IEnumerable<IDataObject> Elements
         {
             get
             {

@@ -39,7 +39,7 @@ namespace DlxLib
         /// matrix (that is, covered elements are _not_ returned) - but never
         /// returns itself.  For the Root returns all Rows, Columns, and Elements.
         /// </summary>
-        public abstract IEnumerable<DataObject> Elements { get; }
+        public abstract IEnumerable<IDataObject> Elements { get; }
         #endregion
     }
 }
