@@ -8,20 +8,21 @@ namespace DlxLib
     /// </summary>
     public class Solution
     {
-        internal Solution(IEnumerable<int> rowIndexes)
+        internal Solution(IList<int> rowIndexes)
         {
-            _rowIndexes = rowIndexes.OrderBy(rowIndex => rowIndex);
+            _rowIndexes = rowIndexes;
         }
 
         /// <summary>
         /// The indexes of the set of rows, in the original matrix, that constitute the solution.
-        /// The indexes are always sorted in ascending order.
+        /// The indexes are always sorted in ascending order (because SearchStep returns them
+        /// that way, deliberately).
         /// </summary>
-        public IEnumerable<int> RowIndexes
+        public IList<int> RowIndexes
         {
             get { return _rowIndexes; }
         }
 
-        private readonly IEnumerable<int> _rowIndexes;
+        private readonly IList<int> _rowIndexes;
     }
 }

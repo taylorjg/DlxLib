@@ -1,0 +1,51 @@
+1. Old to new transition
+
+   Interfaces were:
+
+       IDataObject
+           Root
+       IHeader : IDataObject
+           Name, NumberOfColumns, NumberOfRows, Elements
+       IColumn : IHeader
+           ColumnCover {Primary, Secondary}, Append(DataObject)
+       IRow : IHeader
+           Append(DataObject)
+       IRoot : IHeader
+           <marker>
+
+   Interfaces are for use from OUTSIDE of data structure, pretty much, to the
+   extent that users deal with rows and columns and elements:
+
+       IDataObject
+           Root, RowIndex, ColumnIndex, Kind {Column, Row, Root, Element}
+       IHeader : IDataObject
+           Elements
+       IColumn : IHeader
+           ColumnCover {Primary, Secondary}, NumberOfRows, Append(DataObject)
+       IRow : IHeader
+           NumberOfColumns, Append(DataObject)
+       IRoot : IHeader, IRow, IColumn
+           GetColumn(columnIndex), GetRow(rowIndex)
+       IElement : IDataObject
+           <marker>
+
+   Classes that implement the matrix:
+
+       abstract DataObject : IDataObject
+       ElementObject : DataObject, IElement
+       abstract HeaderObject : DataObject, IHeader
+       RowObject : HeaderObject, IRow
+       ColumnObject : HeaderObject, IColumn
+       RootObject : HeaderObject, IRoot
+
+
+
+9. AddElement(r,c) to IRoot? and maybe to Column/Row as well.
+10. Redundancies between Root NumberOfRows/NumberOfColumns and allRows, allColumns arrays.
+11. Make sure I'm using Root NumberOfColumns vs NumberOfOriginalColumns correctly, same
+    for NumberOfRows vs NumberOfOriginalRows.
+12. Add AddMatrix/AddElement/CreateEmptyMatrix to IRoot.  AddElement to return void.
+13. Consider separating SearchData into the thing that holds the stack of the current cover
+    state, and the handling of the events.
+
+Note: Interfaces solely for external access, internal access uses actual classes

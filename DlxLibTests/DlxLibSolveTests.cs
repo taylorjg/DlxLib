@@ -79,7 +79,8 @@ namespace DlxLibTests
             var dlx = new Dlx();
 
             // Act
-            var solutions = dlx.Solve(matrix).ToList();
+            var solutionsEnumerable = dlx.Solve(matrix);
+            var solutions = solutionsEnumerable.ToList();
 
             // Assert
             Assert.That(solutions, Has.Count.EqualTo(1));

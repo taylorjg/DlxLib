@@ -1,52 +1,82 @@
+using System;
+using System.Collections.Generic;
+
 namespace DlxLib
 {
-    internal class ColumnObject : DataObject
+    /// <summary>
+    /// Column header object: Linked into each column, identifies the column.
+    /// </summary>
+    /// <remarks>
+    /// Used in the DLX algorithm itself so that there's a way to figure out which
+    /// column has the least number of rows uncovered, so as to pick that one to
+    /// cover next.
+    /// </remarks>
+    internal class ColumnObject : HeaderObject, IColumn
     {
-        public ColumnObject()
+        protected internal ColumnObject(RootObject root, ColumnCover columnCover)
+            : base(root)
         {
-            PreviousColumnObject = NextColumnObject = this;
+            ColumnCover = columnCover;
+            _ColumnIndex = root.NumberOfOriginalPrimaryColumns + root.NumberOfOriginalSecondaryColumns;
+            (root as IRow).Append(this);
         }
 
-        public ColumnObject PreviousColumnObject { get; private set; }
-        public ColumnObject NextColumnObject { get; private set; }
-        public int NumberOfRows { get; private set; }
-
-        public void AppendColumnHeader(ColumnObject columnObject)
+        #region IDataObject members
+        public override IRow RowHeader
         {
-            PreviousColumnObject.NextColumnObject = columnObject;
-            columnObject.NextColumnObject = this;
-            columnObject.PreviousColumnObject = PreviousColumnObject;
-            PreviousColumnObject = columnObject;
+            get { return Root; }
         }
 
-        public void UnlinkColumnHeader()
+        public override IColumn ColumnHeader
         {
-            NextColumnObject.PreviousColumnObject = PreviousColumnObject;
-            PreviousColumnObject.NextColumnObject = NextColumnObject;
+            get { return this; }
         }
 
-        public void RelinkColumnHeader()
-        {
-            NextColumnObject.PreviousColumnObject = this;
-            PreviousColumnObject.NextColumnObject = this;
-        }
+        public override int RowIndex { get { return -1; } }
 
-        public void AddDataObject(DataObject dataObject)
+        private readonly int _ColumnIndex;
+        public override int ColumnIndex { get { return _ColumnIndex; } }
+        #endregion
+
+        #region IHeader members
+        public override IEnumerable<IDataObject> Elements
         {
-            AppendToColumn(dataObject);
+            get
+            {
+                return NextFromHere(d => d.Down);
+            }
+        }
+        #endregion
+
+        #region IColumn members
+        public ColumnCover ColumnCover { get; private set; }
+
+        public int NumberOfRows { get; internal set; }
+
+        public void Append(DataObject dataObject)
+        {
+            Up.Down = dataObject;
+            dataObject.Down = this;
+            dataObject.Up = Up;
+            Up = dataObject;
             NumberOfRows++;
         }
+        #endregion
 
-        public void UnlinkDataObject(DataObject dataObject)
+        /// <summary>
+        /// Returns largest rowIndex of column elements (-1 if column has no elements)
+        /// </summary>
+        public int HighestRowInColumn
         {
-            dataObject.UnlinkFromColumn();
-            NumberOfRows--;
+            get
+            {
+                return Up.RowIndex;
+            }
         }
 
-        public void RelinkDataObject(DataObject dataObject)
+        public override string ToString()
         {
-            dataObject.RelinkIntoColumn();
-            NumberOfRows++;
+            return String.Format("{0}[{1},{2}]", Kind, ColumnIndex, ColumnCover);
         }
     }
 }

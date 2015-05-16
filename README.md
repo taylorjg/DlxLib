@@ -1,4 +1,8 @@
-[![Build status](https://ci.appveyor.com/api/projects/status/di25a5u6ny229bvj/branch/master?svg=true)](https://ci.appveyor.com/project/taylorjg/dlxlib/branch/master)
+## Update 2015-05-15: Branch for-working-with-Ripple-Effect
+
+This fork, and this branch, is for upgrades to DlxLib so that it can support Knuths's *generalized cover problem*:  A version of a cover problem where columns are marked either *primary* or *secondary* and you're looking for a set of rows that covers every primary column exactly once and every secondary column *at most once* (see his paper, page 17).  Current status is:  primary and secondary works, also all the original demos (which are ordinary cover problems) still work fine, and unchanged.
+
+<!-- N.B.: this build badge only applies to the master fork of the original project:   [![Build status](https://ci.appveyor.com/api/projects/status/di25a5u6ny229bvj/branch/master?svg=true)](https://ci.appveyor.com/project/taylorjg/dlxlib/branch/master) -->
 
 ## DlxLib (C#)
 

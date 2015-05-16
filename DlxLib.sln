@@ -1,6 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio 2013
+VisualStudioVersion = 12.0.31101.0
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{1538CA7F-F2EF-4F2F-9FDC-DC74A5355B41}"
 	ProjectSection(SolutionItems) = preProject
 		.nuget\NuGet.Config = .nuget\NuGet.Config
@@ -19,6 +21,13 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DlxLibPropertyTests", "DlxLibPropertyTests\DlxLibPropertyTests.csproj", "{4553B01D-D547-45D3-9B1E-869F29534897}"
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "DlxLibPropertyTestsFs", "DlxLibPropertyTestsFs\DlxLibPropertyTestsFs.fsproj", "{99AA588B-46C8-4C12-880C-15598E16C925}"
+EndProject
+Project("{F088123C-0E9E-452A-89E6-6BA2F21D5CAC}") = "DlxLibModels", "DlxLibModels\DlxLibModels.modelproj", "{11965CE7-309F-46C0-8408-2C31CA14901C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{6ED50C4C-94BA-4157-9540-3C1E2322EE80}"
+	ProjectSection(SolutionItems) = preProject
+		00-TODO.txt = 00-TODO.txt
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -93,11 +102,20 @@ Global
 		{99AA588B-46C8-4C12-880C-15598E16C925}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{99AA588B-46C8-4C12-880C-15598E16C925}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{99AA588B-46C8-4C12-880C-15598E16C925}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{99AA588B-46C8-4C12-880C-15598E16C925}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
 		{99AA588B-46C8-4C12-880C-15598E16C925}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{99AA588B-46C8-4C12-880C-15598E16C925}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{99AA588B-46C8-4C12-880C-15598E16C925}.Release|Any CPU.Build.0 = Release|Any CPU
 		{99AA588B-46C8-4C12-880C-15598E16C925}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{99AA588B-46C8-4C12-880C-15598E16C925}.Release|x86.ActiveCfg = Release|Any CPU
+		{11965CE7-309F-46C0-8408-2C31CA14901C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{11965CE7-309F-46C0-8408-2C31CA14901C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{11965CE7-309F-46C0-8408-2C31CA14901C}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{11965CE7-309F-46C0-8408-2C31CA14901C}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{11965CE7-309F-46C0-8408-2C31CA14901C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{11965CE7-309F-46C0-8408-2C31CA14901C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{11965CE7-309F-46C0-8408-2C31CA14901C}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{11965CE7-309F-46C0-8408-2C31CA14901C}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

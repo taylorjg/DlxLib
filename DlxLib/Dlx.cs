@@ -19,45 +19,6 @@ namespace DlxLib
     {
         private readonly CancellationToken _cancellationToken;
 
-        private class SearchData
-        {
-            public SearchData(ColumnObject root)
-            {
-                Root = root;
-            }
-
-            public ColumnObject Root { get; private set; }
-            public int IterationCount { get; private set; }
-            public int SolutionCount { get; private set; }
-
-            public void IncrementIterationCount()
-            {
-                IterationCount++;
-            }
-
-            public void IncrementSolutionCount()
-            {
-                SolutionCount++;
-            }
-
-            public void PushCurrentSolutionRowIndex(int rowIndex)
-            {
-                _currentSolution.Push(rowIndex);
-            }
-
-            public void PopCurrentSolutionRowIndex()
-            {
-                _currentSolution.Pop();
-            }
-
-            public Solution CurrentSolution
-            {
-                get { return new Solution(_currentSolution.ToList()); }
-            }
-
-            private readonly Stack<int> _currentSolution = new Stack<int>();
-        }
-
         /// <summary>
         /// Callers should use this constructor when they do not need to be able to request cancellation.
         /// </summary>
@@ -80,10 +41,10 @@ namespace DlxLib
         ///         {0, 1, 0, 0, 0, 0, 1},
         ///         {0, 0, 0, 1, 1, 0, 1}
         ///     };
-        /// 
+        ///
         /// var cancellationTokenSource = new CancellationTokenSource();
         /// var dlx = new Dlx(cancellationTokenSource.Token);
-        /// 
+        ///
         /// dlx.SolutionFound += (_, e) =>
         /// {
         ///     var managedThreadId1 = Thread.CurrentThread.ManagedThreadId;
@@ -91,21 +52,21 @@ namespace DlxLib
         ///     Thread.Sleep(2000);
         ///     Console.WriteLine("[{0}] Found solution {1} - now waking", managedThreadId1, e.SolutionIndex);
         /// };
-        /// 
+        ///
         /// var thread = new Thread(() => dlx.Solve(matrix).ToList());
-        /// 
+        ///
         /// thread.Start();
-        /// 
+        ///
         /// var managedThreadId2 = Thread.CurrentThread.ManagedThreadId;
         /// Console.WriteLine("[{0}] Sleeping before calling Cancel...", managedThreadId2);
         /// Thread.Sleep(1000);
         /// Console.WriteLine("[{0}] Calling Cancel...", managedThreadId2);
         /// cancellationTokenSource.Cancel();
-        /// 
+        ///
         /// Console.WriteLine("[{0}] Before Join...", managedThreadId2);
         /// thread.Join();
         /// Console.WriteLine("[{0}] After Join", managedThreadId2);
-        /// 
+        ///
         /// // The example displays the following output:
         /// //    [5] Sleeping before calling Cancel...
         /// //    [6] Found solution 0 - now sleeping
@@ -258,7 +219,18 @@ namespace DlxLib
         {
             if (data.Equals(default(TData))) throw new ArgumentNullException("data");
             var root = BuildInternalStructure(data, iterateRows, iterateCols, predicate);
-            return Search(0, new SearchData(root));
+            var searchData = new SearchData();
+
+            // This is safe because we insist that events on the DLX object _not_ be
+            // added/removed while a search is in progress.  (But we're not bothering
+            // to enforce this, since it is just common sense ...)
+            if (null != Started) searchData.OnStartedCall(RaiseStarted);
+            if (null != Finished) searchData.OnFinishedCall(RaiseFinished);
+            if (null != Cancelled) searchData.OnCancelledCall(IsCancelled, RaiseCancelled);
+            if (null != SearchStep) searchData.OnSearchStepCall(RaiseSearchStep);
+            if (null != SolutionFound) searchData.OnSolutionFoundCall(RaiseSolutionFound);
+
+            return root.Search(searchData);
         }
 
         /// <summary>
@@ -286,210 +258,133 @@ namespace DlxLib
         /// </summary>
         public event EventHandler<SolutionFoundEventArgs> SolutionFound;
 
+        /// <summary>
+        /// Return a predicate that returns true iff its argument is the default
+        /// value for the type.
+        /// </summary>
         private static Func<T, bool> DefaultPredicate<T>()
         {
             return t => !EqualityComparer<T>.Default.Equals(t, default(T));
         }
 
+        /// <summary>
+        /// Returns true iff the search has been cancelled (via an async
+        /// cancellation object).
+        /// </summary>
         private bool IsCancelled()
         {
             return _cancellationToken.IsCancellationRequested;
         }
 
-        private static ColumnObject BuildInternalStructure<TData, TRow, TCol>(
+        /// <summary>
+        /// Builds a full data matrix given functions that return rows and elements
+        /// in rows.
+        /// </summary>
+        /// <typeparam name="TData">The type of the data structure that represents the exact cover problem.</typeparam>
+        /// <typeparam name="TRow">The type of the data structure that represents rows in the matrix.</typeparam>
+        /// <typeparam name="TCol">The type of the data structure that represents columns in the matrix.</typeparam>
+        /// <param name="data">The top-level data structure that represents the exact cover problem.</param>
+        /// <param name="iterateRows">A System.Func delegate that will be invoked to iterate the rows in the matrix.</param>
+        /// <param name="iterateCols">A System.Func delegate that will be invoked to iterate the columns
+        /// in a particular row in the matrix.</param>
+        /// <param name="predicate">A predicate which is invoked for each value in the matrix to determine
+        /// whether the value represents a logical 1 or a logical 0 indicated by returning <c>true</c>
+        /// or <c>false</c> respectively.</param>
+        /// <returns>A root holding the data matrix desired.</returns>
+        private static IRoot BuildInternalStructure<TData, TRow, TCol>(
             TData data,
             Func<TData, IEnumerable<TRow>> iterateRows,
             Func<TRow, IEnumerable<TCol>> iterateCols,
             Func<TCol, bool> predicate)
         {
-            var root = new ColumnObject();
+            // The tricky thing with this interface is we don't know how, in
+            // advance, many rows and columns there are; they're discovered on the fly.
+            // (Also need to check that all rows are same length.)
 
-            int? numColumns = null;
+            var root = RootObject.Create();
+
+            bool firstRow = true;
+
+            int numColumns = 0;
+
             var rowIndex = 0;
-            var colIndexToListHeader = new Dictionary<int, ColumnObject>();
-
-            foreach (var row in iterateRows(data))
+            foreach (var rowData in iterateRows(data))
             {
-                DataObject firstDataObjectInThisRow = null;
-                var localRowIndex = rowIndex;
+                RowObject row = root.NewRow();
                 var colIndex = 0;
-
-                foreach (var col in iterateCols(row))
+                foreach (var col in iterateCols(rowData))
                 {
-                    if (localRowIndex == 0)
+                    if (firstRow)
                     {
-                        var listHeader = new ColumnObject();
-                        root.AppendColumnHeader(listHeader);
-                        colIndexToListHeader[colIndex] = listHeader;
+                        numColumns++;
+                        root.NewColumn(ColumnCover.Primary);
                     }
 
                     if (predicate(col))
                     {
-                        var listHeader = colIndexToListHeader[colIndex];
-                        var dataObject = new DataObject(listHeader, localRowIndex);
-
-                        if (firstDataObjectInThisRow != null)
-                            firstDataObjectInThisRow.AppendToRow(dataObject);
-                        else
-                            firstDataObjectInThisRow = dataObject;
+                        var elementObject = root.NewElement(rowIndex, colIndex);
                     }
-
                     colIndex++;
                 }
 
-                if (numColumns.HasValue)
+                if (numColumns != colIndex)
                 {
-                    if (colIndex != numColumns)
-                    {
-                        throw new ArgumentException("All rows must contain the same number of columns!", "data");
-                    }
-                }
-                else
-                {
-                    numColumns = colIndex;
+                    throw new ArgumentException(String.Format("All rows must contain the same number of columns! (problem row {0})", rowIndex), "data");
                 }
 
                 rowIndex++;
+                firstRow = false;
             }
 
             return root;
         }
 
-        private static bool MatrixIsEmpty(ColumnObject root)
-        {
-            return root.NextColumnObject == root;
-        }
-
-        private IEnumerable<Solution> Search(int k, SearchData searchData)
-        {
-            try
-            {
-                if (k == 0) RaiseStarted();
-
-                if (IsCancelled())
-                {
-                    RaiseCancelled();
-                    yield break;
-                }
-
-                RaiseSearchStep(searchData.IterationCount, searchData.CurrentSolution.RowIndexes);
-                searchData.IncrementIterationCount();
-
-                if (MatrixIsEmpty(searchData.Root))
-                {
-                    if (searchData.CurrentSolution.RowIndexes.Any())
-                    {
-                        searchData.IncrementSolutionCount();
-                        var solutionIndex = searchData.SolutionCount - 1;
-                        var solution = searchData.CurrentSolution;
-                        RaiseSolutionFound(solution, solutionIndex);
-                        yield return solution;
-                    }
-
-                    yield break;
-                }
-
-                var c = ChooseColumnWithLeastRows(searchData.Root);
-                CoverColumn(c);
-
-                for (var r = c.Down; r != c; r = r.Down)
-                {
-                    if (IsCancelled())
-                    {
-                        RaiseCancelled();
-                        yield break;
-                    }
-
-                    searchData.PushCurrentSolutionRowIndex(r.RowIndex);
-
-                    for (var j = r.Right; j != r; j = j.Right)
-                        CoverColumn(j.ListHeader);
-
-                    var recursivelyFoundSolutions = Search(k + 1, searchData);
-                    foreach (var solution in recursivelyFoundSolutions) yield return solution;
-
-                    for (var j = r.Left; j != r; j = j.Left)
-                        UncoverColumn(j.ListHeader);
-
-                    searchData.PopCurrentSolutionRowIndex();
-                }
-
-                UncoverColumn(c);
-
-            }
-            finally
-            {
-                if (k == 0) RaiseFinished();
-            }
-        }
-
-        private static ColumnObject ChooseColumnWithLeastRows(ColumnObject root)
-        {
-            ColumnObject chosenColumn = null;
-
-            for (var columnHeader = root.NextColumnObject; columnHeader != root; columnHeader = columnHeader.NextColumnObject)
-            {
-                if (chosenColumn == null || columnHeader.NumberOfRows < chosenColumn.NumberOfRows)
-                    chosenColumn = columnHeader;
-            }
-
-            return chosenColumn;
-        }
-
-        private static void CoverColumn(ColumnObject c)
-        {
-            c.UnlinkColumnHeader();
-
-            for (var i = c.Down; i != c; i = i.Down)
-            {
-                for (var j = i.Right; j != i; j = j.Right)
-                {
-                    j.ListHeader.UnlinkDataObject(j);
-                }
-            }
-        }
-
-        private static void UncoverColumn(ColumnObject c)
-        {
-            for (var i = c.Up; i != c; i = i.Up)
-            {
-                for (var j = i.Left; j != i; j = j.Left)
-                {
-                    j.ListHeader.RelinkDataObject(j);
-                }
-            }
-
-            c.RelinkColumnHeader();
-        }
-
+        /// <summary>
+        /// Raise the Started event.
+        /// </summary>
         private void RaiseStarted()
         {
-            var handler = Started;
-            if (handler != null) handler(this, EventArgs.Empty);
+            Started.Invoke(this, EventArgs.Empty);
         }
 
+        /// <summary>
+        /// Raise the Finished event.
+        /// </summary>
         private void RaiseFinished()
         {
-            var handler = Finished;
-            if (handler != null) handler(this, EventArgs.Empty);
+            Finished.Invoke(this, EventArgs.Empty);
         }
 
+        /// <summary>
+        /// Raise the Cancelled event (you'll get Finished after this).
+        /// </summary>
         private void RaiseCancelled()
         {
-            var handler = Cancelled;
-            if (handler != null) handler(this, EventArgs.Empty);
+            Cancelled.Invoke(this, EventArgs.Empty);
         }
 
-        private void RaiseSearchStep(int iteration, IEnumerable<int> rowIndexes)
+        /// <summary>
+        /// Raise the SearchStep event, passing the current step number and the
+        /// current partial solution.
+        /// </summary>
+        private void RaiseSearchStep(int iteration, Func<IList<int>> rowIndexes)
         {
+            // Don't use Invoke() here (and at RaiseSolutionFound) because it would
+            // create the EventArg object even if the handler was null.  Don't want
+            // to defer that creation using a lambda either, because closing over the
+            // lambda would be executed each time.
             var handler = SearchStep;
-            if (handler != null) handler(this, new SearchStepEventArgs(iteration, rowIndexes));
+            if (handler != null) handler(this, new SearchStepEventArgs(iteration, rowIndexes()));
         }
 
-        private void RaiseSolutionFound(Solution solution, int solutionIndex)
+        /// <summary>
+        /// Raise the SolutionFOund event, passing the solution index (0-based) and
+        /// the just found solution.
+        /// </summary>
+        private void RaiseSolutionFound(int solutionIndex, Func<IList<int>> solution)
         {
             var handler = SolutionFound;
-            if (handler != null) handler(this, new SolutionFoundEventArgs(solution, solutionIndex));
+            if (handler != null) handler(this, new SolutionFoundEventArgs(new Solution(solution()), solutionIndex));
         }
     }
 }

@@ -10,8 +10,9 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>DlxLib</RootNamespace>
     <AssemblyName>DlxLib</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -22,6 +23,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>DlxLib.xml</DocumentationFile>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -31,6 +33,10 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>DlxLib.xml</DocumentationFile>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup>
+    <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -45,16 +51,33 @@
     <Compile Include="ColumnObject.cs" />
     <Compile Include="Dlx.cs" />
     <Compile Include="DataObject.cs" />
+    <Compile Include="ElementObject.cs" />
     <Compile Include="EnumerableArrayAdapter\Enumerable2DArray.cs" />
     <Compile Include="EnumerableArrayAdapter\Enumerable2DArrayRow.cs" />
+    <Compile Include="EnumerableArrayAdapter\EnumerableExtensions.cs" />
+    <Compile Include="Extensions.cs" />
+    <Compile Include="HeaderObject.cs" />
+    <Compile Include="IColumn.cs" />
+    <Compile Include="IDataObject.cs" />
+    <Compile Include="IElement.cs" />
+    <Compile Include="IHeader.cs" />
+    <Compile Include="IRoot.cs" />
+    <Compile Include="IRow.cs" />
     <Compile Include="NamespaceDoc.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RootObject.cs" />
+    <Compile Include="RowObject.cs" />
+    <Compile Include="SearchData.cs" />
     <Compile Include="SearchStepEventArgs.cs" />
     <Compile Include="Solution.cs" />
     <Compile Include="SolutionFoundEventArgs.cs" />
+    <Compile Include="Validations.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>if exist ..\..\..\..\RippleEffect\external\$(Configuration) copy /y $(TargetName).* ..\..\..\..\RippleEffect\external\$(Configuration)</PostBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

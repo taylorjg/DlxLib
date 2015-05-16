@@ -11,7 +11,7 @@ using NUnit.Framework;
 namespace DlxLibPropertyTests
 {
     using Property = Gen<Rose<Result>>;
-    
+
     [TestFixture]
     public class PropertyTests
     {
