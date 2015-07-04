@@ -4,7 +4,7 @@ namespace DlxLibPropertyTests
 {
     public static class JaggedArrayExtensions
     {
-        public static T[,] To2DArray<T>(this IReadOnlyList<IReadOnlyList<T>> jaggedArray)
+        public static T[,] To2DArray<T>(this IList<IList<T>> jaggedArray)
         {
             var numRows = jaggedArray.Count;
             var numCols = jaggedArray[0].Count;

@@ -24,7 +24,7 @@ namespace DlxLibPropertyTests
             var property = Prop.ForAll(arbMatrix, matrix =>
             {
                 var solutions = new Dlx().Solve(matrix).ToList();
-                return FsCheckUtils.Label(!solutions.Any(), makeLabel(solutions.Count()));
+                return (!solutions.Any()).Label(makeLabel(solutions.Count()));
             });
 
             Check.One(Config, property);
@@ -42,9 +42,9 @@ namespace DlxLibPropertyTests
             var property = Prop.ForAll(arbMatrix, matrix =>
             {
                 var solutions = new Dlx().Solve(matrix).ToList();
-                var p1 = FsCheckUtils.Label(solutions.Count() == 1, makeLabel(solutions.Count()));
+                var p1 = (solutions.Count() == 1).Label(makeLabel(solutions.Count()));
                 var p2 = CheckSolutions(solutions, matrix);
-                return FsCheckUtils.AndAll(p1, p2);
+                return FsCheckUtils.And(p1, p2);
             });
 
             Check.One(Config, property);
@@ -67,9 +67,9 @@ namespace DlxLibPropertyTests
                 {
                     var solutions = new Dlx().Solve(matrix).ToList();
                     var actualNumSolutions = solutions.Count();
-                    var p1 = FsCheckUtils.Label(actualNumSolutions == numSolutions, makeLabel(actualNumSolutions));
+                    var p1 = (actualNumSolutions == numSolutions).Label(makeLabel(actualNumSolutions));
                     var p2 = CheckSolutions(solutions, matrix);
-                    return FsCheckUtils.AndAll(p1, p2);
+                    return FsCheckUtils.And(p1, p2);
                 });
             });
 
@@ -78,7 +78,7 @@ namespace DlxLibPropertyTests
 
         private static Property CheckSolutions(IEnumerable<Solution> solutions, int[,] matrix)
         {
-            return FsCheckUtils.AndAll(solutions.Select(solution => CheckSolution(solution, matrix)));
+            return FsCheckUtils.And(solutions.Select(solution => CheckSolution(solution, matrix)));
         }
 
         private static Property CheckSolution(Solution solution, int[,] matrix)
@@ -110,14 +110,14 @@ namespace DlxLibPropertyTests
                     if (matrix[rowIndex, colIndex] == 1) numOnes++;
                 }
 
-                var p1 = FsCheckUtils.Label(numOnes == 1, makeLabel1(colIndex, numOnes));
-                var p2 = FsCheckUtils.Label(numZeros == expectedNumZerosPerColumn, makeLabel2(colIndex, numZeros));
+                var p1 = (numOnes == 1).Label(makeLabel1(colIndex, numOnes));
+                var p2 = (numZeros == expectedNumZerosPerColumn).Label(makeLabel2(colIndex, numZeros));
 
                 colProperties.Add(p1);
                 colProperties.Add(p2);
             }
 
-            return FsCheckUtils.AndAll(colProperties);
+            return FsCheckUtils.And(colProperties);
         }
 
         private static Gen<int[,]> GenMatrixOfIntWithNoSolutions()
@@ -126,7 +126,7 @@ namespace DlxLibPropertyTests
                 from numCols in Gen.Choose(2, 20)
                 from numRows in Gen.Choose(2, 20)
                 from indexOfAlwaysZeroColumn in Gen.Choose(0, numCols - 1)
-                from rows in GenRowWithZeroInGivenColumn(numCols, indexOfAlwaysZeroColumn).ListOf(numRows).Select(x => x.ToList())
+                from rows in GenRowWithZeroInGivenColumn(numCols, indexOfAlwaysZeroColumn).ListOf(numRows)
                 select rows.To2DArray();
         }
 
@@ -136,7 +136,7 @@ namespace DlxLibPropertyTests
                 from numCols in Gen.Choose(2, 20)
                 from solution in GenSolution(numCols)
                 from numRows in Gen.Choose(solution.Count, solution.Count * 5)
-                from matrix in Gen.Constant(0).ListOf(numCols).Select(x => x.ToList()).ListOf(numRows).Select(x => x.ToList())
+                from matrix in Gen.Constant(0).ListOf(numCols).ListOf(numRows)
                 from randomRowIdxs in PickRandomRowIdxs(solution.Count, numRows)
                 select PokeSolutionRowsIntoMatrix(matrix, solution, randomRowIdxs).To2DArray();
         }
@@ -149,23 +149,18 @@ namespace DlxLibPropertyTests
                 from solutions in GenPartitionedSolutions(numCols, partitions)
                 let combinedSolutions = CombineSolutions(solutions)
                 from numRows in Gen.Choose(combinedSolutions.Count, combinedSolutions.Count * 5)
-                from matrix in Gen.Constant(0).ListOf(numCols).Select(x => x.ToList()).ListOf(numRows).Select(x => x.ToList())
+                from matrix in Gen.Constant(0).ListOf(numCols).ListOf(numRows)
                 from randomRowIdxs in PickRandomRowIdxs(combinedSolutions.Count, numRows)
                 select PokeSolutionRowsIntoMatrix(matrix, combinedSolutions, randomRowIdxs).To2DArray();
         }
 
-        private static Gen<List<int>> PickRandomRowIdxs(int numSolutionsRows, int numRows)
-        {
-            return FsCheckUtils.PickValues(numSolutionsRows, Enumerable.Range(0, numRows));
-        }
-
-        private static Gen<List<int>> GenRowWithZeroInGivenColumn(int numCols, int indexOfAlwaysZeroColumn)
+        private static Gen<IList<int>> GenRowWithZeroInGivenColumn(int numCols, int indexOfAlwaysZeroColumn)
         {
             return
                 from row in Gen.Choose(0, 1).ListOf(numCols).Select(r =>
                 {
                     r[indexOfAlwaysZeroColumn] = 0;
-                    return r.ToList();
+                    return r;
                 })
                 select row;
         }
@@ -198,17 +193,17 @@ namespace DlxLibPropertyTests
             });
         }
 
-        private static Gen<List<List<List<int>>>> GenPartitionedSolutions(int numCols, IEnumerable<Tuple<int, int>> partitions)
+        private static Gen<IList<IList<IList<int>>>> GenPartitionedSolutions(int numCols, IEnumerable<Tuple<int, int>> partitions)
         {
             return Gen.Sequence(partitions.Select(partition =>
             {
                 var startIdx = partition.Item1;
                 var endIdx = partition.Item2;
                 return GenPartitionedSolution(numCols, startIdx, endIdx);
-            })).Select(x => x.ToList());
+            })).Select(x => x.ToList() as IList<IList<IList<int>>>);
         }
 
-        private static Gen<List<List<int>>> GenSolution(int numCols)
+        private static Gen<IList<IList<int>>> GenSolution(int numCols)
         {
             return
                 from numSolutionRows in Gen.Choose(1, Math.Min(5, numCols))
@@ -216,15 +211,15 @@ namespace DlxLibPropertyTests
                 select solutionRows;
         }
 
-        private static Gen<List<List<int>>> GenSolutionRows(int numCols, int numSolutionRows)
+        private static Gen<IList<IList<int>>> GenSolutionRows(int numCols, int numSolutionRows)
         {
             return
-                from solutionRows in Gen.Constant(0).ListOf(numCols).Select(x => x.ToList()).ListOf(numSolutionRows).Select(x => x.ToList())
+                from solutionRows in Gen.Constant(0).ListOf(numCols).ListOf(numSolutionRows)
                 from randomRowIdxs in Gen.Choose(0, numSolutionRows - 1).ListOf(numCols)
                 select RandomlySprinkleOnesIntoSolutionRows(solutionRows, randomRowIdxs);
         }
 
-        private static Gen<List<List<int>>> GenPartitionedSolution(int numCols, int startIdx, int endIdx)
+        private static Gen<IList<IList<int>>> GenPartitionedSolution(int numCols, int startIdx, int endIdx)
         {
             return
                 from numSolutionRows in Gen.Choose(1, Math.Min(5, endIdx - startIdx))
@@ -232,7 +227,7 @@ namespace DlxLibPropertyTests
                 select solutionRows;
         }
 
-        private static Gen<List<List<int>>> GenPartitionedSolutionRows(int numCols, int startIdx, int endIdx, int numSolutionRows)
+        private static Gen<IList<IList<int>>> GenPartitionedSolutionRows(int numCols, int startIdx, int endIdx, int numSolutionRows)
         {
             return
                 from solutionRows in Gen.Constant(InitPartitionedSolutionRows(numCols, startIdx, endIdx, numSolutionRows))
@@ -241,27 +236,27 @@ namespace DlxLibPropertyTests
                 select RandomlySprinkleOnesIntoSolutionRows(solutionRows, randomRowIdxs, startIdx);
         }
 
-        private static List<List<int>> InitPartitionedSolutionRows(int numCols, int startIdx, int endIdx, int numSolutionRows)
+        private static IList<IList<int>> InitPartitionedSolutionRows(int numCols, int startIdx, int endIdx, int numSolutionRows)
         {
             var firstRow = InitPartitionedSolutionFirstRow(numCols, startIdx, endIdx);
             var otherRows = InitPartitionedSolutionOtherRows(numCols, startIdx, endIdx, numSolutionRows - 1);
-            var combinedRows = new List<List<int>> {firstRow};
+            var combinedRows = new List<IList<int>> {firstRow};
             combinedRows.AddRange(otherRows);
             return combinedRows;
         }
 
-        private static List<int> InitPartitionedSolutionFirstRow(int numCols, int startIdx, int endIdx)
+        private static IList<int> InitPartitionedSolutionFirstRow(int numCols, int startIdx, int endIdx)
         {
             return InitPartitionedSolutionRow(numCols, startIdx, endIdx, true);
         }
 
-        private static IEnumerable<List<int>> InitPartitionedSolutionOtherRows(int numCols, int startIdx, int endIdx, int numOtherRows)
+        private static IEnumerable<IList<int>> InitPartitionedSolutionOtherRows(int numCols, int startIdx, int endIdx, int numOtherRows)
         {
             return Enumerable.Range(0, numOtherRows)
                 .Select(_ => InitPartitionedSolutionRow(numCols, startIdx, endIdx, false));
         }
 
-        private static List<int> InitPartitionedSolutionRow(int numCols, int startIdx, int endIdx, bool isFirstRow)
+        private static IList<int> InitPartitionedSolutionRow(int numCols, int startIdx, int endIdx, bool isFirstRow)
         {
             var fillerValue = (isFirstRow) ? 1 : 0;
 
@@ -276,8 +271,8 @@ namespace DlxLibPropertyTests
             return prefixPart.Concat(randomPart).Concat(suffixPart).ToList();
         }
 
-        private static List<List<int>> RandomlySprinkleOnesIntoSolutionRows(
-            List<List<int>> solutionRows,
+        private static IList<IList<int>> RandomlySprinkleOnesIntoSolutionRows(
+            IList<IList<int>> solutionRows,
             IEnumerable<int> randomRowIdxs,
             int startIdx = 0)
         {
@@ -286,14 +281,19 @@ namespace DlxLibPropertyTests
             return solutionRows;
         }
 
-        private static List<List<int>> CombineSolutions(IEnumerable<List<List<int>>> solutions)
+        private static IList<IList<int>> CombineSolutions(IEnumerable<IList<IList<int>>> solutions)
         {
             return solutions.SelectMany(solution => solution).ToList();
         }
 
-        private static List<List<int>> PokeSolutionRowsIntoMatrix(
-            List<List<int>> matrix,
-            IReadOnlyList<List<int>> solutionRows,
+        private static Gen<IList<int>> PickRandomRowIdxs(int numSolutionsRows, int numRows)
+        {
+            return FsCheckUtils.PickValues(numSolutionsRows, Enumerable.Range(0, numRows));
+        }
+
+        private static IList<IList<int>> PokeSolutionRowsIntoMatrix(
+            IList<IList<int>> matrix,
+            IList<IList<int>> solutionRows,
             IEnumerable<int> randomRowIdxs)
         {
             var fromIdx = 0;

@@ -7,32 +7,27 @@ namespace DlxLibPropertyTests
 {
     public static class FsCheckUtils
     {
-        public static Property Label(bool b, string label)
+        public static Property And(IEnumerable<Property> properties)
         {
-            return b.Label(label);
+            return And(properties.ToArray());
         }
 
-        public static Property AndAll(params Property[] properties)
+        public static Property And(params Property[] properties)
         {
             return Prop.ofTestable(ListModule.OfSeq(properties));
         }
 
-        public static Property AndAll(IEnumerable<Property> properties)
+        public static Gen<IList<T>> PickValues<T>(int n, IEnumerable<T> l)
         {
-            return AndAll(properties.ToArray());
+            return PickValues(n, l.ToArray());
         }
 
-        public static Gen<List<T>> PickValues<T>(int n, params T[] l)
+        private static Gen<IList<T>> PickValues<T>(int n, params T[] l)
         {
             var allIdxs = Enumerable.Range(0, l.Length).ToArray();
             return Gen.Elements(allIdxs).ListOf(n)
                 .Where(idxs => idxs.Distinct().Count() == n)
-                .Select(idxs => idxs.Select(idx => l[idx]).ToList());
-        }
-
-        public static Gen<List<T>> PickValues<T>(int n, IEnumerable<T> l)
-        {
-            return PickValues(n, l.ToArray());
+                .Select(idxs => idxs.Select(idx => l[idx]).ToList() as IList<T>);
         }
     }
 }
