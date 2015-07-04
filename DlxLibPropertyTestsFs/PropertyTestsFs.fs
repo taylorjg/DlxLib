@@ -150,7 +150,7 @@ let genMatrixOfIntWithSingleSolution =
         let! solution = genSolution numCols
         let! numRows = choose (solution.Length, solution.Length * 5)
         let! matrix = constant 0 |> listOfLength numCols |> listOfLength numRows
-        let! randomRowIdxs = GenExtensions.PickValues(solution.Length, seq { 0..numRows - 1})
+        let! randomRowIdxs = seq { 0..numRows - 1} |> pickValues solution.Length
         return pokeSolutionRowsIntoMatrix matrix solution randomRowIdxs |> to2DArray
     }
 
@@ -162,7 +162,7 @@ let genMatrixOfIntWithMultipleSolutions numSolutions =
         let combinedSolutions = List.concat solutions
         let! numRows = choose (combinedSolutions.Length, combinedSolutions.Length * 5)
         let! matrix = constant 0 |> listOfLength numCols |> listOfLength numRows
-        let! randomRowIdxs = GenExtensions.PickValues(combinedSolutions.Length, seq { 0..numRows - 1})
+        let! randomRowIdxs = seq { 0..numRows - 1} |> pickValues combinedSolutions.Length
         return pokeSolutionRowsIntoMatrix matrix combinedSolutions randomRowIdxs |> to2DArray
     }
 
@@ -187,15 +187,14 @@ let checkSolution (matrix: _ [,]) (solution: DlxLib.Solution) =
         let numZeros, numOnes = Seq.fold innerLoop (0, 0) solution.RowIndexes
         let p1 = numOnes = 1 |@ makeLabel1 colIndex numOnes
         let p2 = numZeros = expectedNumZerosPerColumn |@ makeLabel2 colIndex numZeros
-        (p1 .&. p2) :: properties
+        p1 :: p2 :: properties
 
     let colIndexes = seq { 0..numCols - 1 }
     let properties = Seq.fold loop List.empty colIndexes |> List.rev
-    PropExtensions.AndAll (properties |> Seq.toArray)
+    ofTestable properties
 
 let checkSolutions matrix solutions =
-    let assertions = Seq.map (checkSolution matrix) solutions
-    PropExtensions.AndAll (assertions |> Seq.toArray)
+    List.map (checkSolution matrix) solutions |> ofTestable
 
 [<Test>]
 let ``exact cover problems with no solutions``() =

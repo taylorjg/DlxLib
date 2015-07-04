@@ -4,7 +4,6 @@ using System.Linq;
 using DlxLib;
 using FsCheck;
 using FsCheck.Fluent;
-using FsCheckUtils;
 using Microsoft.FSharp.Core;
 using NUnit.Framework;
 
@@ -29,7 +28,7 @@ namespace DlxLibPropertyTests
             var property = Prop.forAll(arbMatrix, FSharpFunc<int[,], Property>.FromConverter(matrix =>
             {
                 var solutions = new Dlx().Solve(matrix).ToList();
-                return PropExtensions.Label(!solutions.Any(), makeLabel(solutions.Count()));
+                return FsCheckUtils.Label(!solutions.Any(), makeLabel(solutions.Count()));
             }));
 
             Check.One(Config, property);
@@ -47,9 +46,9 @@ namespace DlxLibPropertyTests
             var property = Prop.forAll(arbMatrix, FSharpFunc<int[,], Property>.FromConverter(matrix =>
             {
                 var solutions = new Dlx().Solve(matrix).ToList();
-                var p1 = PropExtensions.Label(solutions.Count() == 1, makeLabel(solutions.Count()));
+                var p1 = FsCheckUtils.Label(solutions.Count() == 1, makeLabel(solutions.Count()));
                 var p2 = CheckSolutions(solutions, matrix);
-                return PropExtensions.And(p1, p2);
+                return FsCheckUtils.AndAll(p1, p2);
             }));
 
             Check.One(Config, property);
@@ -72,9 +71,9 @@ namespace DlxLibPropertyTests
                 {
                     var solutions = new Dlx().Solve(matrix).ToList();
                     var actualNumSolutions = solutions.Count();
-                    var p1 = PropExtensions.Label(actualNumSolutions == numSolutions, makeLabel(actualNumSolutions));
+                    var p1 = FsCheckUtils.Label(actualNumSolutions == numSolutions, makeLabel(actualNumSolutions));
                     var p2 = CheckSolutions(solutions, matrix);
-                    return PropExtensions.And(p1, p2);
+                    return FsCheckUtils.AndAll(p1, p2);
                 }));
             }));
 
@@ -83,7 +82,7 @@ namespace DlxLibPropertyTests
 
         private static Property CheckSolutions(IEnumerable<Solution> solutions, int[,] matrix)
         {
-            return PropExtensions.AndAll(solutions.Select(solution => CheckSolution(solution, matrix)).ToArray());
+            return FsCheckUtils.AndAll(solutions.Select(solution => CheckSolution(solution, matrix)));
         }
 
         private static Property CheckSolution(Solution solution, int[,] matrix)
@@ -115,13 +114,14 @@ namespace DlxLibPropertyTests
                     if (matrix[rowIndex, colIndex] == 1) numOnes++;
                 }
 
-                var p1 = PropExtensions.Label(numOnes == 1, makeLabel1(colIndex, numOnes));
-                var p2 = PropExtensions.Label(numZeros == expectedNumZerosPerColumn, makeLabel2(colIndex, numZeros));
+                var p1 = FsCheckUtils.Label(numOnes == 1, makeLabel1(colIndex, numOnes));
+                var p2 = FsCheckUtils.Label(numZeros == expectedNumZerosPerColumn, makeLabel2(colIndex, numZeros));
 
-                colProperties.Add(PropExtensions.And(p1, p2));
+                colProperties.Add(p1);
+                colProperties.Add(p2);
             }
 
-            return PropExtensions.AndAll(colProperties.ToArray());
+            return FsCheckUtils.AndAll(colProperties);
         }
 
         private static Gen<int[,]> GenMatrixOfIntWithNoSolutions()
@@ -141,7 +141,7 @@ namespace DlxLibPropertyTests
                 from solution in GenSolution(numCols)
                 from numRows in Any.IntBetween(solution.Count, solution.Count * 5)
                 from matrix in Any.Value(0).MakeListOfLength(numCols).MakeListOfLength(numRows)
-                from randomRowIdxs in GenExtensions.PickValues(solution.Count, Enumerable.Range(0, numRows))
+                from randomRowIdxs in PickRandomRowIdxs(solution.Count, numRows)
                 select PokeSolutionRowsIntoMatrix(matrix, solution, randomRowIdxs).To2DArray();
         }
 
@@ -154,8 +154,13 @@ namespace DlxLibPropertyTests
                 let combinedSolutions = CombineSolutions(solutions)
                 from numRows in Any.IntBetween(combinedSolutions.Count, combinedSolutions.Count * 5)
                 from matrix in Any.Value(0).MakeListOfLength(numCols).MakeListOfLength(numRows)
-                from randomRowIdxs in GenExtensions.PickValues(combinedSolutions.Count, Enumerable.Range(0, numRows))
+                from randomRowIdxs in PickRandomRowIdxs(combinedSolutions.Count, numRows)
                 select PokeSolutionRowsIntoMatrix(matrix, combinedSolutions, randomRowIdxs).To2DArray();
+        }
+
+        private static Gen<List<int>> PickRandomRowIdxs(int numSolutionsRows, int numRows)
+        {
+            return FsCheckUtils.PickValues(numSolutionsRows, Enumerable.Range(0, numRows));
         }
 
         private static Gen<List<int>> GenRowWithZeroInGivenColumn(int numCols, int indexOfAlwaysZeroColumn)
