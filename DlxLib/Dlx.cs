@@ -262,6 +262,51 @@ namespace DlxLib
         }
 
         /// <summary>
+        /// Find all possible solutions to an exact cover problem given an arbitrary data structure representing
+        /// the matrix.
+        /// </summary>
+        /// <example>
+        /// <code>
+        /// var data = new List&lt;Tuple&lt;int[], string&gt;&gt;
+        ///     {
+        ///         Tuple.Create(new[] {1, 0, 0}, "Some data associated with row 0"),
+        ///         Tuple.Create(new[] {0, 1, 0}, "Some data associated with row 1"),
+        ///         Tuple.Create(new[] {0, 0, 1}, "Some data associated with row 2")
+        ///     };
+        /// var solutions = new Dlx().Solve(data, d => d, r => r.Item1);
+        /// </code>
+        /// </example>
+        /// <remarks>
+        /// This Solve method overload determines whether a matrix value is a logical 1 or a logical 0
+        /// using the following default predicate:
+        /// <code>
+        /// private static Func&lt;T, bool&gt; DefaultPredicate&lt;T&gt;()
+        /// {
+        ///     return t => !EqualityComparer&lt;T&gt;.Default.Equals(t, default(T));
+        /// }
+        /// </code>
+        /// </remarks>
+        /// <typeparam name="TData">The type of the data structure that represents the exact cover problem.</typeparam>
+        /// <typeparam name="TRow">The type of the data structure that represents rows in the matrix.</typeparam>
+        /// <typeparam name="TCol">The type of the data structure that represents columns in the matrix.</typeparam>
+        /// <param name="data">The top-level data structure that represents the exact cover problem.</param>
+        /// <param name="iterateRows">A System.Func delegate that will be invoked to iterate the rows in the matrix.</param>
+        /// <param name="iterateCols">A System.Func delegate that will be invoked to iterate the columns
+        /// in a particular row in the matrix.</param>
+        /// <param name="numPrimaryColumns">The number of primary columns. Columns at indices higher than this value are secondary columns.</param>
+        /// <returns>Yields <see cref="Solution" /> objects as they are found.</returns>
+        public IEnumerable<Solution> Solve<TData, TRow, TCol>(
+            TData data,
+            Func<TData, IEnumerable<TRow>> iterateRows,
+            Func<TRow, IEnumerable<TCol>> iterateCols,
+            int numPrimaryColumns)
+        {
+            if (data.Equals(default(TData))) throw new ArgumentNullException("data");
+            var root = BuildInternalStructure(data, iterateRows, iterateCols, DefaultPredicate<TCol>(), numPrimaryColumns);
+            return Search(0, new SearchData(root));
+        }
+
+        /// <summary>
         /// Occurs once when the internal search algorithm starts.
         /// </summary>
         public event EventHandler Started;
@@ -300,7 +345,8 @@ namespace DlxLib
             TData data,
             Func<TData, IEnumerable<TRow>> iterateRows,
             Func<TRow, IEnumerable<TCol>> iterateCols,
-            Func<TCol, bool> predicate)
+            Func<TCol, bool> predicate,
+            int? numPrimaryColumns = null)
         {
             var root = new ColumnObject();
 
@@ -319,7 +365,8 @@ namespace DlxLib
                     if (localRowIndex == 0)
                     {
                         var listHeader = new ColumnObject();
-                        root.AppendColumnHeader(listHeader);
+                        var isPrimaryColumn = !numPrimaryColumns.HasValue || colIndex < numPrimaryColumns.Value;
+                        if (isPrimaryColumn) root.AppendColumnHeader(listHeader);
                         colIndexToListHeader[colIndex] = listHeader;
                     }
 
