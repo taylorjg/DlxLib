@@ -7,7 +7,7 @@ namespace DlxLib
             PreviousColumnObject = NextColumnObject = this;
         }
 
-        public ColumnObject PreviousColumnObject { get; private set; }
+        private ColumnObject PreviousColumnObject { get; set; }
         public ColumnObject NextColumnObject { get; private set; }
         public int NumberOfRows { get; private set; }
 

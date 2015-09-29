@@ -62,10 +62,7 @@ namespace DlxLib.EnumerableArrayAdapter
 
             public Enumerable2DArrayRow<TInner> Current { get; private set; }
 
-            object IEnumerator.Current
-            {
-                get { return Current; }
-            }
+            object IEnumerator.Current => Current;
         }
     }
 }

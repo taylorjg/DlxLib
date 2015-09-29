@@ -10,27 +10,18 @@ namespace DlxLib
     {
         internal SearchStepEventArgs(int iteration, IEnumerable<int> rowIndexes)
         {
-            _iteration = iteration;
-            _rowIndexes = rowIndexes;
+            Iteration = iteration;
+            RowIndexes = rowIndexes;
         }
 
         /// <summary>
         /// The number of iterations that the internal search algorithm has performed up to this point.
         /// </summary>
-        public int Iteration
-        {
-            get { return _iteration; }
-        }
+        public int Iteration { get; }
 
         /// <summary>
         /// The indexes of the set of rows, in the original matrix, that is currently being considered.
         /// </summary>
-        public IEnumerable<int> RowIndexes
-        {
-            get { return _rowIndexes; }
-        }
-
-        private readonly int _iteration;
-        private readonly IEnumerable<int> _rowIndexes;
+        public IEnumerable<int> RowIndexes { get; }
     }
 }

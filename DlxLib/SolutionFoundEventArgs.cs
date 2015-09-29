@@ -10,28 +10,19 @@ namespace DlxLib
     {
         internal SolutionFoundEventArgs(Solution solution, int solutionIndex)
         {
-            _solution = solution;
-            _solutionIndex = solutionIndex;
+            Solution = solution;
+            SolutionIndex = solutionIndex;
         }
 
         /// <summary>
         /// Gives details of the solution.
         /// </summary>
-        public Solution Solution
-        {
-            get { return _solution; }
-        }
+        public Solution Solution { get; }
 
         /// <summary>
         /// The zero-based index of the solution i.e. the first solution found has a SolutionIndex of 0,
         /// the second solution found has a SolutionIndex of 1, etc.
         /// </summary>
-        public int SolutionIndex
-        {
-            get { return _solutionIndex; }
-        }
-
-        private readonly Solution _solution;
-        private readonly int _solutionIndex;
+        public int SolutionIndex { get; }
     }
 }

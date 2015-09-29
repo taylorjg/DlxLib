@@ -8,10 +8,7 @@ namespace DlxLib
             ListHeader = listHeader;
             RowIndex = rowIndex;
 
-            if (listHeader != null)
-            {
-                listHeader.AddDataObject(this);
-            }
+            listHeader?.AddDataObject(this);
         }
 
         // TODO: this is a bit ugly...
@@ -36,7 +33,7 @@ namespace DlxLib
             Left = dataObject;
         }
 
-        public void AppendToColumn(DataObject dataObject)
+        protected void AppendToColumn(DataObject dataObject)
         {
             Up.Down = dataObject;
             dataObject.Down = this;

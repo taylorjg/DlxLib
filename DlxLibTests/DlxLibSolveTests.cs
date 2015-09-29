@@ -240,5 +240,53 @@ namespace DlxLibTests
                                                     .EquivalentTo(new[] {2, 4, 5}));
             Assert.That(numSolutionFoundEventsRaised, Is.EqualTo(1));
         }
+
+        [Test]
+        public void SecondaryColumnsCanBeAllZerosUnlikePrimaryColumns()
+        {
+            // Arrange
+            var matrix = new List<List<int>>
+            {
+                new List<int> {1, 0, 0, 0, 0, 0}, // 0
+                new List<int> {0, 1, 1, 0, 0, 0}, // 1
+                new List<int> {1, 0, 0, 1, 0, 0}, // 2
+                new List<int> {0, 0, 1, 1, 0, 0}, // 3
+                new List<int> {0, 1, 0, 0, 0, 0}, // 4
+                new List<int> {0, 0, 1, 0, 0, 0}  // 5
+            };
+            var dlx = new Dlx();
+
+            // Act
+            var solutions = dlx.Solve(matrix, d => d, r => r, 4).ToList();
+
+            // Assert
+            Assert.That(solutions, Has.Count.EqualTo(3));
+            Assert.That(solutions.Select(s => s.RowIndexes), Contains.Item(new[] { 0, 3, 4 }));
+            Assert.That(solutions.Select(s => s.RowIndexes), Contains.Item(new[] { 1, 2 }));
+            Assert.That(solutions.Select(s => s.RowIndexes), Contains.Item(new[] { 2, 4, 5 }));
+        }
+
+        [Test]
+        public void SecondaryColumnsCanBeCoveredOnlyOnceLikePrimaryColumns()
+        {
+            // Arrange
+            var matrix = new List<List<int>>
+            {
+                new List<int> {1, 0, 0, 0, 1}, // 0
+                new List<int> {0, 1, 1, 0, 0}, // 1
+                new List<int> {1, 0, 0, 1, 0}, // 2
+                new List<int> {0, 0, 1, 1, 0}, // 3
+                new List<int> {0, 1, 0, 0, 1}, // 4
+                new List<int> {0, 0, 1, 0, 1}  // 5
+            };
+            var dlx = new Dlx();
+
+            // Act
+            var solutions = dlx.Solve(matrix, d => d, r => r, 4).ToList();
+
+            // Assert
+            Assert.That(solutions, Has.Count.EqualTo(1));
+            Assert.That(solutions.Select(s => s.RowIndexes), Contains.Item(new[] { 1, 2 }));
+        }
     }
 }

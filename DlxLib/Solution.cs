@@ -10,18 +10,13 @@ namespace DlxLib
     {
         internal Solution(IEnumerable<int> rowIndexes)
         {
-            _rowIndexes = rowIndexes.OrderBy(rowIndex => rowIndex);
+            RowIndexes = rowIndexes.OrderBy(rowIndex => rowIndex);
         }
 
         /// <summary>
         /// The indexes of the set of rows, in the original matrix, that constitute the solution.
         /// The indexes are always sorted in ascending order.
         /// </summary>
-        public IEnumerable<int> RowIndexes
-        {
-            get { return _rowIndexes; }
-        }
-
-        private readonly IEnumerable<int> _rowIndexes;
+        public IEnumerable<int> RowIndexes { get; }
     }
 }

@@ -26,7 +26,7 @@ namespace DlxLib
                 Root = root;
             }
 
-            public ColumnObject Root { get; private set; }
+            public ColumnObject Root { get; }
             public int IterationCount { get; private set; }
             public int SolutionCount { get; private set; }
 
@@ -50,10 +50,7 @@ namespace DlxLib
                 _currentSolution.Pop();
             }
 
-            public Solution CurrentSolution
-            {
-                get { return new Solution(_currentSolution.ToList()); }
-            }
+            public Solution CurrentSolution => new Solution(_currentSolution.ToList());
 
             private readonly Stack<int> _currentSolution = new Stack<int>();
         }
@@ -179,7 +176,7 @@ namespace DlxLib
         /// <returns>Yields <see cref="Solution" /> objects as they are found.</returns>
         public IEnumerable<Solution> Solve<T>(T[,] matrix, Func<T, bool> predicate)
         {
-            if (matrix == null) throw new ArgumentNullException("matrix");
+            if (matrix == null) throw new ArgumentNullException(nameof(matrix));
             return Solve(matrix, m => new Enumerable2DArray<T>(m), r => r, predicate);
         }
 
@@ -256,7 +253,7 @@ namespace DlxLib
             Func<TRow, IEnumerable<TCol>> iterateCols,
             Func<TCol, bool> predicate)
         {
-            if (data.Equals(default(TData))) throw new ArgumentNullException("data");
+            if (data.Equals(default(TData))) throw new ArgumentNullException(nameof(data));
             var root = BuildInternalStructure(data, iterateRows, iterateCols, predicate);
             return Search(0, new SearchData(root));
         }
@@ -301,7 +298,7 @@ namespace DlxLib
             Func<TRow, IEnumerable<TCol>> iterateCols,
             int numPrimaryColumns)
         {
-            if (data.Equals(default(TData))) throw new ArgumentNullException("data");
+            if (data.Equals(default(TData))) throw new ArgumentNullException(nameof(data));
             var root = BuildInternalStructure(data, iterateRows, iterateCols, DefaultPredicate<TCol>(), numPrimaryColumns);
             return Search(0, new SearchData(root));
         }
@@ -388,7 +385,7 @@ namespace DlxLib
                 {
                     if (colIndex != numColumns)
                     {
-                        throw new ArgumentException("All rows must contain the same number of columns!", "data");
+                        throw new ArgumentException("All rows must contain the same number of columns!", nameof(data));
                     }
                 }
                 else
@@ -512,31 +509,31 @@ namespace DlxLib
         private void RaiseStarted()
         {
             var handler = Started;
-            if (handler != null) handler(this, EventArgs.Empty);
+            handler?.Invoke(this, EventArgs.Empty);
         }
 
         private void RaiseFinished()
         {
             var handler = Finished;
-            if (handler != null) handler(this, EventArgs.Empty);
+            handler?.Invoke(this, EventArgs.Empty);
         }
 
         private void RaiseCancelled()
         {
             var handler = Cancelled;
-            if (handler != null) handler(this, EventArgs.Empty);
+            handler?.Invoke(this, EventArgs.Empty);
         }
 
         private void RaiseSearchStep(int iteration, IEnumerable<int> rowIndexes)
         {
             var handler = SearchStep;
-            if (handler != null) handler(this, new SearchStepEventArgs(iteration, rowIndexes));
+            handler?.Invoke(this, new SearchStepEventArgs(iteration, rowIndexes));
         }
 
         private void RaiseSolutionFound(Solution solution, int solutionIndex)
         {
             var handler = SolutionFound;
-            if (handler != null) handler(this, new SolutionFoundEventArgs(solution, solutionIndex));
+            handler?.Invoke(this, new SolutionFoundEventArgs(solution, solutionIndex));
         }
     }
 }
