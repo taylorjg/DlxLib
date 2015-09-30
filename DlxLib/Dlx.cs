@@ -192,7 +192,8 @@ namespace DlxLib
         ///         Tuple.Create(new[] {0, 1, 0}, "Some data associated with row 1"),
         ///         Tuple.Create(new[] {0, 0, 1}, "Some data associated with row 2")
         ///     };
-        /// var solutions = new Dlx().Solve(data, d => d, r => r.Item1);
+        /// var dlx = new Dlx();
+        /// var solutions = dlx.Solve(data, d => d, r => r.Item1);
         /// </code>
         /// </example>
         /// <remarks>
@@ -233,7 +234,8 @@ namespace DlxLib
         ///         Tuple.Create(new[] {'O', 'X', 'O'}, "Some data associated with row 1"),
         ///         Tuple.Create(new[] {'O', 'O', 'X'}, "Some data associated with row 2")
         ///     };
-        /// var solutions = new Dlx().Solve(data, d => d, r => r.Item1, c => c == 'X');
+        /// var dlx = new Dlx();
+        /// var solutions = dlx.Solve(data, d => d, r => r.Item1, c => c == 'X');
         /// </code>
         /// </example>
         /// <typeparam name="TData">The type of the data structure that represents the exact cover problem.</typeparam>
@@ -259,18 +261,19 @@ namespace DlxLib
         }
 
         /// <summary>
-        /// Find all possible solutions to an exact cover problem given an arbitrary data structure representing
-        /// the matrix.
+        /// Find all possible solutions to an exact cover problem given a 2-dimensional array of <typeparamref name="T"/>.
         /// </summary>
         /// <example>
         /// <code>
-        /// var data = new List&lt;Tuple&lt;int[], string&gt;&gt;
+        /// var matrix = new[,]
         ///     {
-        ///         Tuple.Create(new[] {1, 0, 0}, "Some data associated with row 0"),
-        ///         Tuple.Create(new[] {0, 1, 0}, "Some data associated with row 1"),
-        ///         Tuple.Create(new[] {0, 0, 1}, "Some data associated with row 2")
+        ///         {1, 0, 0, 1, 0},
+        ///         {0, 1, 0, 0, 0},
+        ///         {0, 0, 1, 0, 0}
         ///     };
-        /// var solutions = new Dlx().Solve(data, d => d, r => r.Item1);
+        /// var dlx = new Dlx();
+        /// const int numPrimaryColumns = 3;
+        /// var solutions = dlx.Solve(matrix, numPrimaryColumns);
         /// </code>
         /// </example>
         /// <remarks>
@@ -282,6 +285,81 @@ namespace DlxLib
         ///     return t => !EqualityComparer&lt;T&gt;.Default.Equals(t, default(T));
         /// }
         /// </code>
+        /// In addition, this Solve method overload handles secondary columns. The difference between primary and secondary columns is that
+        /// a solution covers every primary column exactly once but covers every secondary column at most once.
+        /// </remarks>
+        /// <typeparam name="T">The type of elements in the matrix.</typeparam>
+        /// <param name="matrix">A matrix of <typeparamref name="T"/> values representing an exact cover problem.</param>
+        /// <param name="numPrimaryColumns">The number of primary columns. Columns at indices higher than this value are assumed to be secondary columns.</param>
+        /// <returns>Yields <see cref="Solution" /> objects as they are found.</returns>
+        public IEnumerable<Solution> Solve<T>(T[,] matrix, int numPrimaryColumns)
+        {
+            return Solve(matrix, DefaultPredicate<T>(), numPrimaryColumns);
+        }
+
+        /// <summary>
+        /// Find all possible solutions to an exact cover problem given a 2-dimensional array of <typeparamref name="T"/>
+        /// and a predicate.
+        /// </summary>
+        /// <example>
+        /// <code>
+        /// var matrix = new[,]
+        ///     {
+        ///         {'X', 'O', 'O', 'X', 'O'},
+        ///         {'O', 'X', 'O', 'O', 'O'},
+        ///         {'O', 'O', 'X', 'O', 'O'}
+        ///     };
+        /// var dlx = new Dlx();
+        /// const int numPrimaryColumns = 3;
+        /// var solutions = dlx.Solve(matrix, c => c == 'X', numPrimaryColumns);
+        /// </code>
+        /// </example>
+        /// <remarks>
+        /// This Solve method overload also handles secondary columns.
+        /// The difference between primary and secondary columns is that
+        /// a solution covers every primary column exactly once but covers every secondary column at most once.
+        /// </remarks>
+        /// <typeparam name="T">The type of elements in the matrix.</typeparam>
+        /// <param name="matrix">A matrix of <typeparamref name="T"/> values representing an exact cover problem.</param>
+        /// <param name="predicate">A predicate which is invoked for each value in the matrix to determine
+        /// whether the value represents a logical 1 or a logical 0 indicated by returning <c>true</c>
+        /// or <c>false</c> respectively.</param>
+        /// <param name="numPrimaryColumns">The number of primary columns. Columns at indices higher than this value are assumed to be secondary columns.</param>
+        /// <returns>Yields <see cref="Solution" /> objects as they are found.</returns>
+        public IEnumerable<Solution> Solve<T>(T[,] matrix, Func<T, bool> predicate, int numPrimaryColumns)
+        {
+            if (matrix == null) throw new ArgumentNullException(nameof(matrix));
+            return Solve(matrix, m => new Enumerable2DArray<T>(m), r => r, predicate, numPrimaryColumns);
+        }
+
+        /// <summary>
+        /// Find all possible solutions to an exact cover problem given an arbitrary data structure representing
+        /// the matrix.
+        /// </summary>
+        /// <example>
+        /// <code>
+        /// var data = new List&lt;Tuple&lt;int[], string&gt;&gt;
+        ///     {
+        ///         Tuple.Create(new[] {1, 0, 0, 1, 0}, "Some data associated with row 0"),
+        ///         Tuple.Create(new[] {0, 1, 0, 0, 0}, "Some data associated with row 1"),
+        ///         Tuple.Create(new[] {0, 0, 1, 0, 0}, "Some data associated with row 2")
+        ///     };
+        /// var dlx = new Dlx();
+        /// const int numPrimaryColumns = 3;
+        /// var solutions = dlx.Solve(data, d => d, r => r.Item1, numPrimaryColumns);
+        /// </code>
+        /// </example>
+        /// <remarks>
+        /// This Solve method overload determines whether a matrix value is a logical 1 or a logical 0
+        /// using the following default predicate:
+        /// <code>
+        /// private static Func&lt;T, bool&gt; DefaultPredicate&lt;T&gt;()
+        /// {
+        ///     return t => !EqualityComparer&lt;T&gt;.Default.Equals(t, default(T));
+        /// }
+        /// </code>
+        /// In addition, this Solve method overload handles secondary columns. The difference between primary and secondary columns is that
+        /// a solution covers every primary column exactly once but covers every secondary column at most once.
         /// </remarks>
         /// <typeparam name="TData">The type of the data structure that represents the exact cover problem.</typeparam>
         /// <typeparam name="TRow">The type of the data structure that represents rows in the matrix.</typeparam>
@@ -290,7 +368,7 @@ namespace DlxLib
         /// <param name="iterateRows">A System.Func delegate that will be invoked to iterate the rows in the matrix.</param>
         /// <param name="iterateCols">A System.Func delegate that will be invoked to iterate the columns
         /// in a particular row in the matrix.</param>
-        /// <param name="numPrimaryColumns">The number of primary columns. Columns at indices higher than this value are secondary columns.</param>
+        /// <param name="numPrimaryColumns">The number of primary columns. Columns at indices higher than this value are assumed to be secondary columns.</param>
         /// <returns>Yields <see cref="Solution" /> objects as they are found.</returns>
         public IEnumerable<Solution> Solve<TData, TRow, TCol>(
             TData data,
@@ -300,6 +378,52 @@ namespace DlxLib
         {
             if (data.Equals(default(TData))) throw new ArgumentNullException(nameof(data));
             var root = BuildInternalStructure(data, iterateRows, iterateCols, DefaultPredicate<TCol>(), numPrimaryColumns);
+            return Search(0, new SearchData(root));
+        }
+
+        /// <summary>
+        /// Find all possible solutions to an exact cover problem given an arbitrary data structure representing
+        /// the matrix and a predicate.
+        /// </summary>
+        /// <example>
+        /// <code>
+        /// var data = new List&lt;Tuple&lt;char[], string&gt;&gt;
+        ///     {
+        ///         Tuple.Create(new[] {'X', 'O', 'O', 'X', 'O'}, "Some data associated with row 0"),
+        ///         Tuple.Create(new[] {'O', 'X', 'O', 'O', 'O'}, "Some data associated with row 1"),
+        ///         Tuple.Create(new[] {'O', 'O', 'X', 'O', 'O'}, "Some data associated with row 2")
+        ///     };
+        /// var dlx = new Dlx();
+        /// const int numPrimaryColumns = 3;
+        /// var solutions = dlx.Solve(data, d => d, r => r.Item1, c => c == 'X', numPrimaryColumns);
+        /// </code>
+        /// </example>
+        /// <remarks>
+        /// This Solve method overload also handles secondary columns.
+        /// The difference between primary and secondary columns is that
+        /// a solution covers every primary column exactly once but covers every secondary column at most once.
+        /// </remarks>
+        /// <typeparam name="TData">The type of the data structure that represents the exact cover problem.</typeparam>
+        /// <typeparam name="TRow">The type of the data structure that represents rows in the matrix.</typeparam>
+        /// <typeparam name="TCol">The type of the data structure that represents columns in the matrix.</typeparam>
+        /// <param name="data">The top-level data structure that represents the exact cover problem.</param>
+        /// <param name="iterateRows">A System.Func delegate that will be invoked to iterate the rows in the matrix.</param>
+        /// <param name="iterateCols">A System.Func delegate that will be invoked to iterate the columns
+        /// in a particular row in the matrix.</param>
+        /// <param name="predicate">A predicate which is invoked for each value in the matrix to determine
+        /// whether the value represents a logical 1 or a logical 0 indicated by returning <c>true</c>
+        /// or <c>false</c> respectively.</param>
+        /// <param name="numPrimaryColumns">The number of primary columns. Columns at indices higher than this value are assumed to be secondary columns.</param>
+        /// <returns>Yields <see cref="Solution" /> objects as they are found.</returns>
+        public IEnumerable<Solution> Solve<TData, TRow, TCol>(
+            TData data,
+            Func<TData, IEnumerable<TRow>> iterateRows,
+            Func<TRow, IEnumerable<TCol>> iterateCols,
+            Func<TCol, bool> predicate,
+            int numPrimaryColumns)
+        {
+            if (data.Equals(default(TData))) throw new ArgumentNullException(nameof(data));
+            var root = BuildInternalStructure(data, iterateRows, iterateCols, predicate, numPrimaryColumns);
             return Search(0, new SearchData(root));
         }
 

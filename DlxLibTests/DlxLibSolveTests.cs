@@ -288,5 +288,88 @@ namespace DlxLibTests
             Assert.That(solutions, Has.Count.EqualTo(1));
             Assert.That(solutions.Select(s => s.RowIndexes), Contains.Item(new[] { 1, 2 }));
         }
+
+        [Test]
+        public void SolveWithMatrixOfBoolAndNumPrimaryColumns()
+        {
+            // Arrange
+            var matrix = new[,]
+                {
+                    {true, false, false, true, false},
+                    {false, true, false, false, false},
+                    {false, false, true, false, false}
+                };
+            var dlx = new Dlx();
+
+            // Act
+            const int numPrimaryColumns = 3;
+            var solutions = dlx.Solve(matrix, numPrimaryColumns).ToList();
+
+            // Assert
+            Assert.That(solutions, Has.Count.EqualTo(1));
+            Assert.That(solutions.Select(s => s.RowIndexes), Contains.Item(new[] { 0, 1, 2 }));
+        }
+
+        [Test]
+        public void SolveWithMatrixOfIntAndNumPrimaryColumns()
+        {
+            // Arrange
+            var matrix = new[,]
+            {
+                {1, 0, 0, 1, 0},
+                {0, 1, 0, 0, 0},
+                {0, 0, 1, 0, 0}
+            };
+            var dlx = new Dlx();
+
+            // Act
+            const int numPrimaryColumns = 3;
+            var solutions = dlx.Solve(matrix, numPrimaryColumns).ToList();
+
+            // Assert
+            Assert.That(solutions, Has.Count.EqualTo(1));
+            Assert.That(solutions.Select(s => s.RowIndexes), Contains.Item(new[] { 0, 1, 2 }));
+        }
+
+        [Test]
+        public void SolveWithMatrixOfCharAndCustomPredicateAndNumPrimaryColumns()
+        {
+            // Arrange
+            var matrix = new[,]
+                {
+                    {'X', 'O', 'O', 'X', 'O'},
+                    {'O', 'X', 'O', 'O', 'O'},
+                    {'O', 'O', 'X', 'O', 'O'}
+                };
+            var dlx = new Dlx();
+
+            // Act
+            const int numPrimaryColumns = 3;
+            var solutions = dlx.Solve(matrix, c => c == 'X', numPrimaryColumns).ToList();
+
+            // Assert
+            Assert.That(solutions, Has.Count.EqualTo(1));
+            Assert.That(solutions.Select(s => s.RowIndexes), Contains.Item(new[] { 0, 1, 2 }));
+        }
+
+        [Test]
+        public void SolveWithArbitraryDataStuctureAndCustomPredicateAndNumPrimaryColumns()
+        {
+            // Arrange
+            var data = new List<Tuple<char[], string>>
+                {
+                    Tuple.Create(new[] {'X', 'O', 'O', 'X', 'O'}, "Some data associated with row 0"),
+                    Tuple.Create(new[] {'O', 'X', 'O', 'O', 'O'}, "Some data associated with row 1"),
+                    Tuple.Create(new[] {'O', 'O', 'X', 'O', 'O'}, "Some data associated with row 2")
+                };
+
+            // Act
+            const int numPrimaryColumns = 3;
+            var solutions = new Dlx().Solve(data, d => d, r => r.Item1, c => c == 'X', numPrimaryColumns).ToList();
+
+            // Assert
+            Assert.That(solutions, Has.Count.EqualTo(1));
+            Assert.That(solutions.Select(s => s.RowIndexes), Contains.Item(new[] { 0, 1, 2 }));
+        }
     }
 }
