@@ -182,7 +182,7 @@ namespace DlxLib
 
         /// <summary>
         /// Find all possible solutions to an exact cover problem given an arbitrary data structure representing
-        /// the matrix.
+        /// a matrix.
         /// </summary>
         /// <example>
         /// <code>
@@ -224,7 +224,7 @@ namespace DlxLib
 
         /// <summary>
         /// Find all possible solutions to an exact cover problem given an arbitrary data structure representing
-        /// the matrix and a predicate.
+        /// a matrix and a predicate.
         /// </summary>
         /// <example>
         /// <code>
@@ -261,7 +261,8 @@ namespace DlxLib
         }
 
         /// <summary>
-        /// Find all possible solutions to an exact cover problem given a 2-dimensional array of <typeparamref name="T"/>.
+        /// Find all possible solutions to an exact cover problem given a 2-dimensional array of <typeparamref name="T"/>
+        /// containing primary and secondary columns.
         /// </summary>
         /// <example>
         /// <code>
@@ -299,7 +300,7 @@ namespace DlxLib
 
         /// <summary>
         /// Find all possible solutions to an exact cover problem given a 2-dimensional array of <typeparamref name="T"/>
-        /// and a predicate.
+        /// containing primary and secondary columns and a predicate.
         /// </summary>
         /// <example>
         /// <code>
@@ -334,7 +335,7 @@ namespace DlxLib
 
         /// <summary>
         /// Find all possible solutions to an exact cover problem given an arbitrary data structure representing
-        /// the matrix.
+        /// a matrix containing primary and secondary columns.
         /// </summary>
         /// <example>
         /// <code>
@@ -383,7 +384,7 @@ namespace DlxLib
 
         /// <summary>
         /// Find all possible solutions to an exact cover problem given an arbitrary data structure representing
-        /// the matrix and a predicate.
+        /// a matrix containing primary and secondary columns and a predicate.
         /// </summary>
         /// <example>
         /// <code>
