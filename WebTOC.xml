@@ -1,0 +1,51 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<HelpTOC>
+
+  <HelpTOCNode Id="c951b96d-acd0-4691-b873-380880210c19" Title="DlxLib" Url="html/bd811f37-26ea-c78d-0ac2-242379d6e9d7.htm">
+    <HelpTOCNode Id="b8b9cf91-8fa5-4e2f-97fe-9e7a0c1a92a2" Title="Dlx Class" Url="html/e3d043b6-6b7f-5ab1-02e0-84af4b5f1053.htm">
+      <HelpTOCNode Id="a03e9ba5-72f9-4331-b6b7-f1a633658b46" Title="Dlx Constructor " Url="html/97adea8d-2684-fd9b-b52c-e84e92174c27.htm">
+        <HelpTOCNode Title="Dlx Constructor " Url="html/0216d257-7e15-f8cd-fb37-870b9c9da671.htm" />
+        <HelpTOCNode Title="Dlx Constructor (CancellationToken)" Url="html/6d700789-5bcb-cf33-9c47-345c4ac0d541.htm" />
+      </HelpTOCNode>
+      <HelpTOCNode Id="447595a8-ac43-42af-b165-d879d737b14f" Title="Dlx Methods" Url="html/b5d84583-cfd8-4e7e-594c-51c57ad400c9.htm">
+        <HelpTOCNode Id="4f71b6ac-51d2-456b-a1bf-68ebc3cf925b" Title="Solve Method " Url="html/21bdf80d-c2a5-69a0-c07b-ab6343d42675.htm">
+          <HelpTOCNode Title="Solve(T) Method (T[,])" Url="html/52eff918-a08a-4df3-8767-08dce24d06eb.htm" />
+          <HelpTOCNode Title="Solve(T) Method (T[,], Func(T, Boolean))" Url="html/5cf63d59-cee1-346a-60b5-713afc4847bf.htm" />
+          <HelpTOCNode Title="Solve(T) Method (T[,], Int32)" Url="html/db6ec211-e9a4-e48d-ada5-6cbd2349cdda.htm" />
+          <HelpTOCNode Title="Solve(T) Method (T[,], Func(T, Boolean), Int32)" Url="html/3515f846-3fc9-9403-2e3a-a395a6f66823.htm" />
+          <HelpTOCNode Title="Solve(TData, TRow, TCol) Method (TData, Func(TData, IEnumerable(TRow)), Func(TRow, IEnumerable(TCol)))" Url="html/441bd34e-a4ae-52a7-1050-6f150ca10978.htm" />
+          <HelpTOCNode Title="Solve(TData, TRow, TCol) Method (TData, Func(TData, IEnumerable(TRow)), Func(TRow, IEnumerable(TCol)), Func(TCol, Boolean))" Url="html/1d11be46-043c-c85b-16cb-844208bd31f5.htm" />
+          <HelpTOCNode Title="Solve(TData, TRow, TCol) Method (TData, Func(TData, IEnumerable(TRow)), Func(TRow, IEnumerable(TCol)), Int32)" Url="html/f5dceaef-f723-35f9-78b0-c70b2a180481.htm" />
+          <HelpTOCNode Title="Solve(TData, TRow, TCol) Method (TData, Func(TData, IEnumerable(TRow)), Func(TRow, IEnumerable(TCol)), Func(TCol, Boolean), Int32)" Url="html/f40a0e93-d73a-6f89-4bdd-d000982bfdaa.htm" />
+        </HelpTOCNode>
+      </HelpTOCNode>
+      <HelpTOCNode Id="3bddaa22-46c4-4524-9826-3d1425bd7e52" Title="Dlx Events" Url="html/a1069ad3-582b-ce24-f524-207471aa952d.htm">
+        <HelpTOCNode Title="Cancelled Event" Url="html/f6a25f63-2c25-1925-a9b2-7d27e6236994.htm" />
+        <HelpTOCNode Title="Finished Event" Url="html/f9d2e035-af09-09e0-558b-2898660b012b.htm" />
+        <HelpTOCNode Title="SearchStep Event" Url="html/5352c066-c5bf-dd55-26c8-84d3e34fa498.htm" />
+        <HelpTOCNode Title="SolutionFound Event" Url="html/9ec8b7a5-a0ce-9df2-6a4b-1b5ef8b8a03f.htm" />
+        <HelpTOCNode Title="Started Event" Url="html/623bbb78-c952-d789-3dcb-f760597504ac.htm" />
+      </HelpTOCNode>
+    </HelpTOCNode>
+    <HelpTOCNode Id="927dbf07-348a-4a60-b854-bec4ada2cd19" Title="SearchStepEventArgs Class" Url="html/5c8c1357-c329-71f1-0fa0-9d557174f75b.htm">
+      <HelpTOCNode Id="0bdaa4f3-a686-4372-8bdd-2a5973ff5152" Title="SearchStepEventArgs Properties" Url="html/ec1ebc34-d361-b0fb-d275-ebbbc2cec011.htm">
+        <HelpTOCNode Title="Iteration Property " Url="html/1bec1cd9-9d32-1884-7c8b-fb2545033090.htm" />
+        <HelpTOCNode Title="RowIndexes Property " Url="html/43d915f7-fea7-02dc-58f8-5c3e8baf55fb.htm" />
+      </HelpTOCNode>
+      <HelpTOCNode Title="SearchStepEventArgs Methods" Url="html/088b4aa8-90f7-e8ad-7107-126f33f1f9b4.htm" />
+    </HelpTOCNode>
+    <HelpTOCNode Id="4a5aaae9-1cdd-4089-8d8c-4af2de19fc43" Title="Solution Class" Url="html/1cbfa28f-e465-086f-edc0-6f729b28b127.htm">
+      <HelpTOCNode Id="fd796632-a8a9-41b9-9e88-018c3cc978db" Title="Solution Properties" Url="html/a69ecc40-69d3-166d-295f-43e8627c824a.htm">
+        <HelpTOCNode Title="RowIndexes Property " Url="html/4526f1e5-aa71-d538-f781-7648c44b9702.htm" />
+      </HelpTOCNode>
+      <HelpTOCNode Title="Solution Methods" Url="html/8a7508fd-4aed-118d-4b38-7910ed186d0a.htm" />
+    </HelpTOCNode>
+    <HelpTOCNode Id="ee1422ba-ae5b-4739-9939-c303859c5fbd" Title="SolutionFoundEventArgs Class" Url="html/e61ea22d-8dd9-430e-2c48-824fa69ff3e1.htm">
+      <HelpTOCNode Id="a328fe8c-9c17-4255-8c19-8028a33152bc" Title="SolutionFoundEventArgs Properties" Url="html/42ee591a-8267-b86a-e8c9-f68dd9784ea1.htm">
+        <HelpTOCNode Title="Solution Property " Url="html/8988792f-a8fa-5b88-103f-88e2da54b7ce.htm" />
+        <HelpTOCNode Title="SolutionIndex Property " Url="html/45d1f360-1ec8-6158-c6ae-633147bbb203.htm" />
+      </HelpTOCNode>
+      <HelpTOCNode Title="SolutionFoundEventArgs Methods" Url="html/787ae607-7bdd-5014-7f11-26bb9a246499.htm" />
+    </HelpTOCNode>
+  </HelpTOCNode>
+</HelpTOC>
