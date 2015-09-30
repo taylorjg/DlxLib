@@ -1,6 +1,15 @@
+### 1.3 (1st Oct 2015)
+
+#### Features
+
+* Added support for secondary columns
+    * Added four new Solve overloads that have an additional parameter - _numPrimaryColumns_
+    * Created two new demo programs using secondary columns:
+        * [TetraSticks](https://github.com/taylorjg/TetraSticks)
+        * [RippleEffectDlx](https://github.com/taylorjg/RippleEffectDlx)
+* Updated the C# and F# property tests to use FsCheck 2.x
 
 ### 1.2  (18th Feb 2015)
-
 
 #### Features
 
@@ -21,7 +30,7 @@ public IEnumerable<Solution> Solve<TData, TRow, TCol>(
 
 * All <code>Solve</code> method overloads now yield solutions as they are found. Previously, the internal search algorithm would find all solutions before returning. If only the first solution was required, clients would have to handle the <code>SolutionFound</code> event and cancel the solving process. Now, clients can just use <code>.First()</code> or <code>.Take(1)</code> etc.
 * Added XML documentation comments.
-* Added [online MSDN-style documentation](http://taylorjg.github.io/DlxLib/) that was built from the XML documentation comments using [Sandcastle Help File Builder](https://github.com/EWSoftware/SHFB). 
+* Added [online MSDN-style documentation](http://taylorjg.github.io/DlxLib/) that was built from the XML documentation comments using [Sandcastle Help File Builder](https://github.com/EWSoftware/SHFB).
 
 #### Breaking Changes
 
@@ -39,7 +48,7 @@ public IEnumerable<Solution> Solve<T>(T[,] matrix)
 ```
 
 * Removed the following <code>Solve</code> method overload because it was unnecessarily complicated (what was I smoking ?!?):
- 
+
 ```C#
 public IEnumerable<Solution> Solve<TData, TRow, TCol>(
     TData data,
