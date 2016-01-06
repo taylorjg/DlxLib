@@ -38,11 +38,11 @@ DlxLib is available as a [NuGet package](http://www.nuget.org/packages/DlxLib/).
 
 The documentation for the DlxLib API can be found [here](http://taylorjg.github.io/DlxLib/).
 
-## Things that people have done with DlxLib
+## Gallery
 
 I have created a Wiki page where I encourage people to add links to things that they have done using DlxLib:
 
-* https://github.com/taylorjg/DlxLib/wiki/Things-that-people-have-done-with-DlxLib
+* [Gallery](https://github.com/taylorjg/DlxLib/wiki/Gallery)
 
 ## Screenshot of DlxLibDemo.exe
 
