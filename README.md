@@ -19,12 +19,12 @@ The following example shows how to use DlxLib to find the first two (of three) s
 ```C#
 var matrix = new[,]
     {
-        {0, 0, 1, 0, 1, 1, 0},
-        {1, 0, 0, 1, 0, 0, 1},
-        {0, 1, 1, 0, 0, 1, 0},
-        {1, 0, 0, 1, 0, 0, 0},
-        {0, 1, 0, 0, 0, 0, 1},
-        {0, 0, 0, 1, 1, 0, 1}
+        {1, 0, 0, 0},
+        {0, 1, 1, 0},
+        {1, 0, 0, 1},
+        {0, 0, 1, 1},
+        {0, 1, 0, 0},
+        {0, 0, 1, 0}
     };
 var dlx = new Dlx();
 var firstTwoSolutions = dlx.Solve(matrix).Take(2);
