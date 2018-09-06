@@ -1,3 +1,6 @@
+
+[![NuGet](https://img.shields.io/nuget/v/DlxLib.svg)](https://www.nuget.org/packages/DlxLib/)
+
 [![Build status](https://ci.appveyor.com/api/projects/status/di25a5u6ny229bvj/branch/master?svg=true)](https://ci.appveyor.com/project/taylorjg/dlxlib/branch/master)
 
 ## DlxLib (C#)
